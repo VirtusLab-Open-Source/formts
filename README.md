@@ -4,7 +4,7 @@
 
 - [Typing PoC and API proposal](https://codesandbox.io/s/formts-poc-3ryqv?file=/examples/example_1.tsx)
 - [Lens based optimizations PoC](https://codesandbox.io/s/lens-based-form-poc-ydrhh?file=/src/App.tsx)
-- [Task & Roadmap](https://docs.google.com/spreadsheets/d/18gNEX-fkG65y9HfX03RchTdO16p9Df5Fd2eHNakGLA0/edit?usp=sharing)
+- [Tasks & Roadmap](https://docs.google.com/spreadsheets/d/18gNEX-fkG65y9HfX03RchTdO16p9Df5Fd2eHNakGLA0/edit?usp=sharing)
 
 ### Why another form lib?
 
