@@ -1,0 +1,16 @@
+{
+  "name": "formts",
+  "version": "0.0.1",
+  "description": "Schema-based React-Typescript form library",
+  "main": "index.ts",
+  "scripts": {
+    "test": "test"
+  },
+  "keywords": [
+    "react",
+    "typescript",
+    "form"
+  ],
+  "author": "",
+  "license": "ISC"
+}

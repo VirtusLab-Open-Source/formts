@@ -1,0 +1,21 @@
+{
+  "name": "formts",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "compile": "tsc -p tsconfig.json",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@types/react": "16.9.35",
+    "react": "16.13.1"
+  },
+  "devDependencies": {
+    "@types/jest": "^26.0.10",
+    "conditional-type-checks": "^1.0.5",
+    "jest": "^26.4.0",
+    "ts-jest": "^26.2.0",
+    "typescript": "^3.9.5"
+  }
+}
