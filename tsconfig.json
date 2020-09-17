@@ -29,7 +29,7 @@
     "experimentalDecorators": false,
     "emitDecoratorMetadata": false,
 
-    "lib": ["es2017"],
+    "lib": ["es2017", "dom"],
     "types": [],
     "typeRoots": ["node_modules/@types", "src/types"]
   },

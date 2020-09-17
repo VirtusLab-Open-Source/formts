@@ -18,9 +18,36 @@
     "clean:all": "yarn clean && rm -rf ./node_modules",
     "build": "yarn build:commonjs && yarn build:esnext",
     "build:commonjs": "tsc -p ./tsconfig.commonjs.json",
-    "build:esnext": "tsc -p ./tsconfig.esnext.json"
+    "build:esnext": "tsc -p ./tsconfig.esnext.json",
+    "lint": "eslint 'src/**/*.{ts,tsx}' --fix",
+    "release": "standard-version"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write",
+      "git add"
+    ],
+    "*.{md,json}": [
+      "prettier --write",
+      "git add"
+    ]
   },
   "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^4.1.1",
+    "@typescript-eslint/parser": "^4.1.1",
+    "eslint": "^7.9.0",
+    "eslint-config-prettier": "^6.11.0",
+    "eslint-plugin-import": "^2.22.0",
+    "husky": ">=4",
+    "lint-staged": ">=10",
+    "prettier": "^2.1.2",
+    "standard-version": "^9.0.0",
     "typescript": "^4.0.2"
   }
 }
