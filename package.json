@@ -1,0 +1,26 @@
+{
+  "version": "0.1.0-alpha",
+  "name": "@virtuslab/formts",
+  "description": "Typescript-focused, schema-based React form library",
+  "repository": "git@github.com:VirtusLab/formts.git",
+  "author": "Mikołaj Klaman <mklaman@virtuslab.com>",
+  "license": "MIT",
+  "private": true,
+  "main": "dist/main/index.js",
+  "typings": "dist/main/index.d.ts",
+  "module": "dist/module/index.js",
+  "engines": {
+    "node": "12.18.x",
+    "yarn": "1.22.x"
+  },
+  "scripts": {
+    "clean": "rm -rf ./dist",
+    "clean:all": "yarn clean && rm -rf ./node_modules",
+    "build": "yarn build:commonjs && yarn build:esnext",
+    "build:commonjs": "tsc -p ./tsconfig.commonjs.json",
+    "build:esnext": "tsc -p ./tsconfig.esnext.json"
+  },
+  "devDependencies": {
+    "typescript": "^4.0.2"
+  }
+}
