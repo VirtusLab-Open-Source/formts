@@ -1,0 +1,37 @@
+{
+  "compilerOptions": {
+    "incremental": true,
+    "rootDir": "src",
+    "moduleResolution": "node",
+    "declaration": true,
+    "inlineSourceMap": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictPropertyInitialization": true,
+    "noImplicitThis": true,
+    "alwaysStrict": true,
+
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": false,
+    "noFallthroughCasesInSwitch": false,
+
+    "traceResolution": false,
+    "listEmittedFiles": false,
+    "listFiles": false,
+    "pretty": true,
+
+    "experimentalDecorators": false,
+    "emitDecoratorMetadata": false,
+
+    "lib": ["es2017", "dom"]
+  },
+  "include": ["src/index.ts"],
+  "exclude": ["node_modules/**"],
+  "compileOnSave": false
+}
