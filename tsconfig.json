@@ -29,9 +29,7 @@
     "experimentalDecorators": false,
     "emitDecoratorMetadata": false,
 
-    "lib": ["es2017", "dom"],
-    "types": [],
-    "typeRoots": ["node_modules/@types", "src/types"]
+    "lib": ["es2017", "dom"]
   },
   "include": ["src/index.ts"],
   "exclude": ["node_modules/**"],
