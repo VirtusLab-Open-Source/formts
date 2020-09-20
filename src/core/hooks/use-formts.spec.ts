@@ -1,4 +1,4 @@
-import { useFormts } from "./index";
+import { useFormts } from "./use-formts";
 
 describe("useFormts", () => {
   it("should not be implemented yet", () => {
