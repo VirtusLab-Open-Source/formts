@@ -17,7 +17,6 @@ export const array = <E>(
 ): FieldDecoder<Array<E>> => ({
   fieldType: "array",
   inner: innerDecoder,
-  options: undefined,
 
   init: () => [],
 

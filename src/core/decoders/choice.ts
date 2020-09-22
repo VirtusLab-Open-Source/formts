@@ -1,8 +1,8 @@
-import { FieldDecoder } from "../types/field-decoder";
+import { ChoiceFieldDecoder } from "../types/field-decoder";
 
 type ChoiceDecoderFactory = {
   (): never;
-  <Opts extends string>(...options: Opts[]): FieldDecoder<Opts>;
+  <Opts extends string>(...options: Opts[]): ChoiceFieldDecoder<Opts>;
 };
 
 /**
@@ -18,12 +18,12 @@ type ChoiceDecoderFactory = {
  * ```
  */
 export const choice: ChoiceDecoderFactory = <Opts extends string>(
-  ...options: readonly Opts[]
+  ...options: Opts[]
 ) => {
-  const decoder: FieldDecoder<string> = {
+  const decoder: ChoiceFieldDecoder<Opts> = {
+    options,
+
     fieldType: "choice",
-    inner: undefined,
-    options: options as any,
 
     init: () => options[0],
 

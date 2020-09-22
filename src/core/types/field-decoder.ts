@@ -1,19 +1,24 @@
-import { IsUnion } from "../../utils";
+import { ArrayElement, IsStringUnion } from "../../utils";
 
-export type FieldDecoder<T> = {
+// prettier-ignore
+export type FieldDecoder<T> = [T] extends [Array<any>]
+  ? ArrayFieldDecoder<T>
+  : IsStringUnion<T> extends true
+    ? ChoiceFieldDecoder<T>
+    : FieldDecoderBase<T>;
+
+export type FieldDecoderBase<T> = {
   fieldType: FieldType;
   init: () => T;
   decode: (value: unknown) => DecoderResult<T>;
+};
 
-  // for array decoder
-  inner: [T] extends [Array<infer E>] ? FieldDecoder<E> : undefined;
+export type ArrayFieldDecoder<T> = FieldDecoderBase<T> & {
+  inner: FieldDecoder<ArrayElement<T>>;
+};
 
-  // for choice decoder
-  options: [T] extends [string]
-    ? IsUnion<T> extends true
-      ? T[]
-      : undefined
-    : undefined;
+export type ChoiceFieldDecoder<T> = FieldDecoderBase<T> & {
+  options: T[];
 };
 
 export type FieldType =

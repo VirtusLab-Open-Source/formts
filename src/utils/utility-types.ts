@@ -11,5 +11,8 @@ export type UnionToIntersection<U> = (
   : never;
 
 export type IsUnion<T> = [T] extends [UnionToIntersection<T>] ? false : true;
+export type IsStringUnion<T> = [T] extends [string] ? IsUnion<T> : false;
 
 export type Constructor<T> = new (...args: any[]) => T;
+
+export type ArrayElement<Arr> = Arr extends Array<infer E> ? E : never;

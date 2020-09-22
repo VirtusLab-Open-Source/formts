@@ -13,8 +13,6 @@ import { FieldDecoder } from "../types/field-decoder";
  */
 export const bool = (): FieldDecoder<boolean> => ({
   fieldType: "bool",
-  inner: undefined,
-  options: undefined,
 
   init: () => false,
 
