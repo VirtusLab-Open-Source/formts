@@ -13,6 +13,7 @@ type SomeValues = {
   arrayArrayString: string[][];
   obj: { string: string };
   arrayObj: Array<{ string: string }>;
+  instance: Date | null;
 };
 
 type SomeErr = "err1" | "err2";
@@ -31,14 +32,8 @@ describe("FormSchema type", () => {
       | "arrayChoice"
       | "arrayArrayString"
       | "obj"
-      | "arrayObj";
-
-    assert<IsExact<Actual, Expected>>(true);
-  });
-
-  it("handles string fields", () => {
-    type Actual = Schema["string"];
-    type Expected = FieldDescriptor<string, SomeErr>;
+      | "arrayObj"
+      | "instance";
 
     assert<IsExact<Actual, Expected>>(true);
   });
@@ -100,5 +95,13 @@ describe("FormSchema type", () => {
 
   it("does not handle object fields for now", () => {
     assert<IsNever<Schema["obj"]>>(true);
+  });
+
+  it("handles class fields", () => {
+    type Actual = Schema["instance"];
+
+    type Expected = FieldDescriptor<Date | null, SomeErr>;
+
+    assert<IsExact<Actual, Expected>>(true);
   });
 });
