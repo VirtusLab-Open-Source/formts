@@ -13,8 +13,6 @@ import { FieldDecoder } from "../types/field-decoder";
  */
 export const string = (): FieldDecoder<string> => ({
   fieldType: "string",
-  inner: undefined,
-  options: undefined,
 
   init: () => "",
 

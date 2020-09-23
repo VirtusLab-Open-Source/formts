@@ -1,5 +1,5 @@
 import { Constructor } from "../../utils";
-import { FieldDecoder } from "../types/field-decoder";
+import { FieldDecoderBase } from "../types/field-decoder";
 
 /**s
  * Define object field holding instance of specified type or `null`.
@@ -15,7 +15,7 @@ import { FieldDecoder } from "../types/field-decoder";
  */
 export const instanceOf = <T>(
   constructor: Constructor<T>
-): FieldDecoder<T | null> => {
+): FieldDecoderBase<T | null> => {
   switch (constructor as Constructor<any>) {
     case Object:
     case Array:
@@ -29,8 +29,6 @@ export const instanceOf = <T>(
 
   return {
     fieldType: "class",
-    inner: undefined as any,
-    options: undefined as any,
 
     init: () => null,
 

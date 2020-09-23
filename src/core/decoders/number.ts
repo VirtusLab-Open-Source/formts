@@ -14,8 +14,6 @@ import { FieldDecoder } from "../types/field-decoder";
  */
 export const number = (): FieldDecoder<number | ""> => ({
   fieldType: "number",
-  inner: undefined,
-  options: undefined,
 
   init: () => "",
 
