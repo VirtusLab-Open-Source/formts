@@ -6,7 +6,7 @@ import { impl } from "../types/get-impl";
 import { createFormSchema } from "./create-form-schema";
 
 describe("createFormSchema", () => {
-  it.skip("creates FormSchema type based on field decoders with default error type", () => {
+  it("creates FormSchema type based on field decoders with default error type", () => {
     const Schema = createFormSchema(fields => ({
       string: fields.string(),
       choice: fields.choice("A", "B", "C"),
@@ -36,7 +36,7 @@ describe("createFormSchema", () => {
     assert<IsExact<Actual, Expected>>(true);
   });
 
-  it.skip("creates FormSchema type based on field decoders with custom error type", () => {
+  it("creates FormSchema type based on field decoders with custom error type", () => {
     const Schema = createFormSchema(
       fields => ({
         string: fields.string(),
@@ -69,13 +69,13 @@ describe("createFormSchema", () => {
     assert<IsExact<Actual, Expected>>(true);
   });
 
-  it.skip("creates empty schema object when no fields are specified", () => {
+  it("creates empty schema object when no fields are specified", () => {
     const Schema = createFormSchema(() => ({}));
 
     expect(Object.keys(Schema)).toEqual([]);
   });
 
-  it.skip("creates schema object with keys for every field", () => {
+  it("creates schema object with keys for every field", () => {
     const Schema = createFormSchema(fields => ({
       string: fields.string(),
       choice: fields.choice("A", "B", "C"),
@@ -99,7 +99,7 @@ describe("createFormSchema", () => {
     ]);
   });
 
-  it.skip("creates schema object with paths for every field", () => {
+  it("creates schema object with paths for every field", () => {
     const Schema = createFormSchema(fields => ({
       string: fields.string(),
       choice: fields.choice("A", "B", "C"),
@@ -129,7 +129,7 @@ describe("createFormSchema", () => {
     });
   });
 
-  it.skip("creates field descriptor for string field", () => {
+  it("creates field descriptor for string field", () => {
     const Schema = createFormSchema(fields => ({
       theString: fields.string(),
     }));
@@ -143,7 +143,7 @@ describe("createFormSchema", () => {
     expect(descriptor.decode(42).ok).toBe(false);
   });
 
-  it.skip("creates field descriptor for choice field", () => {
+  it("creates field descriptor for choice field", () => {
     const Schema = createFormSchema(fields => ({
       theChoice: fields.choice("A", "B", "C"),
     }));
@@ -158,7 +158,7 @@ describe("createFormSchema", () => {
     expect(descriptor.decode("foo").ok).toBe(false);
   });
 
-  it.skip("creates field descriptor for number field", () => {
+  it("creates field descriptor for number field", () => {
     const Schema = createFormSchema(fields => ({
       theNumber: fields.number(),
     }));
@@ -172,7 +172,7 @@ describe("createFormSchema", () => {
     expect(descriptor.decode("42").ok).toBe(false);
   });
 
-  it.skip("creates field descriptor for bool field", () => {
+  it("creates field descriptor for bool field", () => {
     const Schema = createFormSchema(fields => ({
       theBoolean: fields.bool(),
     }));
@@ -186,7 +186,7 @@ describe("createFormSchema", () => {
     expect(descriptor.decode("true").ok).toBe(false);
   });
 
-  it.skip("creates field descriptor for array field", () => {
+  it("creates field descriptor for array field", () => {
     const Schema = createFormSchema(fields => ({
       theArray: fields.array(fields.string()),
     }));
@@ -209,7 +209,7 @@ describe("createFormSchema", () => {
     expect(elementDescriptor.decode(["foo", "bar"]).ok).toBe(false);
   });
 
-  it.skip("creates field descriptor for nested array field", () => {
+  it("creates field descriptor for nested array field", () => {
     const Schema = createFormSchema(fields => ({
       theArray: fields.array(fields.array(fields.number())),
     }));
@@ -227,7 +227,7 @@ describe("createFormSchema", () => {
     expect(elementElementDescriptor.path).toBe("theArray.42.666");
   });
 
-  it.skip("creates field descriptor for instanceOf field", () => {
+  it("creates field descriptor for instanceOf field", () => {
     class MyClass {
       constructor(public foo: string) {}
     }

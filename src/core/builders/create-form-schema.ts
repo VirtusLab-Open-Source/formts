@@ -1,8 +1,10 @@
+import { assertNever } from "../../utils";
 import { bool, string, number, choice, array, instanceOf } from "../decoders";
 import { FieldDecoder } from "../types/field-decoder";
+import { _FieldDescriptorImpl } from "../types/field-descriptor";
 import { FormSchema } from "../types/form-schema";
 
-const Fields = {
+const Decoders = {
   bool,
   string,
   number,
@@ -13,10 +15,20 @@ const Fields = {
 
 // FIXME: decoder.choice()
 type BuilderFn<V> = (
-  fields: typeof Fields
+  fields: typeof Decoders
 ) => { [K in keyof V]: FieldDecoder<V[K]> };
 
 type ErrorsMarker<Err> = (errors: <Err>() => Err) => Err;
+
+// loose typing for helping with internal impl, as working with generic target types is impossible
+type _FormSchemaApprox_ = Record<string, _DescriptorApprox_>;
+
+type _DescriptorApprox_ =
+  | _FieldDescriptorImpl<any>
+  | {
+      readonly root: _FieldDescriptorImpl<any>;
+      readonly nth: (index: number) => _DescriptorApprox_;
+    };
 
 /**
  * Define shape of the form values and type of validation errors.
@@ -38,8 +50,42 @@ type ErrorsMarker<Err> = (errors: <Err>() => Err) => Err;
  * ```
  */
 export const createFormSchema = <Values extends object, Err = never>(
-  _fields: BuilderFn<Values>,
+  fields: BuilderFn<Values>,
   _errors?: ErrorsMarker<Err>
 ): FormSchema<Values, Err> => {
-  throw new Error("not implemented!");
+  const decodersMap = fields(Decoders);
+
+  return Object.keys(decodersMap).reduce<_FormSchemaApprox_>((schema, key) => {
+    const decoder = decodersMap[key as keyof Values];
+    schema[key] = createFieldDescriptor(decoder as FieldDecoder<any>, key);
+    return schema;
+  }, {}) as any;
+};
+
+const createFieldDescriptor = (
+  decoder: FieldDecoder<any>,
+  path: string
+): _DescriptorApprox_ => {
+  switch (decoder.fieldType) {
+    case "bool":
+    case "number":
+    case "string":
+    case "class":
+    case "choice":
+      return { ...decoder, path };
+
+    case "array": {
+      const root = { ...decoder, path };
+      const nth = (i: number) =>
+        createFieldDescriptor(
+          decoder.inner as FieldDecoder<any>,
+          `${path}.${i}`
+        );
+
+      return { root, nth };
+    }
+
+    default:
+      return assertNever(decoder.fieldType);
+  }
 };
