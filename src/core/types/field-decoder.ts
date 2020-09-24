@@ -1,25 +1,32 @@
-import { ArrayElement, IsStringUnion } from "../../utils";
+import { ArrayElement, IsStringUnion, Nominal } from "../../utils";
 
 // prettier-ignore
-export type FieldDecoder<T> = [T] extends [Array<any>]
-  ? ArrayFieldDecoder<T>
+export type _FieldDecoderImpl<T> = [T] extends [Array<any>]
+  ? _ArrayFieldDecoderImpl<T>
   : IsStringUnion<T> extends true
-    ? ChoiceFieldDecoder<T>
-    : FieldDecoderBase<T>;
+    ? _ChoiceFieldDecoderImpl<T>
+    : _FieldDecoderBaseImpl<T>;
 
-export type FieldDecoderBase<T> = {
+export type _FieldDecoderBaseImpl<T> = {
   fieldType: FieldType;
   init: () => T;
   decode: (value: unknown) => DecoderResult<T>;
 };
 
-export type ArrayFieldDecoder<T> = FieldDecoderBase<T> & {
-  inner: FieldDecoder<ArrayElement<T>>;
+export type _ArrayFieldDecoderImpl<T> = _FieldDecoderBaseImpl<T> & {
+  inner: _FieldDecoderImpl<ArrayElement<T>>;
 };
 
-export type ChoiceFieldDecoder<T> = FieldDecoderBase<T> & {
+export type _ChoiceFieldDecoderImpl<T> = _FieldDecoderBaseImpl<T> & {
   options: T[];
 };
+
+/**
+ * Object containing run-time type information about a field.
+ * Should be used together with `createForm.schema` function.
+ */
+export interface FieldDecoder<T>
+  extends Nominal<"FieldDecoder", { __ref?: [T] }> {}
 
 export type FieldType =
   | "number"

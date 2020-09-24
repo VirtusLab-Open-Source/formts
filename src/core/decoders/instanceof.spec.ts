@@ -1,14 +1,16 @@
+import { impl } from "../types/type-mapper-util";
+
 import { instanceOf } from "./instanceof";
 
 describe("instanceOf decoder", () => {
   it("should provide it's field type", () => {
-    const decoder = instanceOf(Set);
+    const decoder = impl(instanceOf(Set));
 
     expect(decoder.fieldType).toBe("class");
   });
 
   it("should provide initial field value", () => {
-    const decoder = instanceOf(Date);
+    const decoder = impl(instanceOf(Date));
 
     expect(decoder.init()).toBeNull();
   });
@@ -21,21 +23,21 @@ describe("instanceOf decoder", () => {
 
   describe("combined with Date constructor", () => {
     it("should decode date instance", () => {
-      const decoder = instanceOf(Date);
+      const decoder = impl(instanceOf(Date));
       const value = new Date();
 
       expect(decoder.decode(value)).toEqual({ ok: true, value });
     });
 
     it("should NOT decode strings", () => {
-      const decoder = instanceOf(Date);
+      const decoder = impl(instanceOf(Date));
       const value = Date();
 
       expect(decoder.decode(value)).toEqual({ ok: false, value });
     });
 
     it("should NOT decode null", () => {
-      const decoder = instanceOf(Date);
+      const decoder = impl(instanceOf(Date));
       const value = null;
 
       expect(decoder.decode(value)).toEqual({ ok: false, value });
@@ -48,21 +50,21 @@ describe("instanceOf decoder", () => {
     }
 
     it("should decode class instance", () => {
-      const decoder = instanceOf(MyClass);
+      const decoder = impl(instanceOf(MyClass));
       const value = new MyClass(true);
 
       expect(decoder.decode(value)).toEqual({ ok: true, value });
     });
 
     it("should NOT decode class-like objects", () => {
-      const decoder = instanceOf(MyClass);
+      const decoder = impl(instanceOf(MyClass));
       const value: MyClass = { classy: false };
 
       expect(decoder.decode(value)).toEqual({ ok: false, value });
     });
 
     it("should NOT decode null", () => {
-      const decoder = instanceOf(MyClass);
+      const decoder = impl(instanceOf(MyClass));
       const value = null;
 
       expect(decoder.decode(value)).toEqual({ ok: false, value });

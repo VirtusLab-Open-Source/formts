@@ -1,4 +1,5 @@
-import { FieldDecoder } from "../types/field-decoder";
+import { FieldDecoder, _FieldDecoderImpl } from "../types/field-decoder";
+import { opaque } from "../types/type-mapper-util";
 
 /**
  * Define field of type `string`.
@@ -11,17 +12,21 @@ import { FieldDecoder } from "../types/field-decoder";
  * }));
  * ```
  */
-export const string = (): FieldDecoder<string> => ({
-  fieldType: "string",
+export const string = (): FieldDecoder<string> => {
+  const decoder: _FieldDecoderImpl<string> = {
+    fieldType: "string",
 
-  init: () => "",
+    init: () => "",
 
-  decode: value => {
-    switch (typeof value) {
-      case "string":
-        return { ok: true, value };
-      default:
-        return { ok: false, value };
-    }
-  },
-});
+    decode: value => {
+      switch (typeof value) {
+        case "string":
+          return { ok: true, value };
+        default:
+          return { ok: false, value };
+      }
+    },
+  };
+
+  return opaque(decoder);
+};

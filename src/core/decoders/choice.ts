@@ -1,4 +1,9 @@
-import { ChoiceFieldDecoder } from "../types/field-decoder";
+import {
+  FieldDecoder,
+  _ChoiceFieldDecoderImpl,
+  _FieldDecoderImpl,
+} from "../types/field-decoder";
+import { opaque } from "../types/type-mapper-util";
 
 type ChoiceDecoderFactory = {
   /**
@@ -29,17 +34,17 @@ type ChoiceDecoderFactory = {
    * }));
    * ```
    */
-  <Opts extends string>(...options: Opts[]): ChoiceFieldDecoder<Opts>;
+  <Opts extends string>(...options: Opts[]): FieldDecoder<Opts>;
 };
 
 export const choice: ChoiceDecoderFactory = <Opts extends string>(
   ...options: Opts[]
-): ChoiceFieldDecoder<Opts> => {
+): FieldDecoder<Opts> => {
   if (options.length === 0) {
     throw new Error("choice field: no options provided");
   }
 
-  return {
+  const decoder: _ChoiceFieldDecoderImpl<Opts> = {
     options,
 
     fieldType: "choice",
@@ -57,4 +62,6 @@ export const choice: ChoiceDecoderFactory = <Opts extends string>(
       }
     },
   };
+
+  return opaque(decoder as _FieldDecoderImpl<Opts>);
 };

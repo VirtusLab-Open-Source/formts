@@ -1,8 +1,9 @@
 import { assertNever } from "../../utils";
 import { bool, string, number, choice, array, instanceOf } from "../decoders";
-import { FieldDecoder } from "../types/field-decoder";
+import { FieldDecoder, _FieldDecoderImpl } from "../types/field-decoder";
 import { _FieldDescriptorImpl } from "../types/field-descriptor";
 import { FormSchema } from "../types/form-schema";
+import { impl } from "../types/type-mapper-util";
 
 const Decoders = {
   bool,
@@ -56,13 +57,16 @@ export const createFormSchema = <Values extends object, Err = never>(
 
   return Object.keys(decodersMap).reduce<_FormSchemaApprox_>((schema, key) => {
     const decoder = decodersMap[key as keyof Values];
-    schema[key] = createFieldDescriptor(decoder as FieldDecoder<any>, key);
+    schema[key] = createFieldDescriptor(
+      impl(decoder) as _FieldDecoderImpl<any>,
+      key
+    );
     return schema;
   }, {}) as any;
 };
 
 const createFieldDescriptor = (
-  decoder: FieldDecoder<any>,
+  decoder: _FieldDecoderImpl<any>,
   path: string
 ): _DescriptorApprox_ => {
   switch (decoder.fieldType) {
@@ -77,7 +81,7 @@ const createFieldDescriptor = (
       const root = { ...decoder, path };
       const nth = (i: number) =>
         createFieldDescriptor(
-          decoder.inner as FieldDecoder<any>,
+          decoder.inner as _FieldDecoderImpl<any>,
           `${path}.${i}`
         );
 

@@ -1,11 +1,11 @@
 import { Nominal } from "../../utils";
 
-import { FieldDecoder } from "./field-decoder";
+import { _FieldDecoderImpl } from "./field-decoder";
 
 // actual type, encapsulated away from public API
 export type _FieldDescriptorImpl<T> = {
   path: string;
-} & FieldDecoder<T>;
+} & _FieldDecoderImpl<T>;
 
 /**
  * Pointer to a form field.

@@ -1,4 +1,5 @@
-import { FieldDecoder } from "../types/field-decoder";
+import { FieldDecoder, _FieldDecoderImpl } from "../types/field-decoder";
+import { opaque } from "../types/type-mapper-util";
 
 /**
  * Define field of type `boolean`.
@@ -11,17 +12,21 @@ import { FieldDecoder } from "../types/field-decoder";
  * }));
  * ```
  */
-export const bool = (): FieldDecoder<boolean> => ({
-  fieldType: "bool",
+export const bool = (): FieldDecoder<boolean> => {
+  const decoder: _FieldDecoderImpl<boolean> = {
+    fieldType: "bool",
 
-  init: () => false,
+    init: () => false,
 
-  decode: value => {
-    switch (typeof value) {
-      case "boolean":
-        return { ok: true, value };
-      default:
-        return { ok: false, value };
-    }
-  },
-});
+    decode: value => {
+      switch (typeof value) {
+        case "boolean":
+          return { ok: true, value };
+        default:
+          return { ok: false, value };
+      }
+    },
+  };
+
+  return opaque(decoder);
+};

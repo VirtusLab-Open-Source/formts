@@ -1,10 +1,10 @@
 import { assert, IsExact } from "conditional-type-checks";
 
-import { DecoderResult, FieldDecoder, FieldType } from "./field-decoder";
+import { DecoderResult, _FieldDecoderImpl, FieldType } from "./field-decoder";
 
-describe("FieldDecoder type", () => {
+describe("_FieldDecoderImpl type", () => {
   it("handles string fields", () => {
-    type Actual = FieldDecoder<string>;
+    type Actual = _FieldDecoderImpl<string>;
     type Expected = {
       fieldType: FieldType;
       init: () => string;
@@ -15,7 +15,7 @@ describe("FieldDecoder type", () => {
   });
 
   it("handles number fields", () => {
-    type Actual = FieldDecoder<number | "">;
+    type Actual = _FieldDecoderImpl<number | "">;
     type Expected = {
       fieldType: FieldType;
       init: () => number | "";
@@ -26,7 +26,7 @@ describe("FieldDecoder type", () => {
   });
 
   it("handles boolean fields", () => {
-    type Actual = FieldDecoder<boolean>;
+    type Actual = _FieldDecoderImpl<boolean>;
     type Expected = {
       fieldType: FieldType;
       init: () => boolean;
@@ -37,7 +37,7 @@ describe("FieldDecoder type", () => {
   });
 
   it("handles choice fields", () => {
-    type Actual = FieldDecoder<"A" | "B" | "C">;
+    type Actual = _FieldDecoderImpl<"A" | "B" | "C">;
     type Expected = {
       fieldType: FieldType;
       options: Array<"A" | "B" | "C">;
@@ -49,10 +49,10 @@ describe("FieldDecoder type", () => {
   });
 
   it("handles array fields", () => {
-    type Actual = FieldDecoder<string[]>;
+    type Actual = _FieldDecoderImpl<string[]>;
     type Expected = {
       fieldType: FieldType;
-      inner: FieldDecoder<string>;
+      inner: _FieldDecoderImpl<string>;
       init: () => string[];
       decode: (val: unknown) => DecoderResult<string[]>;
     };

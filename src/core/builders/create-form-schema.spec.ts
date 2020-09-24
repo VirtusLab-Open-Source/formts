@@ -1,7 +1,7 @@
 import { assert, IsExact } from "conditional-type-checks";
 
 import { FormSchema } from "../types/form-schema";
-import { impl } from "../types/get-impl";
+import { impl } from "../types/type-mapper-util";
 
 import { createFormSchema } from "./create-form-schema";
 

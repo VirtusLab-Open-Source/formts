@@ -1,5 +1,10 @@
 import { Constructor } from "../../utils";
-import { FieldDecoderBase } from "../types/field-decoder";
+import {
+  FieldDecoder,
+  _FieldDecoderBaseImpl,
+  _FieldDecoderImpl,
+} from "../types/field-decoder";
+import { opaque } from "../types/type-mapper-util";
 
 /**s
  * Define object field holding instance of specified type or `null`.
@@ -15,7 +20,7 @@ import { FieldDecoderBase } from "../types/field-decoder";
  */
 export const instanceOf = <T>(
   constructor: Constructor<T>
-): FieldDecoderBase<T | null> => {
+): FieldDecoder<T | null> => {
   switch (constructor as Constructor<any>) {
     case Object:
     case Array:
@@ -27,7 +32,7 @@ export const instanceOf = <T>(
       );
   }
 
-  return {
+  const decoder: _FieldDecoderBaseImpl<T | null> = {
     fieldType: "class",
 
     init: () => null,
@@ -35,4 +40,6 @@ export const instanceOf = <T>(
     decode: value =>
       value instanceof constructor ? { ok: true, value } : { ok: false, value },
   };
+
+  return opaque(decoder as _FieldDecoderImpl<T | null>);
 };
