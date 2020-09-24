@@ -1,14 +1,16 @@
-import { assert, IsNever } from "conditional-type-checks";
+import { assert, IsExact } from "conditional-type-checks";
 
 import { choice } from "./choice";
 
 describe("number decoder", () => {
   it("should force the user to provide input options", () => {
-    const invalidDecoder = choice();
-    const validDecoder = choice("A", "B", "C");
-
-    assert<IsNever<typeof invalidDecoder>>(true);
-    assert<IsNever<typeof validDecoder>>(false);
+    try {
+      const invalidDecoder = choice();
+      assert<IsExact<typeof invalidDecoder, void>>(true);
+    } catch (err) {
+      expect(err).toBeInstanceOf(Error);
+    }
+    expect.assertions(1);
   });
 
   it("should provide it's field type", () => {

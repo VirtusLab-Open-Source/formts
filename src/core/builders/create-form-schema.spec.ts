@@ -158,6 +158,15 @@ describe("createFormSchema", () => {
     expect(descriptor.decode("foo").ok).toBe(false);
   });
 
+  it("does not allow creating schema with empty choice field", () => {
+    expect(() =>
+      createFormSchema(fields => ({
+        // @ts-expect-error
+        theChoice: fields.choice(),
+      }))
+    ).toThrowError();
+  });
+
   it("creates field descriptor for number field", () => {
     const Schema = createFormSchema(fields => ({
       theNumber: fields.number(),

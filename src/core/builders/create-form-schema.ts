@@ -13,7 +13,6 @@ const Decoders = {
   instanceOf,
 };
 
-// FIXME: decoder.choice()
 type BuilderFn<V> = (
   fields: typeof Decoders
 ) => { [K in keyof V]: FieldDecoder<V[K]> };
