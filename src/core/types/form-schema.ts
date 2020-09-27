@@ -1,4 +1,4 @@
-import { FieldDescriptor } from "./field-descriptor";
+import { FieldDescriptor, _FieldDescriptorImpl } from "./field-descriptor";
 
 /**
  * Description of a form.

@@ -1,6 +1,10 @@
-import { DeepPartial } from "../../utils";
-import { _FieldDescriptorImpl } from "../types/field-descriptor";
+import { DeepPartial, get, keys, record, set } from "../../utils";
+import {
+  FieldDescriptor,
+  _FieldDescriptorImpl,
+} from "../types/field-descriptor";
 import { FormSchema } from "../types/form-schema";
+import { impl } from "../types/type-mapper-util";
 
 import { createInitialState } from "./create-initial-state";
 
@@ -27,10 +31,28 @@ export type FormtsOptions<Values extends object, Err> = {
 export const useFormts = <Values extends object, Err>(
   options: FormtsOptions<Values, Err>
 ) => {
-  const initialState = createInitialState(
-    options.Schema,
-    options.initialValues
-  );
+  const formState = createInitialState(options.Schema, options.initialValues);
+  const touchedState = record(keys(options.Schema), false);
+  const errorsState = record(keys(options.Schema), null as Err | null);
 
-  return initialState;
+  return [
+    formState,
+    getter(formState),
+    setter(formState),
+    touchedState,
+    errorsState,
+  ];
+};
+
+const getter = <Values extends object>(state: Values) => <T, Err>(
+  desc: FieldDescriptor<T, Err>
+): T => {
+  return get(state, impl(desc).path) as any;
+};
+
+const setter = <Values extends object>(state: Values) => <T, Err>(
+  desc: FieldDescriptor<T, Err>,
+  value: T
+): T => {
+  return set(state, impl(desc).path, value) as any;
 };
