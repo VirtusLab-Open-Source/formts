@@ -16,3 +16,16 @@ export type IsStringUnion<T> = [T] extends [string] ? IsUnion<T> : false;
 export type Constructor<T> = new (...args: any[]) => T;
 
 export type ArrayElement<Arr> = Arr extends Array<infer E> ? E : never;
+
+// prettier-ignore
+export type DeepPartial<T> = T extends Function
+  ? T
+  : T extends Array<infer U>
+    ? Array<DeepPartial<U>>
+    : T extends object
+      ? { [P in keyof T]?: DeepPartial<T[P]> }
+      : T | undefined;
+
+export type IdentityDict<T extends string> = IsUnion<T> extends true
+  ? { [K in T]: K }
+  : never;
