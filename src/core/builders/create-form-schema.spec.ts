@@ -159,12 +159,10 @@ describe("createFormSchema", () => {
   });
 
   it("does not allow creating schema with empty choice field", () => {
-    expect(() =>
-      createFormSchema(fields => ({
-        // @ts-expect-error
-        theChoice: fields.choice(),
-      }))
-    ).toThrowError();
+    createFormSchema(fields => ({
+      // @ts-expect-error
+      theChoice: fields.choice(),
+    }));
   });
 
   it("creates field descriptor for number field", () => {
@@ -212,7 +210,7 @@ describe("createFormSchema", () => {
     const elementDescriptor = impl(Schema.theArray.nth(42));
 
     expect(elementDescriptor.fieldType).toBe("string");
-    expect(elementDescriptor.path).toBe("theArray.42");
+    expect(elementDescriptor.path).toBe("theArray[42]");
     expect(elementDescriptor.init()).toEqual("");
     expect(elementDescriptor.decode("foo").ok).toBe(true);
     expect(elementDescriptor.decode(["foo", "bar"]).ok).toBe(false);
@@ -229,11 +227,11 @@ describe("createFormSchema", () => {
 
     const elementDescriptor = impl(Schema.theArray.nth(42).root);
     expect(elementDescriptor.fieldType).toBe("array");
-    expect(elementDescriptor.path).toBe("theArray.42");
+    expect(elementDescriptor.path).toBe("theArray[42]");
 
     const elementElementDescriptor = impl(Schema.theArray.nth(42).nth(666));
     expect(elementElementDescriptor.fieldType).toBe("number");
-    expect(elementElementDescriptor.path).toBe("theArray.42.666");
+    expect(elementElementDescriptor.path).toBe("theArray[42][666]");
   });
 
   it("creates field descriptor for instanceOf field", () => {

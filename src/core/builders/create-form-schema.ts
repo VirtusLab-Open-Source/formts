@@ -82,7 +82,7 @@ const createFieldDescriptor = (
       const nth = (i: number) =>
         createFieldDescriptor(
           decoder.inner as _FieldDecoderImpl<any>,
-          `${path}.${i}`
+          `${path}[${i}]`
         );
 
       return { root, nth };

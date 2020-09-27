@@ -5,58 +5,49 @@ import {
 } from "../types/field-decoder";
 import { opaque } from "../types/type-mapper-util";
 
-type ChoiceDecoderFactory = {
-  /**
-   * Define field of given string literal union type.
-   * Will check values against provided whitelist.
-   * Default initial value will be first option received.
-   *
-   * **requires at least one option to be provided**
-   *
-   * @example
-   * ```
-   * const Schema = createForm.schema(fields => ({
-   *   x: fields.choice("A", "B", "C") // x: "A" | "B" | "C"
-   * }));
-   * ```
-   */
-  (): void;
-
-  /**
-   * Define field of given string literal union type.
-   * Will check values against provided whitelist.
-   * Default initial value will be first option received.
-   *
-   * @example
-   * ```
-   * const Schema = createForm.schema(fields => ({
-   *   x: fields.choice("A", "B", "C") // x: "A" | "B" | "C"
-   * }));
-   * ```
-   */
-  <Opts extends string>(...options: Opts[]): FieldDecoder<Opts>;
-};
-
-export const choice: ChoiceDecoderFactory = <Opts extends string>(
-  ...options: Opts[]
+/**
+ * Define field of given string literal union type.
+ * Will check values against provided whitelist.
+ * Default initial value will be first option received.
+ *
+ * **requires at least one option to be provided**
+ *
+ * @example
+ * ```
+ * const Schema = createForm.schema(fields => ({
+ *   x: fields.choice("A", "B", "C") // x: "A" | "B" | "C"
+ * }));
+ * ```
+ */
+export const choice = <Opts extends string>(
+  firstOption: Opts,
+  ...otherOptions: Opts[]
 ): FieldDecoder<Opts> => {
-  if (options.length === 0) {
-    throw new Error("choice field: no options provided");
-  }
+  const options = [firstOption, ...otherOptions];
+
+  const optionsDictionary = options.reduce<Record<string, Opts | undefined>>(
+    (dict, opt) => {
+      dict[opt] = opt;
+      return dict;
+    },
+    {}
+  );
 
   const decoder: _ChoiceFieldDecoderImpl<Opts> = {
     options,
 
     fieldType: "choice",
 
-    init: () => options[0],
+    init: () => firstOption,
 
     decode: value => {
       switch (typeof value) {
-        case "string":
-          return options.includes(value as Opts)
-            ? { ok: true, value: value as Opts }
+        case "string": {
+          const option = optionsDictionary[value];
+          return option != null
+            ? { ok: true, value: option }
             : { ok: false, value };
+        }
         default:
           return { ok: false, value };
       }

@@ -1,18 +1,11 @@
-import { assert, IsExact } from "conditional-type-checks";
-
 import { impl } from "../types/type-mapper-util";
 
 import { choice } from "./choice";
 
 describe("number decoder", () => {
   it("should force the user to provide input options", () => {
-    try {
-      const invalidDecoder = choice();
-      assert<IsExact<typeof invalidDecoder, void>>(true);
-    } catch (err) {
-      expect(err).toBeInstanceOf(Error);
-    }
-    expect.assertions(1);
+    // @ts-expect-error
+    const invalidDecoder = choice();
   });
 
   it("should provide it's field type", () => {
@@ -27,16 +20,16 @@ describe("number decoder", () => {
     expect(decoder.init()).toBe("A");
   });
 
-  it("should exposed it's options", () => {
+  it("should expose it's options", () => {
     const decoder = impl(choice("", "A", "B", "C"));
 
     expect(decoder.options).toEqual(["", "A", "B", "C"]);
   });
 
   it("should decode whitelisted values", () => {
-    const decoder = impl(choice("A", "B", "C"));
+    const decoder = impl(choice("", "A", "B", "C"));
 
-    ["A", "B", "C"].forEach(value =>
+    ["", "A", "B", "C"].forEach(value =>
       expect(decoder.decode(value)).toEqual({ ok: true, value })
     );
   });
