@@ -59,4 +59,42 @@ describe("_FieldDecoderImpl type", () => {
 
     assert<IsExact<Actual, Expected>>(true);
   });
+
+  it("handles object fields", () => {
+    type Actual = _FieldDecoderImpl<{
+      str: string;
+      num: number | "";
+      arr: boolean[];
+      nested: { str: string };
+    }>;
+
+    type Expected = {
+      fieldType: FieldType;
+
+      inner: {
+        str: _FieldDecoderImpl<string>;
+        num: _FieldDecoderImpl<number | "">;
+        arr: _FieldDecoderImpl<boolean[]>;
+        nested: _FieldDecoderImpl<{ str: string }>;
+      };
+
+      init: () => {
+        str: string;
+        num: number | "";
+        arr: boolean[];
+        nested: { str: string };
+      };
+
+      decode: (
+        val: unknown
+      ) => DecoderResult<{
+        str: string;
+        num: number | "";
+        arr: boolean[];
+        nested: { str: string };
+      }>;
+    };
+
+    assert<IsExact<Actual, Expected>>(true);
+  });
 });

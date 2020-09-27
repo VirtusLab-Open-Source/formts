@@ -88,6 +88,9 @@ const createFieldDescriptor = (
       return { root, nth };
     }
 
+    case "object":
+      throw new Error("not implemented!"); // TODO
+
     default:
       return assertNever(decoder.fieldType);
   }
