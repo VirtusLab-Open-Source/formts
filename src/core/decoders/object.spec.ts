@@ -12,13 +12,13 @@ import { string } from "./string";
 
 describe("object decoder", () => {
   it("should force the user to provide object properties", () => {
-    try {
-      const invalidDecoder = object({});
-      assert<IsExact<typeof invalidDecoder, void>>(true);
-    } catch (err) {
-      expect(err).toBeInstanceOf(Error);
-    }
-    expect.assertions(1);
+    const invalidDecoder = object({});
+    assert<IsExact<typeof invalidDecoder, void>>(true);
+  });
+
+  it("should force the user to NOT use the reserved 'root' property", () => {
+    const invalidDecoder = object({ root: bool(), foo: string() });
+    assert<IsExact<typeof invalidDecoder, void>>(true);
   });
 
   it("should provide it's field type", () => {

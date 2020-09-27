@@ -5,6 +5,15 @@ import {
 } from "../types/field-decoder";
 import { impl } from "../types/type-mapper-util";
 
+// prettier-ignore
+type ObjectFieldDecoderWithGuards<
+  O extends object
+> = O[keyof O] extends undefined
+  ? void
+  : Extract<keyof O, "root"> extends never
+    ? FieldDecoder<O>
+    : void;
+
 /**
  * Define nested object field with shape defined by `innerDecoders` param.
  * Will check if value is an object and if it contains all specified properties of the right types at runtime.
@@ -23,11 +32,7 @@ export const object = <O extends object>(
   innerDecoders: {
     [K in keyof O]: FieldDecoder<O[K]>;
   }
-): O[keyof O] extends undefined ? void : FieldDecoder<O> => {
-  if (Object.keys(innerDecoders).length === 0) {
-    throw new Error("object field: no properties provided");
-  }
-
+): ObjectFieldDecoderWithGuards<O> => {
   const decoder: _ObjectFieldDecoderImpl<O> = {
     fieldType: "object",
 
