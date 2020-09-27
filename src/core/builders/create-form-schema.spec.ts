@@ -12,10 +12,20 @@ describe("createFormSchema", () => {
       choice: fields.choice("A", "B", "C"),
       num: fields.number(),
       bool: fields.bool(),
+      instance: fields.instanceOf(Date),
       arrayString: fields.array(fields.string()),
       arrayChoice: fields.array(fields.choice("a", "b", "c")),
       arrayArrayString: fields.array(fields.array(fields.string())),
-      instance: fields.instanceOf(Date),
+      object: fields.object({ str: fields.string(), num: fields.number() }),
+      arrayObjectString: fields.array(fields.object({ str: fields.string() })),
+      objectArray: fields.object({
+        arrayString: fields.array(fields.string()),
+      }),
+      objectObjectArrayObjectString: fields.object({
+        obj: fields.object({
+          array: fields.array(fields.object({ str: fields.string() })),
+        }),
+      }),
     }));
 
     type Actual = typeof Schema;
@@ -25,10 +35,16 @@ describe("createFormSchema", () => {
         choice: "A" | "B" | "C";
         num: number | "";
         bool: boolean;
+        instance: Date | null;
         arrayString: string[];
         arrayChoice: Array<"a" | "b" | "c">;
         arrayArrayString: string[][];
-        instance: Date | null;
+        object: { str: string; num: "" | number };
+        arrayObjectString: Array<{ str: string }>;
+        objectArray: { arrayString: string[] };
+        objectObjectArrayObjectString: {
+          obj: { array: Array<{ str: string }> };
+        };
       },
       never
     >;
@@ -43,10 +59,22 @@ describe("createFormSchema", () => {
         choice: fields.choice("A", "B", "C"),
         num: fields.number(),
         bool: fields.bool(),
+        instance: fields.instanceOf(Date),
         arrayString: fields.array(fields.string()),
         arrayChoice: fields.array(fields.choice("a", "b", "c")),
         arrayArrayString: fields.array(fields.array(fields.string())),
-        instance: fields.instanceOf(Date),
+        object: fields.object({ str: fields.string(), num: fields.number() }),
+        arrayObjectString: fields.array(
+          fields.object({ str: fields.string() })
+        ),
+        objectArray: fields.object({
+          arrayString: fields.array(fields.string()),
+        }),
+        objectObjectArrayObjectString: fields.object({
+          obj: fields.object({
+            array: fields.array(fields.object({ str: fields.string() })),
+          }),
+        }),
       }),
       error => error<"ERR_1" | "ERR_2">()
     );
@@ -58,10 +86,16 @@ describe("createFormSchema", () => {
         choice: "A" | "B" | "C";
         num: number | "";
         bool: boolean;
+        instance: Date | null;
         arrayString: string[];
         arrayChoice: Array<"a" | "b" | "c">;
         arrayArrayString: string[][];
-        instance: Date | null;
+        object: { str: string; num: "" | number };
+        arrayObjectString: Array<{ str: string }>;
+        objectArray: { arrayString: string[] };
+        objectObjectArrayObjectString: {
+          obj: { array: Array<{ str: string }> };
+        };
       },
       "ERR_1" | "ERR_2"
     >;
@@ -81,10 +115,20 @@ describe("createFormSchema", () => {
       choice: fields.choice("A", "B", "C"),
       num: fields.number(),
       bool: fields.bool(),
+      instance: fields.instanceOf(Date),
       arrayString: fields.array(fields.string()),
       arrayChoice: fields.array(fields.choice("a", "b", "c")),
       arrayArrayString: fields.array(fields.array(fields.string())),
-      instance: fields.instanceOf(Date),
+      object: fields.object({ str: fields.string(), num: fields.number() }),
+      arrayObjectString: fields.array(fields.object({ str: fields.string() })),
+      objectArray: fields.object({
+        arrayString: fields.array(fields.string()),
+      }),
+      objectObjectArrayObjectString: fields.object({
+        obj: fields.object({
+          array: fields.array(fields.object({ str: fields.string() })),
+        }),
+      }),
     }));
 
     expect(Object.keys(Schema)).toEqual([
@@ -92,10 +136,14 @@ describe("createFormSchema", () => {
       "choice",
       "num",
       "bool",
+      "instance",
       "arrayString",
       "arrayChoice",
       "arrayArrayString",
-      "instance",
+      "object",
+      "arrayObjectString",
+      "objectArray",
+      "objectObjectArrayObjectString",
     ]);
   });
 
@@ -105,27 +153,68 @@ describe("createFormSchema", () => {
       choice: fields.choice("A", "B", "C"),
       num: fields.number(),
       bool: fields.bool(),
+      instance: fields.instanceOf(Date),
       arrayString: fields.array(fields.string()),
       arrayChoice: fields.array(fields.choice("a", "b", "c")),
       arrayArrayString: fields.array(fields.array(fields.string())),
-      instance: fields.instanceOf(Date),
+      object: fields.object({ str: fields.string(), num: fields.number() }),
+      arrayObjectString: fields.array(fields.object({ str: fields.string() })),
+      objectArray: fields.object({
+        arrayString: fields.array(fields.string()),
+      }),
+      objectObjectArrayObjectString: fields.object({
+        obj: fields.object({
+          array: fields.array(fields.object({ str: fields.string() })),
+        }),
+      }),
     }));
 
+    const expectPath = (path: string) => expect.objectContaining({ path });
+
     expect(Schema).toEqual({
-      string: expect.objectContaining({ path: "string" }),
-      choice: expect.objectContaining({ path: "choice" }),
-      num: expect.objectContaining({ path: "num" }),
-      bool: expect.objectContaining({ path: "bool" }),
-      arrayString: expect.objectContaining({
-        root: expect.objectContaining({ path: "arrayString" }),
-      }),
-      arrayChoice: expect.objectContaining({
-        root: expect.objectContaining({ path: "arrayChoice" }),
-      }),
-      arrayArrayString: expect.objectContaining({
-        root: expect.objectContaining({ path: "arrayArrayString" }),
-      }),
-      instance: expect.objectContaining({ path: "instance" }),
+      string: expectPath("string"),
+      choice: expectPath("choice"),
+      num: expectPath("num"),
+      bool: expectPath("bool"),
+      instance: expectPath("instance"),
+      arrayString: {
+        root: expectPath("arrayString"),
+        nth: expect.any(Function),
+      },
+      arrayChoice: {
+        root: expectPath("arrayChoice"),
+        nth: expect.any(Function),
+      },
+      arrayArrayString: {
+        root: expectPath("arrayArrayString"),
+        nth: expect.any(Function),
+      },
+      object: {
+        root: expectPath("object"),
+        str: expectPath("object.str"),
+        num: expectPath("object.num"),
+      },
+      arrayObjectString: {
+        root: expectPath("arrayObjectString"),
+        nth: expect.any(Function),
+      },
+      objectArray: {
+        root: expectPath("objectArray"),
+        arrayString: {
+          root: expectPath("objectArray.arrayString"),
+          nth: expect.any(Function),
+        },
+      },
+      objectObjectArrayObjectString: {
+        root: expectPath("objectObjectArrayObjectString"),
+        obj: {
+          root: expectPath("objectObjectArrayObjectString.obj"),
+          array: {
+            root: expectPath("objectObjectArrayObjectString.obj.array"),
+            nth: expect.any(Function),
+          },
+        },
+      },
     });
   });
 
@@ -193,6 +282,24 @@ describe("createFormSchema", () => {
     expect(descriptor.decode("true").ok).toBe(false);
   });
 
+  it("creates field descriptor for instanceOf field", () => {
+    class MyClass {
+      constructor(public foo: string) {}
+    }
+
+    const Schema = createFormSchema(fields => ({
+      theClass: fields.instanceOf(MyClass),
+    }));
+
+    const descriptor = impl(Schema.theClass);
+
+    expect(descriptor.fieldType).toBe("class");
+    expect(descriptor.path).toBe("theClass");
+    expect(descriptor.init()).toBe(null);
+    expect(descriptor.decode(new MyClass("42")).ok).toBe(true);
+    expect(descriptor.decode({ foo: "42" }).ok).toBe(false);
+  });
+
   it("creates field descriptor for array field", () => {
     const Schema = createFormSchema(fields => ({
       theArray: fields.array(fields.string()),
@@ -234,21 +341,81 @@ describe("createFormSchema", () => {
     expect(elementElementDescriptor.path).toBe("theArray[42][666]");
   });
 
-  it("creates field descriptor for instanceOf field", () => {
-    class MyClass {
-      constructor(public foo: string) {}
-    }
-
+  it("creates field descriptor for object field", () => {
     const Schema = createFormSchema(fields => ({
-      theClass: fields.instanceOf(MyClass),
+      theObject: fields.object({ str: fields.string(), num: fields.number() }),
     }));
 
-    const descriptor = impl(Schema.theClass);
+    const rootDescriptor = impl(Schema.theObject.root);
+    expect(rootDescriptor.fieldType).toBe("object");
+    expect(rootDescriptor.path).toBe("theObject");
 
-    expect(descriptor.fieldType).toBe("class");
-    expect(descriptor.path).toBe("theClass");
-    expect(descriptor.init()).toBe(null);
-    expect(descriptor.decode(new MyClass("42")).ok).toBe(true);
-    expect(descriptor.decode({ foo: "42" }).ok).toBe(false);
+    const nestedStringDescriptor = impl(Schema.theObject.str);
+    expect(nestedStringDescriptor.fieldType).toBe("string");
+    expect(nestedStringDescriptor.path).toBe("theObject.str");
+
+    const nestedNumberDescriptor = impl(Schema.theObject.num);
+    expect(nestedNumberDescriptor.fieldType).toBe("number");
+    expect(nestedNumberDescriptor.path).toBe("theObject.num");
+  });
+
+  it("creates field descriptor for a complex object field", () => {
+    const Schema = createFormSchema(fields => ({
+      theObject: fields.object({
+        choice: fields.choice("A", "B"),
+        nested: fields.object({
+          array: fields.array(fields.object({ str: fields.string() })),
+        }),
+      }),
+    }));
+
+    const rootDescriptor = impl(Schema.theObject.root);
+    expect(rootDescriptor.fieldType).toBe("object");
+    expect(rootDescriptor.path).toBe("theObject");
+
+    const nestedChoiceDescriptor = impl(Schema.theObject.choice);
+    expect(nestedChoiceDescriptor.fieldType).toBe("choice");
+    expect(nestedChoiceDescriptor.path).toBe("theObject.choice");
+    expect(nestedChoiceDescriptor.options).toEqual(["A", "B"]);
+
+    const nestedObjectDescriptor = impl(Schema.theObject.nested.root);
+    expect(nestedObjectDescriptor.fieldType).toBe("object");
+    expect(nestedObjectDescriptor.path).toBe("theObject.nested");
+
+    const nestedNestedArrayDescriptor = impl(
+      Schema.theObject.nested.array.root
+    );
+    expect(nestedNestedArrayDescriptor.fieldType).toBe("array");
+    expect(nestedNestedArrayDescriptor.path).toBe("theObject.nested.array");
+
+    const nestedNestedArrayElementRootDescriptor = impl(
+      Schema.theObject.nested.array.nth(42).root
+    );
+    expect(nestedNestedArrayElementRootDescriptor.fieldType).toBe("object");
+    expect(nestedNestedArrayElementRootDescriptor.path).toBe(
+      "theObject.nested.array[42]"
+    );
+
+    const nestedNestedArrayElementStringDescriptor = impl(
+      Schema.theObject.nested.array.nth(42).str
+    );
+    expect(nestedNestedArrayElementStringDescriptor.fieldType).toBe("string");
+    expect(nestedNestedArrayElementStringDescriptor.path).toBe(
+      "theObject.nested.array[42].str"
+    );
+  });
+
+  it("does not allow creating schema with empty object field", () => {
+    createFormSchema(fields => ({
+      // @ts-expect-error
+      theObject: fields.object({}),
+    }));
+  });
+
+  it("does not allow creating schema with nested 'root' field", () => {
+    createFormSchema(fields => ({
+      // @ts-expect-error
+      theObject: fields.object({ foo: fields.string(), root: fields.string() }),
+    }));
   });
 });

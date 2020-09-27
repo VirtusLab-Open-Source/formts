@@ -1,5 +1,13 @@
 import { assertNever } from "../../utils";
-import { bool, string, number, choice, array, instanceOf } from "../decoders";
+import {
+  bool,
+  string,
+  number,
+  choice,
+  instanceOf,
+  array,
+  object,
+} from "../decoders";
 import { FieldDecoder, _FieldDecoderImpl } from "../types/field-decoder";
 import { _FieldDescriptorImpl } from "../types/field-descriptor";
 import { FormSchema } from "../types/form-schema";
@@ -10,13 +18,14 @@ const Decoders = {
   string,
   number,
   choice,
-  array,
   instanceOf,
+  array,
+  object,
 };
 
-type BuilderFn<V> = (
-  fields: typeof Decoders
-) => { [K in keyof V]: FieldDecoder<V[K]> };
+type BuilderFn<V> = (fields: typeof Decoders) => DecodersMap<V>;
+
+type DecodersMap<O> = { [K in keyof O]: FieldDecoder<O[K]> };
 
 type ErrorsMarker<Err> = (errors: <Err>() => Err) => Err;
 
@@ -28,6 +37,10 @@ type _DescriptorApprox_ =
   | {
       readonly root: _FieldDescriptorImpl<any>;
       readonly nth: (index: number) => _DescriptorApprox_;
+    }
+  | {
+      readonly root: _FieldDescriptorImpl<any>;
+      [prop: string]: _FieldDescriptorImpl<any>;
     };
 
 /**
@@ -52,17 +65,17 @@ type _DescriptorApprox_ =
 export const createFormSchema = <Values extends object, Err = never>(
   fields: BuilderFn<Values>,
   _errors?: ErrorsMarker<Err>
-): FormSchema<Values, Err> => {
-  const decodersMap = fields(Decoders);
+): FormSchema<Values, Err> => createObjectSchema(fields(Decoders)) as any;
 
+const createObjectSchema = <O>(decodersMap: DecodersMap<O>, path?: string) => {
   return Object.keys(decodersMap).reduce<_FormSchemaApprox_>((schema, key) => {
-    const decoder = decodersMap[key as keyof Values];
+    const decoder = decodersMap[key as keyof O];
     schema[key] = createFieldDescriptor(
       impl(decoder) as _FieldDecoderImpl<any>,
-      key
+      path ? `${path}.${key}` : key
     );
     return schema;
-  }, {}) as any;
+  }, {});
 };
 
 const createFieldDescriptor = (
@@ -88,8 +101,14 @@ const createFieldDescriptor = (
       return { root, nth };
     }
 
-    case "object":
-      throw new Error("not implemented!"); // TODO
+    case "object": {
+      const root = { ...decoder, path };
+      const props = createObjectSchema(
+        decoder.inner as DecodersMap<object>,
+        path
+      );
+      return { root, ...props };
+    }
 
     default:
       return assertNever(decoder.fieldType);

@@ -18,6 +18,8 @@ type ObjectFieldDecoderWithGuards<
  * Define nested object field with shape defined by `innerDecoders` param.
  * Will check if value is an object and if it contains all specified properties of the right types at runtime.
  *
+ * **Does not accept empty objects and objects with reserved 'root' property**
+ *
  * @example
  * ```
  * const Schema = createForm.schema(fields => ({
