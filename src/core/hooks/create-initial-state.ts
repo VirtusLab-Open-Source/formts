@@ -1,21 +1,28 @@
-import { DeepPartial, entries } from "../../utils";
+import { deepMerge, DeepPartial, entries } from "../../utils";
 import { _FieldDescriptorImpl } from "../types/field-descriptor";
-import { FormSchema, GenericFormDescriptorSchema } from "../types/form-schema";
-import { impl } from "../types/type-mapper-util";
+import { FormSchema } from "../types/form-schema";
+import {
+  isArrayDesc,
+  isObjectDesc,
+  schemaImpl,
+  _DescriptorApprox_,
+  _FormSchemaApprox_,
+} from "../types/form-schema-approx";
 
 export const createInitialState = <Values extends object>(
-  schema: FormSchema<Values, any>,
+  _schema: FormSchema<Values, any>,
   initial?: DeepPartial<Values>
 ): Values => {
-  const initialStateFromDecoders = entries(schema).reduce(
-    (shape, [key, val]) => {
-      const descriptor = val as GenericFormDescriptorSchema<any, any>;
+  const schema = schemaImpl(_schema);
 
-      //FIXME
+  const initialStateFromDecoders = entries(schema).reduce(
+    (shape, [key, value]) => {
+      const descriptor = value as _DescriptorApprox_<Values[typeof key]>;
+
       const fieldInitialValue =
-        "root" in descriptor
-          ? impl(descriptor.root).init()
-          : impl(descriptor).init();
+        isArrayDesc(descriptor) || isObjectDesc(descriptor)
+          ? descriptor.root.init()
+          : descriptor.init();
 
       shape[key] = fieldInitialValue;
       return shape;
@@ -23,5 +30,7 @@ export const createInitialState = <Values extends object>(
     {} as Values
   );
 
-  return { ...initialStateFromDecoders, ...initial };
+  return initial
+    ? deepMerge(initialStateFromDecoders, initial)
+    : initialStateFromDecoders;
 };

@@ -1,4 +1,4 @@
-import { get, set } from "./object";
+import { deepMerge, get, set } from "./object";
 
 describe("get", () => {
   it("empty path should return origin ", () => {
@@ -109,5 +109,85 @@ describe("set", () => {
     expect(
       set({ a: [1, 2, { b: "bb", c: [10, 20] }], aa: 1 }, "a[2].c[1]", 200)
     ).toEqual({ a: [1, 2, { b: "bb", c: [10, 200] }], aa: 1 });
+  });
+});
+
+describe("deepMerge", () => {
+  it("1D object", () => {
+    expect(deepMerge({ a: "origin-a", b: 10 }, { a: "merge-a" })).toEqual({
+      a: "merge-a",
+      b: 10,
+    });
+  });
+
+  it("2D object", () => {
+    expect(
+      deepMerge(
+        {
+          a: {
+            b: { c: "origin-c", d: "origin-d" },
+            e: true,
+          },
+        },
+        { a: { b: { d: "merge-d" }, e: false } }
+      )
+    ).toEqual({
+      a: {
+        b: { c: "origin-c", d: "merge-d" },
+        e: false,
+      },
+    });
+  });
+
+  it("2D object with arrays", () => {
+    expect(
+      deepMerge(
+        {
+          a: {
+            b: { c: "origin-c", d: "origin-d" },
+            e: [1, 2, 3],
+          },
+        },
+        { a: { e: [10, 20, 30] } }
+      )
+    ).toEqual({
+      a: { b: { c: "origin-c", d: "origin-d" }, e: [10, 20, 30] },
+    });
+  });
+
+  it("2D object with override", () => {
+    expect(
+      deepMerge(
+        {
+          a: {
+            b: { c: "origin-c", d: "origin-d" },
+            e: [1, 2, 3],
+          },
+          f: "foo",
+        },
+        { a: "override" }
+      )
+    ).toEqual({
+      a: "override",
+      f: "foo",
+    });
+  });
+
+  it("2D object with nulls", () => {
+    expect(
+      deepMerge(
+        {
+          a: {
+            b: { c: "origin-c", d: "origin-d" },
+            e: [1, 2, 3],
+          },
+          f: "foo",
+        },
+        { a: null }
+      )
+    ).toEqual({
+      a: null,
+      f: "foo",
+    });
   });
 });

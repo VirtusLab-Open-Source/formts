@@ -1,4 +1,4 @@
-import { DeepPartial, get, keys, record, set } from "../../utils";
+import { DeepPartial, get, set } from "../../utils";
 import {
   FieldDescriptor,
   _FieldDescriptorImpl,
@@ -32,16 +32,7 @@ export const useFormts = <Values extends object, Err>(
   options: FormtsOptions<Values, Err>
 ) => {
   const formState = createInitialState(options.Schema, options.initialValues);
-  const touchedState = record(keys(options.Schema), false);
-  const errorsState = record(keys(options.Schema), null as Err | null);
-
-  return [
-    formState,
-    getter(formState),
-    setter(formState),
-    touchedState,
-    errorsState,
-  ];
+  return [formState, getter(formState), setter(formState)];
 };
 
 const getter = <Values extends object>(state: Values) => <T, Err>(

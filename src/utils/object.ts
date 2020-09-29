@@ -1,5 +1,7 @@
+import { DeepPartial } from "./utility-types";
+
 export const entries = <T extends object>(o: T): [keyof T, T[keyof T]][] =>
-  Object.entries(o) as [keyof T, T[keyof T]][];
+  Object.entries(o) as any;
 
 export const keys = <T extends object>(o: T): (keyof T)[] =>
   Object.keys(o) as (keyof T)[];
@@ -57,4 +59,23 @@ const getPathSegments = (path: string): string[] => {
     .replace(/(\[|\])/g, ".")
     .split(".")
     .filter((x: string) => x.length > 0);
+};
+
+export const deepMerge = <T extends object>(
+  origin: T,
+  x: DeepPartial<T>
+): T => {
+  return keys(origin).reduce((acc, key) => {
+    const value = origin[key];
+    const toMerge = (x as Partial<T>)[key];
+    acc[key] =
+      toMerge !== undefined
+        ? Array.isArray(toMerge) ||
+          typeof toMerge !== "object" ||
+          toMerge === null
+          ? toMerge
+          : deepMerge(value, toMerge as any)
+        : value;
+    return acc;
+  }, {} as T);
 };
