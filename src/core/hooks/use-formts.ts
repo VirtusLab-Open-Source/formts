@@ -20,19 +20,18 @@ export type FormtsOptions<Values extends object, Err> = {
   initialValues?: DeepPartial<Values>;
 };
 
-/**
- * Hook used to create form controller - should be used in main form component.
- *
- * @returns tuple containing:
- * - `FieldHandleSchema` - tree of field handles used to interact with fields of the form
- * - `FormHandle` - used to interact with the form as a whole rather than with individual fields
- * - `FormtsProvider` - component enabling usage of `useField` hooks in nested components
- */
 export const useFormts = <Values extends object, Err>(
   options: FormtsOptions<Values, Err>
-) => {
+): [
+  Values,
+  <T, Err>(desc: FieldDescriptor<T, Err>) => T,
+  <T, Err>(desc: FieldDescriptor<T, Err>, value: T) => Values
+] => {
   const formState = createInitialState(options.Schema, options.initialValues);
-  return [formState, getter(formState), setter(formState)];
+  const get = getter(formState);
+  const set = setter(formState);
+
+  return [formState, get, set];
 };
 
 const getter = <Values extends object>(state: Values) => <T, Err>(
@@ -43,7 +42,7 @@ const getter = <Values extends object>(state: Values) => <T, Err>(
 
 const setter = <Values extends object>(state: Values) => <T, Err>(
   desc: FieldDescriptor<T, Err>,
-  value: T
-): T => {
+  value: {} & T
+): Values => {
   return set(state, impl(desc).path, value) as any;
 };

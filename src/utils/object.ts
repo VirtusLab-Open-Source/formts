@@ -6,15 +6,6 @@ export const entries = <T extends object>(o: T): [keyof T, T[keyof T]][] =>
 export const keys = <T extends object>(o: T): (keyof T)[] =>
   Object.keys(o) as (keyof T)[];
 
-export const record = <T extends string | number | symbol, V>(
-  keys: T[],
-  value: V
-): Record<T, V> =>
-  keys.reduce((acc, key) => {
-    acc[key] = value;
-    return acc;
-  }, {} as Record<T, V>);
-
 // dummy impl
 export const get = (o: object, path: string) => {
   const pathSegments = getPathSegments(path);
