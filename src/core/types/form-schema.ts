@@ -13,7 +13,7 @@ type GenericFormDescriptorSchema<T, Err> =
   [T] extends [Array<unknown>]
     ? ArrayFormDescriptorSchema<T, Err>
     : [T] extends [object]
-      ? never // ObjectFormDescriptorSchema<T, Err>
+      ? ObjectFormDescriptorSchema<T, Err>
       : FieldDescriptor<T, Err>;
 
 type ArrayFormDescriptorSchema<T extends Array<unknown>, Err> = {
@@ -21,6 +21,6 @@ type ArrayFormDescriptorSchema<T extends Array<unknown>, Err> = {
   readonly nth: (index: number) => GenericFormDescriptorSchema<T[number], Err>;
 };
 
-// type ObjectFormDescriptorSchema<T extends object, Err> = {
-//   readonly root: FieldDescriptor<T, Err>;
-// } & { readonly [K in keyof T]: GenericFormDescriptorSchema<T[K], Err> };
+type ObjectFormDescriptorSchema<T extends object, Err> = {
+  readonly root: FieldDescriptor<T, Err>;
+} & { readonly [K in keyof T]: GenericFormDescriptorSchema<T[K], Err> };
