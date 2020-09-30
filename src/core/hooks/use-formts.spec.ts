@@ -145,4 +145,42 @@ describe("use-formts", () => {
       ["comes", "THE", "sun"],
     ]);
   });
+
+  it("should work for nested objects", () => {
+    const Schema = createFormSchema(fields => ({
+      fridge: fields.object({
+        fruit: fields.array(fields.choice("banana", "berry", "kiwi")),
+        milk: fields.number(),
+      }),
+    }));
+
+    const [fields, get, set] = useFormts({
+      Schema,
+      initialValues: {
+        fridge: {
+          fruit: ["banana", "banana"],
+          milk: 10,
+        },
+      },
+    });
+
+    const fruit = fields.fridge.fruit;
+    expect(fruit).toEqual(["banana", "banana"]);
+
+    const milk = fields.fridge.milk;
+    expect(milk).toEqual(10);
+
+    expect(get(Schema.fridge.root)).toEqual({
+      fruit: ["banana", "banana"],
+      milk: 10,
+    });
+    expect(get(Schema.fridge.fruit.root)).toEqual(["banana", "banana"]);
+    expect(get(Schema.fridge.milk)).toEqual(10);
+
+    const shape1 = set(Schema.fridge.root, { fruit: ["berry"], milk: 12 });
+    expect(shape1.fridge).toEqual({ fruit: ["berry"], milk: 12 });
+
+    const shape2 = set(Schema.fridge.fruit.nth(0), "kiwi");
+    expect(shape2.fridge).toEqual({ fruit: ["kiwi", "banana"], milk: 10 });
+  });
 });

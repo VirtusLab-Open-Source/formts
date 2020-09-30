@@ -33,4 +33,4 @@ export const isArrayDesc = <Value>(
 
 export const isObjectDesc = <Value>(
   x: _DescriptorApprox_<Value>
-): x is _ObjectDescriptorApprox_<Value> => "nth"! in x && "root" in x;
+): x is _ObjectDescriptorApprox_<Value> => "root" in x && !("nth" in x);

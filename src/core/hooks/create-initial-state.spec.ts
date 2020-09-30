@@ -84,4 +84,20 @@ describe("create-initial-state", () => {
       choiceField: "Cream",
     });
   });
+
+  it("for nested-object", () => {
+    const schema = createFormSchema(fields => ({
+      parent: fields.object({
+        kain: fields.choice("Banana", "Spinach"),
+        abel: fields.bool(),
+      }),
+    }));
+
+    expect(createInitialState(schema, { parent: { abel: true } })).toEqual({
+      parent: {
+        kain: "Banana",
+        abel: true,
+      },
+    });
+  });
 });
