@@ -1,7 +1,6 @@
 import { ArrayElement } from "../../utils";
-
-import { _FieldDescriptorImpl } from "./field-descriptor";
-import { FormSchema } from "./form-schema";
+import { _FieldDescriptorImpl } from "../types/field-descriptor";
+import { FormSchema } from "../types/form-schema";
 
 // loose typing for helping with internal impl, as working with generic target types is impossible
 

@@ -110,6 +110,20 @@ describe("set", () => {
       set({ a: [1, 2, { b: "bb", c: [10, 20] }], aa: 1 }, "a[2].c[1]", 200)
     ).toEqual({ a: [1, 2, { b: "bb", c: [10, 200] }], aa: 1 });
   });
+
+  it("preserves structural sharing", () => {
+    const original = {
+      left: { a: { id: 1 }, b: { id: 2 } },
+      right: { a: { id: 3 }, b: { id: 4 } },
+    };
+    const updated = set(original, "right.b.id", 10);
+
+    expect(original).not.toBe(updated);
+    expect(original.right).not.toBe(updated.right);
+    expect(original.right.b).not.toBe(updated.right.b);
+    expect(original.right.a).toBe(updated.right.a);
+    expect(original.left).toBe(updated.left);
+  });
 });
 
 describe("deepMerge", () => {

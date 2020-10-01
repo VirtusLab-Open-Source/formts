@@ -15,14 +15,6 @@ describe("create-initial-state", () => {
     expect(createInitialState(schema)).toEqual({ stringField: "" });
   });
 
-  it("for one-element schema", () => {
-    const schema = createFormSchema(fields => ({
-      stringField: fields.string(),
-    }));
-
-    expect(createInitialState(schema)).toEqual({ stringField: "" });
-  });
-
   it("for multi-element schema", () => {
     const schema = createFormSchema(fields => ({
       stringField: fields.string(),
@@ -98,6 +90,21 @@ describe("create-initial-state", () => {
         kain: "Banana",
         abel: true,
       },
+    });
+  });
+
+  it("for array of objects", () => {
+    const schema = createFormSchema(fields => ({
+      arr: fields.array(
+        fields.object({
+          one: fields.string(),
+          two: fields.array(fields.number()),
+        })
+      ),
+    }));
+
+    expect(createInitialState(schema, { arr: [{ two: [10] }] })).toEqual({
+      arr: [{ two: [10] }],
     });
   });
 });
