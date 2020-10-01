@@ -1,12 +1,12 @@
-import { DeepPartial, get, set } from "../../utils";
+import { DeepPartial, get, set } from "../../../utils";
 import {
   FieldDescriptor,
   _FieldDescriptorImpl,
-} from "../types/field-descriptor";
-import { FormSchema } from "../types/form-schema";
-import { impl } from "../types/type-mapper-util";
+} from "../../types/field-descriptor";
+import { FormSchema } from "../../types/form-schema";
+import { impl } from "../../types/type-mapper-util";
 
-import { createInitialState } from "./create-initial-state";
+import { createInitialValues } from "./create-initial-values";
 
 export type FormtsOptions<Values extends object, Err> = {
   /** Definition of form fields created using `createForm.schema` function.  */
@@ -27,11 +27,11 @@ export const useFormts = <Values extends object, Err>(
   <T, Err>(desc: FieldDescriptor<T, Err>) => T,
   <T, Err>(desc: FieldDescriptor<T, Err>, value: T) => Values
 ] => {
-  const formState = createInitialState(options.Schema, options.initialValues);
-  const get = getter(formState);
-  const set = setter(formState);
+  const formValues = createInitialValues(options.Schema, options.initialValues);
+  const get = getter(formValues);
+  const set = setter(formValues);
 
-  return [formState, get, set];
+  return [formValues, get, set];
 };
 
 const getter = <Values extends object>(state: Values) => <T, Err>(

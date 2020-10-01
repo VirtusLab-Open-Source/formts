@@ -1,10 +1,10 @@
-import { createFormSchema } from "../builders/create-form-schema";
+import { createFormSchema } from "../../builders/create-form-schema";
 
-import { createInitialState } from "./create-initial-state";
+import { createInitialValues } from "./create-initial-values";
 
 describe("create-initial-state", () => {
   it("should be empty for empty schema", () => {
-    expect(createInitialState({})).toEqual({});
+    expect(createInitialValues({})).toEqual({});
   });
 
   it("for one-element schema", () => {
@@ -12,7 +12,7 @@ describe("create-initial-state", () => {
       stringField: fields.string(),
     }));
 
-    expect(createInitialState(schema)).toEqual({ stringField: "" });
+    expect(createInitialValues(schema)).toEqual({ stringField: "" });
   });
 
   it("for multi-element schema", () => {
@@ -24,7 +24,7 @@ describe("create-initial-state", () => {
       choiceField: fields.choice("Banana", "Avocado", "Cream"),
     }));
 
-    expect(createInitialState(schema)).toEqual({
+    expect(createInitialValues(schema)).toEqual({
       stringField: "",
       boolField: false,
       numberField: "",
@@ -42,7 +42,7 @@ describe("create-initial-state", () => {
       choiceField: fields.choice("Banana", "Avocado", "Cream"),
     }));
 
-    expect(createInitialState(schema, { stringField: "dodo" })).toEqual({
+    expect(createInitialValues(schema, { stringField: "dodo" })).toEqual({
       stringField: "dodo",
       boolField: false,
       numberField: "",
@@ -61,7 +61,7 @@ describe("create-initial-state", () => {
     }));
 
     expect(
-      createInitialState(schema, {
+      createInitialValues(schema, {
         stringField: "dodo",
         boolField: true,
         numberField: 0,
@@ -85,7 +85,7 @@ describe("create-initial-state", () => {
       }),
     }));
 
-    expect(createInitialState(schema, { parent: { abel: true } })).toEqual({
+    expect(createInitialValues(schema, { parent: { abel: true } })).toEqual({
       parent: {
         kain: "Banana",
         abel: true,
@@ -103,7 +103,7 @@ describe("create-initial-state", () => {
       ),
     }));
 
-    expect(createInitialState(schema, { arr: [{ two: [10] }] })).toEqual({
+    expect(createInitialValues(schema, { arr: [{ two: [10] }] })).toEqual({
       arr: [{ two: [10] }],
     });
   });

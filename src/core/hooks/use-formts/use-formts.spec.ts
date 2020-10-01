@@ -1,6 +1,6 @@
 import { assert, IsExact } from "conditional-type-checks";
 
-import { createFormSchema } from "../builders/create-form-schema";
+import { createFormSchema } from "../../builders/create-form-schema";
 
 import { useFormts } from "./use-formts";
 
