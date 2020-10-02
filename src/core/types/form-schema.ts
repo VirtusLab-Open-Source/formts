@@ -1,4 +1,4 @@
-import { FieldDescriptor } from "./field-descriptor";
+import { FieldDescriptor, _FieldDescriptorImpl } from "./field-descriptor";
 
 /**
  * Description of a form.
@@ -9,7 +9,7 @@ export type FormSchema<Values extends object, Err> = {
 };
 
 // prettier-ignore
-type GenericFormDescriptorSchema<T, Err> = 
+export type GenericFormDescriptorSchema<T, Err> = 
   [T] extends [Array<unknown>]
     ? ArrayFormDescriptorSchema<T, Err>
     : [T] extends [object]

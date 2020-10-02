@@ -1,4 +1,4 @@
-import { assertNever } from "../../utils";
+import { assertNever, keys } from "../../utils";
 import {
   bool,
   string,
@@ -11,6 +11,10 @@ import {
 import { FieldDecoder, _FieldDecoderImpl } from "../types/field-decoder";
 import { _FieldDescriptorImpl } from "../types/field-descriptor";
 import { FormSchema } from "../types/form-schema";
+import {
+  _DescriptorApprox_,
+  _FormSchemaApprox_,
+} from "../types/form-schema-approx";
 import { impl } from "../types/type-mapper-util";
 
 const Decoders = {
@@ -28,20 +32,6 @@ type BuilderFn<V> = (fields: typeof Decoders) => DecodersMap<V>;
 type DecodersMap<O> = { [K in keyof O]: FieldDecoder<O[K]> };
 
 type ErrorsMarker<Err> = (errors: <Err>() => Err) => Err;
-
-// loose typing for helping with internal impl, as working with generic target types is impossible
-type _FormSchemaApprox_ = Record<string, _DescriptorApprox_>;
-
-type _DescriptorApprox_ =
-  | _FieldDescriptorImpl<any>
-  | {
-      readonly root: _FieldDescriptorImpl<any>;
-      readonly nth: (index: number) => _DescriptorApprox_;
-    }
-  | {
-      readonly root: _FieldDescriptorImpl<any>;
-      [prop: string]: _FieldDescriptorImpl<any>;
-    };
 
 /**
  * Define shape of the form values and type of validation errors.
@@ -67,21 +57,24 @@ export const createFormSchema = <Values extends object, Err = never>(
   _errors?: ErrorsMarker<Err>
 ): FormSchema<Values, Err> => createObjectSchema(fields(Decoders)) as any;
 
-const createObjectSchema = <O>(decodersMap: DecodersMap<O>, path?: string) => {
-  return Object.keys(decodersMap).reduce<_FormSchemaApprox_>((schema, key) => {
-    const decoder = decodersMap[key as keyof O];
-    schema[key] = createFieldDescriptor(
+const createObjectSchema = <O extends object>(
+  decodersMap: DecodersMap<O>,
+  path?: string
+) => {
+  return keys(decodersMap).reduce((schema, key) => {
+    const decoder = decodersMap[key];
+    (schema as any)[key] = createFieldDescriptor(
       impl(decoder) as _FieldDecoderImpl<any>,
-      path ? `${path}.${key}` : key
+      path ? `${path}.${key}` : `${key}`
     );
     return schema;
-  }, {});
+  }, {} as _FormSchemaApprox_<O>);
 };
 
 const createFieldDescriptor = (
   decoder: _FieldDecoderImpl<any>,
   path: string
-): _DescriptorApprox_ => {
+): _DescriptorApprox_<any> => {
   switch (decoder.fieldType) {
     case "bool":
     case "number":
