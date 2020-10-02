@@ -7,7 +7,7 @@ import {
   schemaImpl,
   _DescriptorApprox_,
   _FormSchemaApprox_,
-} from "../form-schema-approx";
+} from "../../types/form-schema-approx";
 
 export const createInitialValues = <Values extends object>(
   _schema: FormSchema<Values, any>,

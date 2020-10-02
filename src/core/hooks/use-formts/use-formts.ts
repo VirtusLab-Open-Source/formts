@@ -30,7 +30,6 @@ type TmpFormtsReturn<Values extends object> = {
   setField: <T, Err>(desc: FieldDescriptor<T, Err>, value: T) => void;
 };
 
-// TODO fix tests
 export const useFormts = <Values extends object, Err>(
   options: FormtsOptions<Values, Err>
 ): TmpFormtsReturn<Values> => {
