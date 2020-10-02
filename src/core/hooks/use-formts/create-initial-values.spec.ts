@@ -2,7 +2,7 @@ import { createFormSchema } from "../../builders/create-form-schema";
 
 import { createInitialValues } from "./create-initial-values";
 
-describe("create-initial-state", () => {
+describe("createInitialValues", () => {
   it("should be empty for empty schema", () => {
     expect(createInitialValues({})).toEqual({});
   });

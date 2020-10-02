@@ -1,12 +1,15 @@
-import { DeepPartial, get, set } from "../../../utils";
+import React from "react";
+
+import { DeepPartial, get } from "../../../utils";
 import {
   FieldDescriptor,
   _FieldDescriptorImpl,
 } from "../../types/field-descriptor";
 import { FormSchema } from "../../types/form-schema";
+import { TouchedValues } from "../../types/formts-state";
 import { impl } from "../../types/type-mapper-util";
 
-import { createInitialValues } from "./create-initial-values";
+import { createReducer, getInitialState } from "./reducer";
 
 export type FormtsOptions<Values extends object, Err> = {
   /** Definition of form fields created using `createForm.schema` function.  */
@@ -20,29 +23,31 @@ export type FormtsOptions<Values extends object, Err> = {
   initialValues?: DeepPartial<Values>;
 };
 
+type TmpFormtsReturn<Values extends object> = {
+  values: Values;
+  touched: TouchedValues<Values>;
+  getField: <T, Err>(desc: FieldDescriptor<T, Err>) => T;
+  setField: <T, Err>(desc: FieldDescriptor<T, Err>, value: T) => void;
+};
+
+// TODO fix tests
 export const useFormts = <Values extends object, Err>(
   options: FormtsOptions<Values, Err>
-): [
-  Values,
-  <T, Err>(desc: FieldDescriptor<T, Err>) => T,
-  <T, Err>(desc: FieldDescriptor<T, Err>, value: T) => Values
-] => {
-  const formValues = createInitialValues(options.Schema, options.initialValues);
-  const get = getter(formValues);
-  const set = setter(formValues);
+): TmpFormtsReturn<Values> => {
+  const [state, dispatch] = React.useReducer(
+    createReducer<Values>(),
+    options,
+    getInitialState
+  );
 
-  return [formValues, get, set];
-};
+  const getField = <T, Err>(desc: FieldDescriptor<T, Err>): T =>
+    get(state.values, impl(desc).path) as any;
 
-const getter = <Values extends object>(state: Values) => <T, Err>(
-  desc: FieldDescriptor<T, Err>
-): T => {
-  return get(state, impl(desc).path) as any;
-};
+  const setField = <T, Err>(desc: FieldDescriptor<T, Err>, value: T): void =>
+    dispatch({
+      type: "updateValue",
+      payload: { path: impl(desc).path, value },
+    });
 
-const setter = <Values extends object>(state: Values) => <T, Err>(
-  desc: FieldDescriptor<T, Err>,
-  value: {} & T
-): Values => {
-  return set(state, impl(desc).path, value) as any;
+  return { ...state, getField, setField };
 };
