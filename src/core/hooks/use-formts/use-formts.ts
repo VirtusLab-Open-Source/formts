@@ -10,6 +10,7 @@ import { TouchedValues } from "../../types/formts-state";
 import { impl } from "../../types/type-mapper-util";
 
 import { createReducer, getInitialState } from "./reducer";
+import { resolveTouched } from "./resolve-touched";
 
 export type FormtsOptions<Values extends object, Err> = {
   /** Definition of form fields created using `createForm.schema` function.  */
@@ -23,30 +24,35 @@ export type FormtsOptions<Values extends object, Err> = {
   initialValues?: DeepPartial<Values>;
 };
 
-type TmpFormtsReturn<Values extends object> = {
+type TemporaryFormtsReturn<Values extends object> = {
   values: Values;
   touched: TouchedValues<Values>;
-  getField: <T, Err>(desc: FieldDescriptor<T, Err>) => T;
-  setField: <T, Err>(desc: FieldDescriptor<T, Err>, value: T) => void;
+  getField: <T, Err>(field: FieldDescriptor<T, Err>) => T;
+  setField: <T, Err>(field: FieldDescriptor<T, Err>, value: T) => void;
+  isTouched: <T, Err>(field: FieldDescriptor<T, Err>) => boolean;
+  touchField: <T, Err>(field: FieldDescriptor<T, Err>) => void;
 };
 
 export const useFormts = <Values extends object, Err>(
   options: FormtsOptions<Values, Err>
-): TmpFormtsReturn<Values> => {
+): TemporaryFormtsReturn<Values> => {
   const [state, dispatch] = React.useReducer(
     createReducer<Values>(),
     options,
     getInitialState
   );
 
-  const getField = <T, Err>(desc: FieldDescriptor<T, Err>): T =>
-    get(state.values, impl(desc).path) as any;
+  const getField = <T, Err>(field: FieldDescriptor<T, Err>): T =>
+    get(state.values, impl(field).path) as any;
 
-  const setField = <T, Err>(desc: FieldDescriptor<T, Err>, value: T): void =>
-    dispatch({
-      type: "updateValue",
-      payload: { path: impl(desc).path, value },
-    });
+  const isTouched = <T, Err>(field: FieldDescriptor<T, Err>) =>
+    resolveTouched(get(state.touched as object, impl(field).path));
 
-  return { ...state, getField, setField };
+  const setField = <T, Err>(field: FieldDescriptor<T, Err>, value: T): void =>
+    dispatch({ type: "setValue", payload: { path: impl(field).path, value } });
+
+  const touchField = <T, Err>(field: FieldDescriptor<T, Err>) =>
+    dispatch({ type: "touchValue", payload: { path: impl(field).path } });
+
+  return { ...state, getField, setField, isTouched, touchField };
 };

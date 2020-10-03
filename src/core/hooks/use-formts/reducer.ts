@@ -1,34 +1,44 @@
 import { Reducer } from "react";
 
-import { set } from "../../../utils";
+import { get, set } from "../../../utils";
 import { FormtsState } from "../../types/formts-state";
 
-import { FormtsAction } from "./actions";
-import { createInitialTouched } from "./create-initial-touched";
 import { createInitialValues } from "./create-initial-values";
+import { makeTouchedValues, makeUntouchedValues } from "./make-touched-values";
 import { FormtsOptions } from "./use-formts";
 
-// TODO testme
+export type FormtsAction<Values> =
+  | { type: "reset"; payload: { values: Values } }
+  | { type: "touchValue"; payload: { path: string } }
+  | { type: "setValue"; payload: { path: string; value: any } };
+
 export const createReducer = <Values extends object>(): Reducer<
   FormtsState<Values>,
   FormtsAction<Values>
 > => (state, action) => {
   switch (action.type) {
-    case "setValues":
-      return { ...state, values: action.payload.values };
+    case "reset": {
+      const { values } = action.payload;
 
-    case "setTouched":
-      return { ...state, touched: action.payload.touched };
+      const touched = makeUntouchedValues(values);
 
-    case "updateValue": {
-      const values = set(
-        state.values,
-        action.payload.path,
-        action.payload.value
-      );
+      return { values, touched };
+    }
 
-      // TODO: handle non-primitive values
-      const touched = set(state.touched as object, action.payload.path, true);
+    case "touchValue": {
+      const { path } = action.payload;
+
+      const value = get(state.values, path);
+      const touched = set(state.touched, path, makeTouchedValues(value));
+
+      return { ...state, touched };
+    }
+
+    case "setValue": {
+      const { path, value } = action.payload;
+
+      const values = set(state.values, path, value);
+      const touched = set(state.touched, path, makeTouchedValues(value));
 
       return { values, touched };
     }
@@ -40,6 +50,6 @@ export const getInitialState = <Values extends object>({
   initialValues,
 }: FormtsOptions<Values, any>): FormtsState<Values> => {
   const values = createInitialValues(Schema, initialValues);
-  const touched = createInitialTouched(values);
+  const touched = makeUntouchedValues(values);
   return { values, touched };
 };

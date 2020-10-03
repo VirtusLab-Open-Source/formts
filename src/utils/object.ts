@@ -6,8 +6,11 @@ export const entries = <T extends object>(o: T): [keyof T, T[keyof T]][] =>
 export const keys = <T extends object>(o: T): (keyof T)[] =>
   Object.keys(o) as (keyof T)[];
 
+export const values = <T extends object>(o: T): T[keyof T][] =>
+  Object.values(o) as T[keyof T][];
+
 // dummy impl
-export const get = (o: object, path: string) => {
+export const get = <T extends object>(o: T, path: string): any => {
   const pathSegments = getPathSegments(path);
   let current = o;
 
@@ -25,7 +28,7 @@ export const get = (o: object, path: string) => {
 };
 
 // dummy impl
-export const set = (o: object, path: string, value: any) => {
+export const set = <T>(o: T, path: string, value: any): T => {
   const pathSegments = getPathSegments(path);
   if (pathSegments.length === 0) {
     return o;
@@ -34,7 +37,7 @@ export const set = (o: object, path: string, value: any) => {
   }
 };
 
-const setRecursive = (obj: object, value: any, pathSegments: string[]) => {
+const setRecursive = <T>(obj: T, value: any, pathSegments: string[]): T => {
   const path = pathSegments[0];
   const copy = Array.isArray(obj) ? [...obj] : ({ ...obj } as any);
   if (pathSegments.length === 1) {
