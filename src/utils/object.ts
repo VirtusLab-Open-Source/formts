@@ -1,4 +1,4 @@
-import { DeepPartial } from "./utility-types";
+import { DeepPartial, IdentityDict } from "./utility-types";
 
 export const entries = <T extends object>(o: T): [keyof T, T[keyof T]][] =>
   Object.entries(o) as any;
@@ -8,6 +8,14 @@ export const keys = <T extends object>(o: T): (keyof T)[] =>
 
 export const values = <T extends object>(o: T): T[keyof T][] =>
   Object.values(o) as T[keyof T][];
+
+export const toIdentityDict = <T extends string>(
+  values: T[]
+): IdentityDict<T> =>
+  values.reduce((dict, val) => {
+    (dict as any)[val] = val;
+    return dict;
+  }, {} as IdentityDict<T>);
 
 // dummy impl
 export const get = <T extends object>(o: T, path: string): any => {
