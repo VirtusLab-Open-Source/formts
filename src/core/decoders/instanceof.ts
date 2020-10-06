@@ -4,7 +4,7 @@ import {
   _FieldDecoderBaseImpl,
   _FieldDecoderImpl,
 } from "../types/field-decoder";
-import { opaque } from "../types/type-mapper-util";
+import { opaqueDecoder } from "../types/type-mapper-util";
 
 /**s
  * Define object field holding instance of specified type or `null`.
@@ -41,5 +41,5 @@ export const instanceOf = <T>(
       value instanceof constructor ? { ok: true, value } : { ok: false, value },
   };
 
-  return opaque(decoder as _FieldDecoderImpl<T | null>);
+  return opaqueDecoder(decoder as _FieldDecoderImpl<T | null>);
 };

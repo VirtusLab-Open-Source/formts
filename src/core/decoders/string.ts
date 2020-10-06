@@ -1,5 +1,5 @@
 import { FieldDecoder, _FieldDecoderImpl } from "../types/field-decoder";
-import { opaque } from "../types/type-mapper-util";
+import { opaqueDecoder } from "../types/type-mapper-util";
 
 /**
  * Define field of type `string`.
@@ -28,5 +28,5 @@ export const string = (): FieldDecoder<string> => {
     },
   };
 
-  return opaque(decoder);
+  return opaqueDecoder(decoder);
 };

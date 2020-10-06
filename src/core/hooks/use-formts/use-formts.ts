@@ -1,10 +1,8 @@
 import React from "react";
 
-import { DeepPartial, get, logger, toIdentityDict } from "../../../utils";
+import { DeepPartial, get, keys, logger, toIdentityDict } from "../../../utils";
 import {
-  isArrayDecoder,
   isChoiceDecoder,
-  isObjectDecoder,
   _ChoiceFieldDecoderImpl,
 } from "../../types/field-decoder";
 import {
@@ -12,9 +10,19 @@ import {
   _FieldDescriptorImpl,
 } from "../../types/field-descriptor";
 import { FieldHandle, toFieldHandle } from "../../types/field-handle";
-import { FormSchema } from "../../types/form-schema";
+import { FieldHandleSchema } from "../../types/field-handle-schema";
+import {
+  FormSchema,
+  GenericFormDescriptorSchema,
+} from "../../types/form-schema";
+import {
+  isArrayDesc,
+  isObjectDesc,
+  objectDescriptorKeys,
+  _DescriptorApprox_,
+} from "../../types/form-schema-approx";
 import { TouchedValues } from "../../types/formts-state";
-import { impl } from "../../types/type-mapper-util";
+import { impl, opaqueDescriptor as opaque } from "../../types/type-mapper-util";
 
 import { createReducer, getInitialState } from "./reducer";
 import { resolveTouched } from "./resolve-touched";
@@ -31,7 +39,8 @@ export type FormtsOptions<Values extends object, Err> = {
   initialValues?: DeepPartial<Values>;
 };
 
-type TemporaryFormtsReturn<Values extends object> = {
+type TemporaryFormtsReturn<Values extends object, Err> = {
+  fields: FieldHandleSchema<Values, Err>;
   values: Values;
   touched: TouchedValues<Values>;
   getField: <T, Err>(field: FieldDescriptor<T, Err>) => T;
@@ -42,14 +51,12 @@ type TemporaryFormtsReturn<Values extends object> = {
 
 export const useFormts = <Values extends object, Err>(
   options: FormtsOptions<Values, Err>
-): TemporaryFormtsReturn<Values> => {
+): TemporaryFormtsReturn<Values, Err> => {
   const [state, dispatch] = React.useReducer(
     createReducer<Values>(),
     options,
     getInitialState
   );
-
-  //
 
   const getField = <T, Err>(field: FieldDescriptor<T, Err>): T =>
     get(state.values, impl(field).path) as any;
@@ -76,40 +83,43 @@ export const useFormts = <Values extends object, Err>(
     }
   };
 
-  //
-
-  // TODO: call on top level descriptors from the Schema and return from the hook
-  // @ts-ignore // unused
-  const fieldHandle = <T, Err>(
-    // TODO: do we need GenericFormDescriptorSchema<T, Err> here instead?
+  const createFieldHandleNode = <T, Err>(
     // TODO: consider flattening descriptors, so that `Schema.obj` -> root and `Schema.obj.prop` -> prop
-    descriptor: FieldDescriptor<T, Err>
-  ): FieldHandle<T, Err> =>
-    toFieldHandle({
-      descriptor,
+    _descriptor: GenericFormDescriptorSchema<T, Err>
+  ): FieldHandle<T, Err> => {
+    const descriptor = (_descriptor as any) as _DescriptorApprox_<T>;
+    const rootDescriptor =
+      isArrayDesc(descriptor) || isObjectDesc(descriptor)
+        ? descriptor.root
+        : descriptor;
 
-      id: impl(descriptor).path,
+    return toFieldHandle({
+      descriptor: opaque(rootDescriptor),
+
+      id: rootDescriptor.path,
 
       get value() {
-        return getField(descriptor);
+        return getField(opaque(rootDescriptor));
       },
 
       get isTouched() {
-        return isTouched(descriptor);
+        return isTouched(opaque(rootDescriptor));
       },
 
-      // by using getters we can lazily create field handles when needed instead of keeping them as part of state
       get children() {
-        if (isObjectDecoder(descriptor)) {
-          // we need access to child descriptors here (needed for recursive call),
-
-          // maybe each key could be a getter fn with computed name for further laziness?
-          return {}; // TODO
+        if (isObjectDesc(descriptor)) {
+          return objectDescriptorKeys(descriptor).reduce((acc, key) => {
+            acc[key] = createFieldHandleNode((descriptor as any)[key]);
+            return acc;
+          }, {} as any);
         }
-        if (isArrayDecoder(descriptor)) {
-          // same problem except we also need to look up values in state to create handle for each array item.
-          // `nth` function for generating descriptors is needed for recursive call
-          return []; // TODO
+        if (isArrayDesc(descriptor)) {
+          const value = (getField(opaque(rootDescriptor)) as any) as Array<
+            unknown
+          >;
+          return value.map((_, idx) =>
+            createFieldHandleNode(descriptor.nth(idx) as any)
+          );
         }
 
         return undefined;
@@ -120,13 +130,19 @@ export const useFormts = <Values extends object, Err>(
         : undefined,
 
       handleBlur: () => {
-        touchField(descriptor);
+        touchField(opaque(rootDescriptor));
       },
 
       setValue: val => {
-        setField(descriptor, val);
+        setField(opaque(rootDescriptor), val);
       },
     });
+  };
 
-  return { ...state, getField, setField, isTouched, touchField };
+  const fields = keys(options.Schema).reduce((acc, key) => {
+    (acc as any)[key] = createFieldHandleNode(options.Schema[key]);
+    return acc;
+  }, {} as FieldHandleSchema<Values, Err>);
+
+  return { ...state, getField, setField, isTouched, touchField, fields };
 };

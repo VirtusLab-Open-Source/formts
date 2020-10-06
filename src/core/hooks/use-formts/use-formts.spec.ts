@@ -12,7 +12,9 @@ describe("use-formts", () => {
     theBool: fields.bool(),
     theInstance: fields.instanceOf(Date),
     theArray: fields.array(fields.string()),
-    theObject: fields.object({ foo: fields.string() }),
+    theObject: fields.object({
+      foo: fields.string(),
+    }),
     theObjectArray: fields.object({ arr: fields.array(fields.string()) }),
   }));
 
@@ -220,6 +222,77 @@ describe("use-formts", () => {
       expect(isTouched(Schema.theObjectArray.arr.nth(0))).toBe(true);
       expect(isTouched(Schema.theObjectArray.arr.nth(1))).toBe(true);
       expect(isTouched(Schema.theObjectArray.arr.nth(2))).toBe(true);
+    }
+  });
+
+  describe("fields work properly", () => {
+    const hook = renderHook(() => useFormts({ Schema }));
+
+    {
+      const { fields } = hook.result.current;
+      expect(fields.theString.value).toEqual("");
+      expect(fields.theChoice.value).toEqual("A");
+      expect(fields.theNum.value).toEqual("");
+      expect(fields.theBool.value).toBe(false);
+      expect(fields.theInstance.value).toEqual(null);
+      expect(fields.theArray.value).toEqual([]);
+      expect(fields.theObject.value).toEqual({ foo: "" });
+      expect(fields.theObject.children.foo.value).toEqual("");
+      expect(fields.theObjectArray.value).toEqual({ arr: [] });
+      expect(fields.theObjectArray.children.arr.value).toEqual([]);
+    }
+
+    {
+      act(() => {
+        hook.result.current.fields.theNum.setValue(42);
+      });
+      expect(hook.result.current.fields.theNum.value).toEqual(42);
+      expect(hook.result.current.fields.theNum.isTouched).toBe(true);
+    }
+
+    {
+      act(() => {
+        hook.result.current.fields.theArray.setValue([
+          "gumisie",
+          "teletubisie",
+        ]);
+      });
+
+      expect(hook.result.current.fields.theArray.value).toEqual([
+        "gumisie",
+        "teletubisie",
+      ]);
+      expect(hook.result.current.fields.theArray.children[0].value).toEqual(
+        "gumisie"
+      );
+      expect(hook.result.current.fields.theArray.children[1].value).toEqual(
+        "teletubisie"
+      );
+    }
+
+    {
+      act(() => {
+        hook.result.current.fields.theObject.children.foo.setValue("42");
+      });
+
+      expect(hook.result.current.fields.theObject.value).toEqual({ foo: "42" });
+      expect(hook.result.current.fields.theObject.children.foo.value).toEqual(
+        "42"
+      );
+    }
+
+    {
+      act(() => {
+        hook.result.current.fields.theObjectArray.setValue({
+          arr: ["a", "b", "c"],
+        });
+      });
+      expect(hook.result.current.fields.theObjectArray.value).toEqual({
+        arr: ["a", "b", "c"],
+      });
+      expect(
+        hook.result.current.fields.theObjectArray.children.arr.value
+      ).toEqual(["a", "b", "c"]);
     }
   });
 });

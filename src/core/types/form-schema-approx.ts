@@ -1,4 +1,4 @@
-import { ArrayElement } from "../../utils";
+import { ArrayElement, keys } from "../../utils";
 
 import { _FieldDescriptorImpl } from "./field-descriptor";
 import { FormSchema } from "./form-schema";
@@ -34,3 +34,7 @@ export const isArrayDesc = <Value>(
 export const isObjectDesc = <Value>(
   x: _DescriptorApprox_<Value>
 ): x is _ObjectDescriptorApprox_<Value> => "root" in x && !("nth" in x);
+
+export const objectDescriptorKeys = <Value>(
+  x: _ObjectDescriptorApprox_<Value>
+): (keyof Value)[] => keys(x).filter(x => x !== "root") as any;

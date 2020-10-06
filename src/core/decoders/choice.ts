@@ -3,7 +3,7 @@ import {
   _ChoiceFieldDecoderImpl,
   _FieldDecoderImpl,
 } from "../types/field-decoder";
-import { opaque } from "../types/type-mapper-util";
+import { opaqueDecoder } from "../types/type-mapper-util";
 
 /**
  * Define field of given string literal union type.
@@ -54,5 +54,5 @@ export const choice = <Opts extends string>(
     },
   };
 
-  return opaque(decoder as _FieldDecoderImpl<Opts>);
+  return opaqueDecoder(decoder as _FieldDecoderImpl<Opts>);
 };

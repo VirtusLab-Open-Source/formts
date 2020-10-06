@@ -15,8 +15,9 @@ type GetImplFn = {
  * hide implementation details of impl type.
  * for internal use only
  */
-export const opaque: GetOpaque = (it: any) => it;
-type GetOpaque = {
-  <T>(it: _FieldDecoderImpl<T>): FieldDecoder<T>;
-  <T, Err>(it: _FieldDescriptorImpl<T>): FieldDescriptor<T, Err>;
-};
+export const opaqueDecoder = <T>(it: _FieldDecoderImpl<T>): FieldDecoder<T> =>
+  it as any;
+
+export const opaqueDescriptor = <T, Err>(
+  it: _FieldDescriptorImpl<T>
+): FieldDescriptor<T, Err> => it as any;
