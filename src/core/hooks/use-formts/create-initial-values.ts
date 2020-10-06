@@ -1,15 +1,15 @@
-import { deepMerge, DeepPartial, entries } from "../../utils";
-import { _FieldDescriptorImpl } from "../types/field-descriptor";
-import { FormSchema } from "../types/form-schema";
+import { deepMerge, DeepPartial, entries } from "../../../utils";
+import { _FieldDescriptorImpl } from "../../types/field-descriptor";
+import { FormSchema } from "../../types/form-schema";
 import {
   isArrayDesc,
   isObjectDesc,
   schemaImpl,
   _DescriptorApprox_,
   _FormSchemaApprox_,
-} from "../types/form-schema-approx";
+} from "../../types/form-schema-approx";
 
-export const createInitialState = <Values extends object>(
+export const createInitialValues = <Values extends object>(
   _schema: FormSchema<Values, any>,
   initial?: DeepPartial<Values>
 ): Values => {
