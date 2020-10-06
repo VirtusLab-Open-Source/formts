@@ -9,6 +9,9 @@ export const keys = <T extends object>(o: T): (keyof T)[] =>
 export const values = <T extends object>(o: T): T[keyof T][] =>
   Object.values(o) as T[keyof T][];
 
+export const isPlainObject = (it: unknown): it is object =>
+  it != null && typeof it === "object" && (it as any).constructor === Object;
+
 // dummy impl
 export const get = <T extends object>(o: T, path: string): any => {
   const pathSegments = getPathSegments(path);
