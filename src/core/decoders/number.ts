@@ -1,5 +1,5 @@
 import { FieldDecoder, _FieldDecoderImpl } from "../types/field-decoder";
-import { opaqueDecoder } from "../types/type-mapper-util";
+import { opaque } from "../types/type-mapper-util";
 
 /**
  * Define field of type `number | ""` (empty string is needed to represent state of empty number inputs)
@@ -36,5 +36,5 @@ export const number = (): FieldDecoder<number | ""> => {
     },
   };
 
-  return opaqueDecoder(decoder);
+  return opaque(decoder);
 };

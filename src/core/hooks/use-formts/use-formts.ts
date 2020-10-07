@@ -11,6 +11,7 @@ import {
 } from "../../types/field-descriptor";
 import { FieldHandle, toFieldHandle } from "../../types/field-handle";
 import { FieldHandleSchema } from "../../types/field-handle-schema";
+import { FormHandle } from "../../types/form-handle";
 import {
   FormSchema,
   GenericFormDescriptorSchema,
@@ -21,9 +22,9 @@ import {
   objectDescriptorKeys,
   _DescriptorApprox_,
 } from "../../types/form-schema-approx";
-import { TouchedValues } from "../../types/formts-state";
-import { impl, opaqueDescriptor as opaque } from "../../types/type-mapper-util";
+import { impl, opaque } from "../../types/type-mapper-util";
 
+import { createInitialValues } from "./create-initial-values";
 import { createReducer, getInitialState } from "./reducer";
 import { resolveTouched } from "./resolve-touched";
 
@@ -39,25 +40,22 @@ export type FormtsOptions<Values extends object, Err> = {
   initialValues?: DeepPartial<Values>;
 };
 
-type TemporaryFormtsReturn<Values extends object, Err> = {
-  fields: FieldHandleSchema<Values, Err>;
-  values: Values;
-  touched: TouchedValues<Values>;
-  getField: <T, Err>(field: FieldDescriptor<T, Err>) => T;
-  setField: <T, Err>(field: FieldDescriptor<T, Err>, value: T) => void;
-  isTouched: <T, Err>(field: FieldDescriptor<T, Err>) => boolean;
-  touchField: <T, Err>(field: FieldDescriptor<T, Err>) => void;
-};
+type FormtsReturn<Values extends object, Err> = [
+  fields: FieldHandleSchema<Values, Err>,
+  form: Partial<FormHandle<Values, Err>> // TODO
+];
 
 export const useFormts = <Values extends object, Err>(
   options: FormtsOptions<Values, Err>
-): TemporaryFormtsReturn<Values, Err> => {
+): FormtsReturn<Values, Err> => {
+  /// INTERNAL STATE
   const [state, dispatch] = React.useReducer(
     createReducer<Values>(),
     options,
     getInitialState
   );
 
+  /// INTERNAL HANDLERS
   const getField = <T, Err>(field: FieldDescriptor<T, Err>): T =>
     get(state.values, impl(field).path) as any;
 
@@ -83,6 +81,7 @@ export const useFormts = <Values extends object, Err>(
     }
   };
 
+  /// FIELD HANDLE CREATOR
   const createFieldHandleNode = <T, Err>(
     // TODO: consider flattening descriptors, so that `Schema.obj` -> root and `Schema.obj.prop` -> prop
     _descriptor: GenericFormDescriptorSchema<T, Err>
@@ -108,11 +107,19 @@ export const useFormts = <Values extends object, Err>(
 
       get children() {
         if (isObjectDesc(descriptor)) {
-          return objectDescriptorKeys(descriptor).reduce((acc, key) => {
-            acc[key] = createFieldHandleNode((descriptor as any)[key]);
-            return acc;
-          }, {} as any);
+          return objectDescriptorKeys(descriptor).reduce(
+            (acc, key) =>
+              Object.defineProperty(acc, key, {
+                enumerable: true,
+                get: function () {
+                  const nestedDescriptor = descriptor[key];
+                  return createFieldHandleNode(nestedDescriptor as any);
+                },
+              }),
+            {}
+          );
         }
+
         if (isArrayDesc(descriptor)) {
           const value = (getField(opaque(rootDescriptor)) as any) as Array<
             unknown
@@ -125,9 +132,11 @@ export const useFormts = <Values extends object, Err>(
         return undefined;
       },
 
-      options: isChoiceDecoder(descriptor)
-        ? toIdentityDict(descriptor.options as string[])
-        : undefined,
+      get options() {
+        return isChoiceDecoder(descriptor)
+          ? toIdentityDict(descriptor.options as string[])
+          : undefined;
+      },
 
       handleBlur: () => {
         touchField(opaque(rootDescriptor));
@@ -139,10 +148,34 @@ export const useFormts = <Values extends object, Err>(
     });
   };
 
-  const fields = keys(options.Schema).reduce((acc, key) => {
-    (acc as any)[key] = createFieldHandleNode(options.Schema[key]);
-    return acc;
-  }, {} as FieldHandleSchema<Values, Err>);
+  /// PUBLIC API
+  const fields = keys(options.Schema).reduce(
+    (acc, key) =>
+      Object.defineProperty(acc, key, {
+        enumerable: true,
+        get: function () {
+          const nestedDescriptor = options.Schema[key];
+          return createFieldHandleNode(nestedDescriptor);
+        },
+      }),
+    {} as FieldHandleSchema<Values, Err>
+  );
 
-  return { ...state, getField, setField, isTouched, touchField, fields };
+  // TODO
+  const form: Partial<FormHandle<Values, Err>> = {
+    values: state.values,
+
+    get isTouched() {
+      return resolveTouched(state.touched);
+    },
+
+    reset: values => {
+      dispatch({
+        type: "reset",
+        payload: { values: createInitialValues(options.Schema, values) },
+      });
+    },
+  };
+
+  return [fields, form];
 };

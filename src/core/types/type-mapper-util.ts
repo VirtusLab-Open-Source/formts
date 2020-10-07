@@ -7,17 +7,16 @@ import { FieldDescriptor, _FieldDescriptorImpl } from "./field-descriptor";
  */
 export const impl: GetImplFn = (it: any) => it;
 type GetImplFn = {
-  <T>(it: FieldDecoder<T>): _FieldDecoderImpl<T>;
   <T, Err>(it: FieldDescriptor<T, Err>): _FieldDescriptorImpl<T>;
+  <T>(it: FieldDecoder<T>): _FieldDecoderImpl<T>;
 };
 
 /**
  * hide implementation details of impl type.
  * for internal use only
  */
-export const opaqueDecoder = <T>(it: _FieldDecoderImpl<T>): FieldDecoder<T> =>
-  it as any;
-
-export const opaqueDescriptor = <T, Err>(
-  it: _FieldDescriptorImpl<T>
-): FieldDescriptor<T, Err> => it as any;
+export const opaque: GetOpaque = (it: any) => it;
+type GetOpaque = {
+  <T, Err>(it: _FieldDescriptorImpl<T>): FieldDescriptor<T, Err>;
+  <T>(it: _FieldDecoderImpl<T>): FieldDecoder<T>;
+};

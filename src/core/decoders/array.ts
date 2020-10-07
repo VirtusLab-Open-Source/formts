@@ -1,5 +1,5 @@
 import { FieldDecoder, _FieldDecoderImpl } from "../types/field-decoder";
-import { impl, opaqueDecoder } from "../types/type-mapper-util";
+import { impl, opaque } from "../types/type-mapper-util";
 
 /**
  * Define array field with elements of type defined by provided `innerDecoder`.
@@ -36,5 +36,5 @@ export const array = <E>(
     },
   };
 
-  return opaqueDecoder(decoder);
+  return opaque(decoder);
 };
