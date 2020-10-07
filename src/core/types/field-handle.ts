@@ -10,7 +10,19 @@ export type FieldHandle<T, Err> =
     & BaseFieldHandle<T, Err>
     & ArrayFieldHandle<T, Err>
     & ObjectFieldHandle<T, Err>
-    & ChoiceFieldHandle<T, Err>;
+    & ChoiceFieldHandle<T>;
+
+export type _FieldHandleApprox<T, Err> = BaseFieldHandle<T, Err> & {
+  children?:
+    | Array<_FieldHandleApprox<unknown, Err>>
+    | Record<string, _FieldHandleApprox<unknown, Err>>;
+  options?: Record<string, string>;
+};
+
+export const toApproxFieldHandle = <T, Err>(it: FieldHandle<T, Err>) =>
+  it as _FieldHandleApprox<T, Err>;
+export const toFieldHandle = <T, Err>(it: _FieldHandleApprox<T, Err>) =>
+  it as FieldHandle<T, Err>;
 
 type BaseFieldHandle<T, Err> = {
   /** Unique string generated for each field in the form based on field path */
@@ -94,7 +106,7 @@ type ObjectFieldHandle<T, Err> = T extends Array<any>
     }
   : void;
 
-type ChoiceFieldHandle<T, Err> = [T] extends [string]
+type ChoiceFieldHandle<T> = [T] extends [string]
   ? IsUnion<T> extends true
     ? {
         /** Dictionary containing options specified in Schema using `choice` function */

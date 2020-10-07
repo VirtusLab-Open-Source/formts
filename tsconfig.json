@@ -29,7 +29,8 @@
     "experimentalDecorators": false,
     "emitDecoratorMetadata": false,
 
-    "lib": ["es2017", "dom"]
+    "lib": ["es2017", "dom"],
+    "target": "ES2017"
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules/**"],
