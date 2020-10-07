@@ -17,6 +17,9 @@ export const toIdentityDict = <T extends string>(
     return dict;
   }, {} as IdentityDict<T>);
 
+export const isPlainObject = (it: unknown): it is object =>
+  it != null && typeof it === "object" && (it as any).constructor === Object;
+
 // dummy impl
 export const get = <T extends object>(o: T, path: string): any => {
   const pathSegments = getPathSegments(path);

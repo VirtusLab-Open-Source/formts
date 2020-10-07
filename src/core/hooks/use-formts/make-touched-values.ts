@@ -1,4 +1,4 @@
-import { entries } from "../../../utils";
+import { entries, isPlainObject } from "../../../utils";
 import { TouchedValues } from "../../types/formts-state";
 
 export const makeUntouchedValues = <T>(value: T): TouchedValues<T> =>
@@ -21,6 +21,11 @@ const transformToBoolObject = <T>(
   }
 
   if (Array.isArray(value)) {
+    if (value.length === 0 && bool === true) {
+      // special case to mark empty array as touched
+      return bool as TouchedValues<T>;
+    }
+
     return (value.map(v =>
       transformToBoolObject(v, bool)
     ) as unknown) as TouchedValues<T>;
@@ -35,6 +40,3 @@ const transformToBoolObject = <T>(
 
   return bool as TouchedValues<T>;
 };
-
-const isPlainObject = (it: unknown): it is object =>
-  it != null && typeof it === "object" && (it as any).constructor === Object;

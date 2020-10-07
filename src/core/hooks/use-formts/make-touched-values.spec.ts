@@ -74,7 +74,7 @@ describe("makeTouchedValues", () => {
     const touched = makeTouchedValues(values);
 
     expect(touched).toEqual({
-      empty: [],
+      empty: true,
       filled: [true, true],
     });
   });
