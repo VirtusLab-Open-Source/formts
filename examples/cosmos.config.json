@@ -1,0 +1,6 @@
+{
+  "$schema": "http://json.schemastore.org/cosmos-config",
+  "fixtureFileSuffix": "example",
+  "watchDirs": ["./src/**"],
+  "port": 9000
+}

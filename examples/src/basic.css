@@ -1,0 +1,13 @@
+section {
+  margin: 10px 0;
+}
+
+label {
+  padding: 0 10px;
+}
+
+pre {
+  margin: 30px 0;
+  padding: 10px;
+  background-color: #eee;
+}
