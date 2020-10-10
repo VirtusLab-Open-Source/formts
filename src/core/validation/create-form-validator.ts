@@ -32,7 +32,7 @@ import { FieldValidator, FormValidator, ValidateFn } from "./types";
  */
 export const createFormValidator = <Values extends object, Err>(
   //@ts-ignore
-  form: FormSchema<Values, Err>,
+  schema: FormSchema<Values, Err>,
   //@ts-ignore
   builder: (
     validate: ValidateFn
