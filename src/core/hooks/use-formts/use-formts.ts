@@ -22,8 +22,8 @@ import {
   objectDescriptorKeys,
   _DescriptorApprox_,
 } from "../../types/form-schema-approx";
+import { FormValidator } from "../../types/form-validator";
 import { impl, opaque } from "../../types/type-mapper-util";
-import { FormValidator } from "../../validation";
 
 import { createInitialValues } from "./create-initial-values";
 import { createReducer, getInitialState } from "./reducer";

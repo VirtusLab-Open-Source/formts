@@ -1,5 +1,6 @@
 import { Falsy } from "../../utils";
-import { FieldDescriptor } from "../types/field-descriptor";
+
+import { FieldDescriptor } from "./field-descriptor";
 
 /**
  * Function responsible for validating single field.
@@ -8,9 +9,8 @@ import { FieldDescriptor } from "../types/field-descriptor";
  *
  * @returns validation error of type `Err`, or `null` when field is valid
  */
-export type Validator<T, Err> =
-  | Validator.Sync<T, Err>
-  | Validator.Async<T, Err>;
+export type Validator<T, Err> = Validator.Sync<T, Err>;
+// | Validator.Async<T, Err>;
 
 export namespace Validator {
   export type Sync<T, Err> = {

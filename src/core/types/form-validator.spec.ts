@@ -1,8 +1,7 @@
 import { assert, IsExact } from "conditional-type-checks";
 
-import { FieldDescriptor } from "../types/field-descriptor";
-
-import { FieldValidator, ValidateFn } from "./types";
+import { FieldDescriptor } from "./field-descriptor";
+import { FieldValidator, ValidateFn } from "./form-validator";
 
 const validator: ValidateFn = (() => {}) as any;
 
@@ -18,8 +17,7 @@ describe("validateFn", () => {
     const stringFieldValidator = validator({
       field: fd1,
       dependencies: [fd2, fd3],
-      //@ts-ignore
-      rules: (number, choice) => [false],
+      rules: (_number, _choice) => [false],
     });
 
     type Actual = typeof stringFieldValidator;
@@ -32,8 +30,7 @@ describe("validateFn", () => {
     const choiceFieldValidator = validator({
       field: fd3,
       dependencies: [fd1, fd4],
-      //@ts-ignore
-      rules: (string, dateArray) => [false],
+      rules: (_string, _dateArray) => [false],
     });
 
     type Actual = typeof choiceFieldValidator;
@@ -46,8 +43,7 @@ describe("validateFn", () => {
     const arrayFieldValidator = validator({
       field: fd4,
       dependencies: [fd1, fd2, fd3, fd5],
-      //@ts-ignore
-      rules: (string, number, choice, obj) => [false],
+      rules: (_string, _number, _choice, _obj) => [false],
     });
 
     type Actual = typeof arrayFieldValidator;
@@ -64,8 +60,7 @@ describe("validateFn", () => {
     const objFieldValidator = validator({
       field: fd5,
       dependencies: [fd1],
-      //@ts-ignore
-      rules: string => [false],
+      rules: _string => [false],
     });
 
     type Actual = typeof objFieldValidator;

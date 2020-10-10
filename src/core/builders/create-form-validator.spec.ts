@@ -1,9 +1,9 @@
 import { assert, IsExact } from "conditional-type-checks";
 
-import { createFormSchema } from "../builders/create-form-schema";
+import { FormValidator } from "../types/form-validator";
 
+import { createFormSchema } from "./create-form-schema";
 import { createFormValidator } from "./create-form-validator";
-import { FormValidator } from "./types";
 
 describe("createFormValidator", () => {
   const Schema = createFormSchema(
@@ -17,8 +17,7 @@ describe("createFormValidator", () => {
   );
 
   it("resolves ok", () => {
-    //@ts-ignore
-    const formValidator = createFormValidator(Schema, validate => []);
+    const formValidator = createFormValidator(Schema, _validate => []);
 
     type Actual = typeof formValidator;
     type Expected = FormValidator<

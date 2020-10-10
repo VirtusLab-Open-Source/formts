@@ -1,6 +1,9 @@
 import { FormSchema } from "../types/form-schema";
-
-import { FieldValidator, FormValidator, ValidateFn } from "./types";
+import {
+  FieldValidator,
+  FormValidator,
+  ValidateFn,
+} from "../types/form-validator";
 
 /**
  * Create form validator based on provided set of validation rules.
@@ -31,10 +34,8 @@ import { FieldValidator, FormValidator, ValidateFn } from "./types";
  * ```
  */
 export const createFormValidator = <Values extends object, Err>(
-  //@ts-ignore
-  schema: FormSchema<Values, Err>,
-  //@ts-ignore
-  builder: (
+  _schema: FormSchema<Values, Err>,
+  _builder: (
     validate: ValidateFn
   ) => Array<FieldValidator<unknown, Err, unknown[]>>
 ): FormValidator<Values, Err> => {
