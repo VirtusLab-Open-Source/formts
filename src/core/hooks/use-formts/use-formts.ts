@@ -1,6 +1,14 @@
 import React from "react";
 
-import { DeepPartial, get, keys, logger, toIdentityDict } from "../../../utils";
+import {
+  DeepPartial,
+  entries,
+  get,
+  keys,
+  logger,
+  toIdentityDict,
+  values,
+} from "../../../utils";
 import {
   isChoiceDecoder,
   _ChoiceFieldDecoderImpl,
@@ -27,6 +35,7 @@ import { impl, opaque } from "../../types/type-mapper-util";
 
 import { createInitialValues } from "./create-initial-values";
 import { createReducer, getInitialState } from "./reducer";
+import { resolveIsValid } from "./resolve-is-valid";
 import { resolveTouched } from "./resolve-touched";
 
 export type FormtsOptions<Values extends object, Err> = {
@@ -54,22 +63,27 @@ export const useFormts = <Values extends object, Err>(
 ): FormtsReturn<Values, Err> => {
   /// INTERNAL STATE
   const [state, dispatch] = React.useReducer(
-    createReducer<Values>(),
+    createReducer<Values, Err>(),
     options,
     getInitialState
   );
 
   /// INTERNAL HANDLERS
-  const getField = <T, Err>(field: FieldDescriptor<T, Err>): T =>
+  const getField = <T>(field: FieldDescriptor<T, Err>): T =>
     get(state.values, impl(field).path) as any;
 
-  const isTouched = <T, Err>(field: FieldDescriptor<T, Err>) =>
+  const getFieldError = (field: FieldDescriptor<any, Err>): Err | null => {
+    const error = state.errors[impl(field).path];
+    return error == null ? null : error;
+  };
+
+  const isFieldTouched = <T>(field: FieldDescriptor<T, Err>) =>
     resolveTouched(get(state.touched as object, impl(field).path));
 
-  const touchField = <T, Err>(field: FieldDescriptor<T, Err>) =>
-    dispatch({ type: "touchValue", payload: { path: impl(field).path } });
+  const isFieldValid = <T>(field: FieldDescriptor<T, Err>) =>
+    resolveIsValid(state.errors, impl(field).path);
 
-  const setField = <T, Err>(field: FieldDescriptor<T, Err>, value: T): void => {
+  const setField = <T>(field: FieldDescriptor<T, Err>, value: T): void => {
     const decodeResult = impl(field).decode(value);
     if (decodeResult.ok) {
       dispatch({
@@ -85,8 +99,25 @@ export const useFormts = <Values extends object, Err>(
     }
   };
 
+  const touchField = <T, Err>(field: FieldDescriptor<T, Err>) =>
+    dispatch({ type: "touchValue", payload: { path: impl(field).path } });
+
+  const setFieldErrors = (
+    ...fields: Array<{
+      field: FieldDescriptor<unknown, Err>;
+      error: Err | null;
+    }>
+  ) =>
+    dispatch({
+      type: "setErrors",
+      payload: fields.map(it => ({
+        path: impl(it.field).path,
+        error: it.error,
+      })),
+    });
+
   /// FIELD HANDLE CREATOR
-  const createFieldHandleNode = <T, Err>(
+  const createFieldHandleNode = <T>(
     // TODO: consider flattening descriptors, so that `Schema.obj` -> root and `Schema.obj.prop` -> prop
     _descriptor: GenericFormDescriptorSchema<T, Err>
   ): FieldHandle<T, Err> => {
@@ -106,7 +137,15 @@ export const useFormts = <Values extends object, Err>(
       },
 
       get isTouched() {
-        return isTouched(opaque(rootDescriptor));
+        return isFieldTouched(opaque(rootDescriptor));
+      },
+
+      get error() {
+        return getFieldError(opaque(rootDescriptor));
+      },
+
+      get isValid() {
+        return isFieldValid(opaque(rootDescriptor));
       },
 
       get children() {
@@ -149,6 +188,10 @@ export const useFormts = <Values extends object, Err>(
       setValue: val => {
         setField(opaque(rootDescriptor), val);
       },
+
+      setError: error => {
+        setFieldErrors({ field: opaque(rootDescriptor), error });
+      },
     });
   };
 
@@ -169,8 +212,18 @@ export const useFormts = <Values extends object, Err>(
   const form: Partial<FormHandle<Values, Err>> = {
     values: state.values,
 
+    get errors() {
+      return entries(state.errors)
+        .filter(([, err]) => err != null)
+        .map(([path, error]) => ({ path, error: error! }));
+    },
+
     get isTouched() {
       return resolveTouched(state.touched);
+    },
+
+    get isValid() {
+      return values(state.errors).filter(err => err != null).length === 0;
     },
 
     reset: values => {

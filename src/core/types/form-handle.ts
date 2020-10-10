@@ -1,9 +1,7 @@
 import { DeepPartial } from "../../utils";
 
-import { FieldDescriptor } from "./field-descriptor";
-
 type FieldError<Err> = {
-  field: FieldDescriptor<unknown, Err>;
+  path: string;
   error: Err;
 };
 
@@ -14,7 +12,7 @@ export type FormHandle<Values extends object, Err> = {
   /** Form values */
   values: Values;
 
-  /** Array containing all form errors together with respective FieldDescriptor objects */
+  /** Array containing all form errors together with respective field paths */
   errors: Array<FieldError<Err>>;
 
   /** True if any form field is touched */

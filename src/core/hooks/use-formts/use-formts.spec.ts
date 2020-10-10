@@ -5,18 +5,21 @@ import { createFormSchema } from "../../builders/create-form-schema";
 import { useFormts } from "./use-formts";
 
 describe("useFormts", () => {
-  const Schema = createFormSchema(fields => ({
-    theString: fields.string(),
-    theChoice: fields.choice("A", "B", "C"),
-    theNum: fields.number(),
-    theBool: fields.bool(),
-    theInstance: fields.instanceOf(Date),
-    theArray: fields.array(fields.string()),
-    theObject: fields.object({
-      foo: fields.string(),
+  const Schema = createFormSchema(
+    fields => ({
+      theString: fields.string(),
+      theChoice: fields.choice("A", "B", "C"),
+      theNum: fields.number(),
+      theBool: fields.bool(),
+      theInstance: fields.instanceOf(Date),
+      theArray: fields.array(fields.string()),
+      theObject: fields.object({
+        foo: fields.string(),
+      }),
+      theObjectArray: fields.object({ arr: fields.array(fields.string()) }),
     }),
-    theObjectArray: fields.object({ arr: fields.array(fields.string()) }),
-  }));
+    errors => errors<string>()
+  );
 
   it("returns form handle with values initialized to defaults", () => {
     const hook = renderHook(() => useFormts({ Schema }));
@@ -35,7 +38,7 @@ describe("useFormts", () => {
     });
   });
 
-  it("returns form handle with  values initialized to defaults merged with custom initial values", () => {
+  it("returns form handle with values initialized to defaults merged with custom initial values", () => {
     const hook = renderHook(() =>
       useFormts({
         Schema,
@@ -182,6 +185,108 @@ describe("useFormts", () => {
         theObject: { foo: "42" },
         theObjectArray: { arr: [] },
       });
+    }
+  });
+
+  it("allows for setting errors using corresponding field handles and keeps track of isValid state", () => {
+    const hook = renderHook(() => useFormts({ Schema }));
+
+    {
+      const [fields, form] = hook.result.current;
+      expect(form.isValid).toBe(true);
+      expect(form.errors).toEqual([]);
+
+      expect(fields.theString.isValid).toBe(true);
+      expect(fields.theString.error).toBe(null);
+
+      expect(fields.theChoice.isValid).toBe(true);
+      expect(fields.theChoice.error).toBe(null);
+
+      expect(fields.theNum.isValid).toBe(true);
+      expect(fields.theNum.error).toBe(null);
+
+      expect(fields.theBool.isValid).toBe(true);
+      expect(fields.theBool.error).toBe(null);
+
+      expect(fields.theInstance.isValid).toBe(true);
+      expect(fields.theInstance.error).toBe(null);
+
+      expect(fields.theArray.isValid).toBe(true);
+      expect(fields.theArray.error).toBe(null);
+
+      expect(fields.theObject.isValid).toBe(true);
+      expect(fields.theObject.error).toBe(null);
+
+      expect(fields.theObject.children.foo.isValid).toBe(true);
+      expect(fields.theObject.children.foo.error).toBe(null);
+
+      expect(fields.theObjectArray.isValid).toBe(true);
+      expect(fields.theObjectArray.error).toBe(null);
+
+      expect(fields.theObjectArray.children.arr.isValid).toBe(true);
+      expect(fields.theObjectArray.children.arr.error).toBe(null);
+    }
+
+    act(() => {
+      const [fields] = hook.result.current;
+      fields.theNum.setError("ERR_1");
+    });
+
+    {
+      const [fields, form] = hook.result.current;
+      expect(form.isValid).toBe(false);
+      expect(form.errors).toEqual([{ path: "theNum", error: "ERR_1" }]);
+
+      expect(fields.theNum.isValid).toBe(false);
+      expect(fields.theNum.error).toBe("ERR_1");
+
+      expect(fields.theArray.isValid).toBe(true);
+      expect(fields.theArray.error).toBe(null);
+    }
+
+    act(() => {
+      const [fields] = hook.result.current;
+      fields.theArray.setError("ERR_2");
+    });
+
+    {
+      const [fields, form] = hook.result.current;
+      expect(form.isValid).toBe(false);
+      expect(form.errors).toEqual([
+        { path: "theNum", error: "ERR_1" },
+        { path: "theArray", error: "ERR_2" },
+      ]);
+
+      expect(fields.theNum.isValid).toBe(false);
+      expect(fields.theNum.error).toBe("ERR_1");
+
+      expect(fields.theArray.isValid).toBe(false);
+      expect(fields.theArray.error).toBe("ERR_2");
+    }
+
+    act(() => {
+      const [fields] = hook.result.current;
+      fields.theObject.children.foo.setError("ERR_3");
+    });
+
+    {
+      const [fields, form] = hook.result.current;
+      expect(form.isValid).toBe(false);
+      expect(form.errors).toEqual([
+        { path: "theNum", error: "ERR_1" },
+        { path: "theArray", error: "ERR_2" },
+        { path: "theObject.foo", error: "ERR_3" },
+      ]);
+
+      expect(fields.theNum.isValid).toBe(false);
+      expect(fields.theNum.error).toBe("ERR_1");
+      expect(fields.theArray.isValid).toBe(false);
+      expect(fields.theArray.error).toBe("ERR_2");
+
+      expect(fields.theObject.isValid).toBe(false);
+      expect(fields.theObject.error).toBe(null);
+      expect(fields.theObject.children.foo.isValid).toBe(false);
+      expect(fields.theObject.children.foo.error).toBe("ERR_3");
     }
   });
 

@@ -7,22 +7,23 @@ import { createInitialValues } from "./create-initial-values";
 import { makeTouchedValues, makeUntouchedValues } from "./make-touched-values";
 import { FormtsOptions } from "./use-formts";
 
-export type FormtsAction<Values> =
+export type FormtsAction<Values, Err> =
   | { type: "reset"; payload: { values: Values } }
   | { type: "touchValue"; payload: { path: string } }
-  | { type: "setValue"; payload: { path: string; value: any } };
+  | { type: "setValue"; payload: { path: string; value: any } }
+  | { type: "setErrors"; payload: Array<{ path: string; error: Err | null }> };
 
-export const createReducer = <Values extends object>(): Reducer<
-  FormtsState<Values>,
-  FormtsAction<Values>
+export const createReducer = <Values extends object, Err>(): Reducer<
+  FormtsState<Values, Err>,
+  FormtsAction<Values, Err>
 > => (state, action) => {
   switch (action.type) {
     case "reset": {
       const { values } = action.payload;
-
       const touched = makeUntouchedValues(values);
+      const errors = {};
 
-      return { values, touched };
+      return { values, touched, errors };
     }
 
     case "touchValue": {
@@ -40,16 +41,33 @@ export const createReducer = <Values extends object>(): Reducer<
       const values = set(state.values, path, value);
       const touched = set(state.touched, path, makeTouchedValues(value));
 
-      return { values, touched };
+      return { ...state, values, touched };
+    }
+
+    case "setErrors": {
+      const errors = action.payload.reduce(
+        (dict, { path, error }) => {
+          if (error != null) {
+            dict[path] = error;
+          } else {
+            delete dict[path];
+          }
+          return dict;
+        },
+        { ...state.errors }
+      );
+
+      return { ...state, errors };
     }
   }
 };
 
-export const getInitialState = <Values extends object>({
+export const getInitialState = <Values extends object, Err>({
   Schema,
   initialValues,
-}: FormtsOptions<Values, any>): FormtsState<Values> => {
+}: FormtsOptions<Values, any>): FormtsState<Values, Err> => {
   const values = createInitialValues(Schema, initialValues);
   const touched = makeUntouchedValues(values);
-  return { values, touched };
+  const errors = {};
+  return { values, touched, errors };
 };
