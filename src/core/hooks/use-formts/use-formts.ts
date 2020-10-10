@@ -22,6 +22,7 @@ import {
   objectDescriptorKeys,
   _DescriptorApprox_,
 } from "../../types/form-schema-approx";
+import { FormValidator } from "../../types/form-validator";
 import { impl, opaque } from "../../types/type-mapper-util";
 
 import { createInitialValues } from "./create-initial-values";
@@ -38,6 +39,9 @@ export type FormtsOptions<Values extends object, Err> = {
    * The defaults depend on field type (defined in the Schema).
    */
   initialValues?: DeepPartial<Values>;
+
+  /** Form validator created using `createForm.validator` function (optional). */
+  validator?: FormValidator<Values, Err>;
 };
 
 type FormtsReturn<Values extends object, Err> = [
