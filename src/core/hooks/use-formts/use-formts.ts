@@ -4,6 +4,7 @@ import {
   DeepPartial,
   entries,
   get,
+  handleMaybePromise,
   keys,
   logger,
   toIdentityDict,
@@ -55,7 +56,7 @@ export type FormtsOptions<Values extends object, Err> = {
 
 type FormtsReturn<Values extends object, Err> = [
   fields: FieldHandleSchema<Values, Err>,
-  form: Partial<FormHandle<Values, Err>> // TODO
+  form: FormHandle<Values, Err>
 ];
 
 export const useFormts = <Values extends object, Err>(
@@ -91,6 +92,17 @@ export const useFormts = <Values extends object, Err>(
     if (errors) {
       setFieldErrors(...errors);
     }
+  };
+
+  const validateForm = () => {
+    if (options.validator == null) {
+      return [];
+    }
+
+    const topLevelDescriptors = values(fields).map(it => it.descriptor);
+    const errors = options.validator.validate(topLevelDescriptors, getField);
+    setFieldErrors(...errors);
+    return errors;
   };
 
   const setField = <T>(field: FieldDescriptor<T, Err>, value: T): void => {
@@ -130,7 +142,7 @@ export const useFormts = <Values extends object, Err>(
     }
   };
 
-  const touchField = <T, Err>(field: FieldDescriptor<T, Err>) =>
+  const touchField = <T>(field: FieldDescriptor<T, Err>) =>
     dispatch({ type: "touchValue", payload: { path: impl(field).path } });
 
   const setFieldErrors = (
@@ -244,9 +256,12 @@ export const useFormts = <Values extends object, Err>(
     {} as FieldHandleSchema<Values, Err>
   );
 
-  // TODO
-  const form: Partial<FormHandle<Values, Err>> = {
+  const form: FormHandle<Values, Err> = {
     values: state.values,
+
+    isSubmitting: state.isSubmitting,
+
+    isValidating: false, // TODO: async validation
 
     get errors() {
       return entries(state.errors)
@@ -263,13 +278,7 @@ export const useFormts = <Values extends object, Err>(
     },
 
     validate: () => {
-      if (options.validator == null) {
-        return;
-      }
-
-      const topLevelDescriptors = values(fields).map(it => it.descriptor);
-      const errors = options.validator.validate(topLevelDescriptors, getField);
-      setFieldErrors(...errors);
+      validateForm();
     },
 
     reset: values => {
@@ -277,6 +286,34 @@ export const useFormts = <Values extends object, Err>(
         type: "reset",
         payload: { values: createInitialValues(options.Schema, values) },
       });
+    },
+
+    getSubmitHandler: (onSuccess, onFailure) => event => {
+      event?.preventDefault();
+      dispatch({ type: "setIsSubmitting", payload: { isSubmitting: true } });
+
+      const clearSubmitting = () =>
+        dispatch({
+          type: "setIsSubmitting",
+          payload: { isSubmitting: false },
+        });
+
+      const errors = validateForm()
+        .filter(({ error }) => error != null)
+        .map(({ field, error }) => ({
+          path: impl(field).path,
+          error: error!,
+        }));
+
+      if (errors.length > 0) {
+        clearSubmitting();
+        onFailure?.(errors);
+      } else {
+        handleMaybePromise(() => onSuccess(state.values), {
+          then: clearSubmitting,
+          catch: clearSubmitting,
+        });
+      }
     },
   };
 

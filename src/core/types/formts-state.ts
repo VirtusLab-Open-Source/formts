@@ -3,6 +3,7 @@ export type FormtsState<Values extends object, Err> = {
   values: Values;
   touched: TouchedValues<Values>;
   errors: FieldErrors<Err>;
+  isSubmitting: boolean;
 };
 
 export type TouchedValues<V> = [V] extends [Array<infer U>]

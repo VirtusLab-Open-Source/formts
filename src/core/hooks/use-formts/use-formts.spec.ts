@@ -301,4 +301,267 @@ describe("useFormts", () => {
       C: "C",
     });
   });
+
+  it("validates fields when blur handler is called", () => {
+    const validator = {
+      validate: jest
+        .fn()
+        .mockReturnValueOnce([{ field: Schema.theNum, error: "ERR_1" }])
+        .mockReturnValueOnce([{ field: Schema.theNum, error: null }]),
+    };
+
+    const hook = renderHook(() => useFormts({ Schema, validator }));
+
+    {
+      const [fields, form] = hook.result.current;
+      expect(form.isValid).toBe(true);
+      expect(form.errors).toEqual([]);
+
+      expect(fields.theNum.isValid).toBe(true);
+      expect(fields.theNum.error).toBe(null);
+
+      expect(validator.validate).not.toHaveBeenCalled();
+    }
+
+    act(() => {
+      const [fields] = hook.result.current;
+      fields.theNum.handleBlur();
+    });
+
+    {
+      const [fields, form] = hook.result.current;
+      expect(form.isValid).toBe(false);
+      expect(form.errors).toEqual([{ path: "theNum", error: "ERR_1" }]);
+
+      expect(fields.theNum.isValid).toBe(false);
+      expect(fields.theNum.error).toBe("ERR_1");
+
+      expect(validator.validate).toHaveBeenCalledTimes(1);
+    }
+
+    act(() => {
+      const [fields] = hook.result.current;
+      fields.theNum.handleBlur();
+    });
+
+    {
+      const [fields, form] = hook.result.current;
+      expect(form.isValid).toBe(true);
+      expect(form.errors).toEqual([]);
+
+      expect(fields.theNum.isValid).toBe(true);
+      expect(fields.theNum.error).toBe(null);
+
+      expect(validator.validate).toHaveBeenCalledTimes(2);
+    }
+  });
+
+  it("validates fields when validate method is called", () => {
+    const validator = {
+      validate: jest
+        .fn()
+        .mockReturnValueOnce([{ field: Schema.theNum, error: "ERR_1" }])
+        .mockReturnValueOnce([{ field: Schema.theNum, error: null }]),
+    };
+
+    const hook = renderHook(() => useFormts({ Schema, validator }));
+
+    {
+      const [fields, form] = hook.result.current;
+      expect(form.isValid).toBe(true);
+      expect(form.errors).toEqual([]);
+
+      expect(fields.theNum.isValid).toBe(true);
+      expect(fields.theNum.error).toBe(null);
+
+      expect(validator.validate).not.toHaveBeenCalled();
+    }
+
+    act(() => {
+      const [fields] = hook.result.current;
+      fields.theNum.validate();
+    });
+
+    {
+      const [fields, form] = hook.result.current;
+      expect(form.isValid).toBe(false);
+      expect(form.errors).toEqual([{ path: "theNum", error: "ERR_1" }]);
+
+      expect(fields.theNum.isValid).toBe(false);
+      expect(fields.theNum.error).toBe("ERR_1");
+
+      expect(validator.validate).toHaveBeenCalledTimes(1);
+    }
+
+    act(() => {
+      const [fields] = hook.result.current;
+      fields.theNum.validate();
+    });
+
+    {
+      const [fields, form] = hook.result.current;
+      expect(form.isValid).toBe(true);
+      expect(form.errors).toEqual([]);
+
+      expect(fields.theNum.isValid).toBe(true);
+      expect(fields.theNum.error).toBe(null);
+
+      expect(validator.validate).toHaveBeenCalledTimes(2);
+    }
+  });
+
+  it("validates fields when field value is changed", () => {
+    const validator = {
+      validate: jest.fn().mockImplementation((fields: any[], getValue: any) =>
+        fields.map(field => ({
+          field,
+          error: getValue(field) === "" ? "REQUIRED" : null,
+        }))
+      ),
+    };
+
+    const hook = renderHook(() => useFormts({ Schema, validator }));
+
+    {
+      const [fields, form] = hook.result.current;
+      expect(form.isValid).toBe(true);
+      expect(form.errors).toEqual([]);
+
+      expect(fields.theNum.isValid).toBe(true);
+      expect(fields.theNum.error).toBe(null);
+
+      expect(validator.validate).not.toHaveBeenCalled();
+    }
+
+    act(() => {
+      const [fields] = hook.result.current;
+      fields.theNum.setValue(42);
+    });
+
+    {
+      const [fields, form] = hook.result.current;
+      expect(form.isValid).toBe(true);
+      expect(form.errors).toEqual([]);
+
+      expect(fields.theNum.isValid).toBe(true);
+      expect(fields.theNum.error).toBe(null);
+
+      expect(validator.validate).toHaveBeenCalledTimes(1);
+    }
+
+    act(() => {
+      const [fields] = hook.result.current;
+      fields.theNum.setValue("");
+    });
+
+    {
+      const [fields, form] = hook.result.current;
+      expect(form.isValid).toBe(false);
+      expect(form.errors).toEqual([{ path: "theNum", error: "REQUIRED" }]);
+
+      expect(fields.theNum.isValid).toBe(false);
+      expect(fields.theNum.error).toBe("REQUIRED");
+
+      expect(validator.validate).toHaveBeenCalledTimes(2);
+    }
+  });
+
+  it("validates all fields when form validate method is called", () => {
+    const validator = {
+      validate: jest
+        .fn()
+        .mockImplementation((fields: any[]) =>
+          fields.map(field => ({ field, error: "ERROR" }))
+        ),
+    };
+
+    const hook = renderHook(() => useFormts({ Schema, validator }));
+
+    {
+      const [, form] = hook.result.current;
+      expect(validator.validate).not.toHaveBeenCalled();
+      expect(form.isValid).toBe(true);
+      expect(form.errors).toEqual([]);
+    }
+
+    act(() => {
+      const [, form] = hook.result.current;
+      form.validate();
+    });
+
+    {
+      const [, form] = hook.result.current;
+      expect(validator.validate).toHaveBeenCalledTimes(1);
+      expect(form.isValid).toBe(false);
+      expect(form.errors).toEqual([
+        { path: "theString", error: "ERROR" },
+        { path: "theChoice", error: "ERROR" },
+        { path: "theNum", error: "ERROR" },
+        { path: "theBool", error: "ERROR" },
+        { path: "theInstance", error: "ERROR" },
+        { path: "theArray", error: "ERROR" },
+        { path: "theObject", error: "ERROR" },
+        { path: "theObjectArray", error: "ERROR" },
+      ]);
+    }
+  });
+
+  it("creates submit handler which runs validation of all fields and invokes proper callback", () => {
+    const validator = {
+      validate: jest
+        .fn()
+        .mockImplementationOnce((fields: any[]) =>
+          fields.map(field => ({ field, error: "ERROR" }))
+        )
+        .mockReturnValueOnce([]),
+    };
+
+    const hook = renderHook(() => useFormts({ Schema, validator }));
+    const onSuccess = jest.fn();
+    const onFailure = jest.fn();
+    const submitHandler = hook.result.current[1].getSubmitHandler(
+      onSuccess,
+      onFailure
+    );
+
+    expect(validator.validate).not.toHaveBeenCalled();
+    expect(onSuccess).not.toHaveBeenCalled();
+    expect(onFailure).not.toHaveBeenCalled();
+
+    act(() => {
+      submitHandler();
+    });
+
+    expect(validator.validate).toHaveBeenCalledTimes(1);
+    expect(onSuccess).not.toHaveBeenCalled();
+    expect(onFailure).toHaveBeenCalledTimes(1);
+    expect(onFailure).toHaveBeenCalledWith([
+      { path: "theString", error: "ERROR" },
+      { path: "theChoice", error: "ERROR" },
+      { path: "theNum", error: "ERROR" },
+      { path: "theBool", error: "ERROR" },
+      { path: "theInstance", error: "ERROR" },
+      { path: "theArray", error: "ERROR" },
+      { path: "theObject", error: "ERROR" },
+      { path: "theObjectArray", error: "ERROR" },
+    ]);
+
+    act(() => {
+      submitHandler();
+    });
+
+    expect(validator.validate).toHaveBeenCalledTimes(2);
+    expect(onSuccess).toHaveBeenCalledTimes(1);
+    expect(onSuccess).toHaveBeenCalledWith({
+      theString: "",
+      theChoice: "A",
+      theNum: "",
+      theBool: false,
+      theInstance: null,
+      theArray: [],
+      theObject: { foo: "" },
+      theObjectArray: { arr: [] },
+    });
+    expect(onFailure).toHaveBeenCalledTimes(1);
+  });
 });

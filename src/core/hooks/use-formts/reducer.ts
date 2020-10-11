@@ -11,7 +11,8 @@ export type FormtsAction<Values, Err> =
   | { type: "reset"; payload: { values: Values } }
   | { type: "touchValue"; payload: { path: string } }
   | { type: "setValue"; payload: { path: string; value: any } }
-  | { type: "setErrors"; payload: Array<{ path: string; error: Err | null }> };
+  | { type: "setErrors"; payload: Array<{ path: string; error: Err | null }> }
+  | { type: "setIsSubmitting"; payload: { isSubmitting: boolean } };
 
 export const createReducer = <Values extends object, Err>(): Reducer<
   FormtsState<Values, Err>,
@@ -21,9 +22,13 @@ export const createReducer = <Values extends object, Err>(): Reducer<
     case "reset": {
       const { values } = action.payload;
       const touched = makeUntouchedValues(values);
-      const errors = {};
 
-      return { values, touched, errors };
+      return {
+        values,
+        touched,
+        errors: {},
+        isSubmitting: false,
+      };
     }
 
     case "touchValue": {
@@ -59,6 +64,11 @@ export const createReducer = <Values extends object, Err>(): Reducer<
 
       return { ...state, errors };
     }
+
+    case "setIsSubmitting": {
+      const { isSubmitting } = action.payload;
+      return { ...state, isSubmitting };
+    }
   }
 };
 
@@ -68,6 +78,11 @@ export const getInitialState = <Values extends object, Err>({
 }: FormtsOptions<Values, any>): FormtsState<Values, Err> => {
   const values = createInitialValues(Schema, initialValues);
   const touched = makeUntouchedValues(values);
-  const errors = {};
-  return { values, touched, errors };
+
+  return {
+    values,
+    touched,
+    errors: {},
+    isSubmitting: false,
+  };
 };

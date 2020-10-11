@@ -50,5 +50,5 @@ export type FormHandle<Values extends object, Err> = {
   getSubmitHandler: (
     onSuccess: (values: Values) => void | Promise<unknown>,
     onFailure?: (errors: Array<FieldError<Err>>) => void
-  ) => (event?: any) => void;
+  ) => (event?: React.SyntheticEvent) => void;
 };
