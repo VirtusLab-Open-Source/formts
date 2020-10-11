@@ -30,7 +30,7 @@ import {
   objectDescriptorKeys,
   _DescriptorApprox_,
 } from "../../types/form-schema-approx";
-import { FormValidator } from "../../types/form-validator";
+import { FormValidator, ValidationTrigger } from "../../types/form-validator";
 import { impl, opaque } from "../../types/type-mapper-util";
 
 import { createInitialValues } from "./create-initial-values";
@@ -83,13 +83,44 @@ export const useFormts = <Values extends object, Err>(
   const isFieldValid = <T>(field: FieldDescriptor<T, Err>) =>
     resolveIsValid(state.errors, impl(field).path);
 
+  const validateField = <T>(
+    field: FieldDescriptor<T, Err>,
+    trigger?: ValidationTrigger
+  ) => {
+    const errors = options.validator?.validate([field], getField, trigger);
+    if (errors) {
+      setFieldErrors(...errors);
+    }
+  };
+
   const setField = <T>(field: FieldDescriptor<T, Err>, value: T): void => {
     const decodeResult = impl(field).decode(value);
     if (decodeResult.ok) {
+      const validateAfterChange = () => {
+        // TODO: getField is problematic when relaying on useReducer, should be solved when Atom based state is implemented
+        const modifiedGetField = <T>(
+          fieldToValidate: FieldDescriptor<T, Err>
+        ): T => {
+          if (impl(field).path === impl(fieldToValidate).path) {
+            return decodeResult.value as any;
+          }
+          return getField(fieldToValidate);
+        };
+        const errors = options.validator?.validate(
+          [field],
+          modifiedGetField,
+          "change"
+        );
+        if (errors) {
+          setFieldErrors(...errors);
+        }
+      };
+
       dispatch({
         type: "setValue",
         payload: { path: impl(field).path, value: decodeResult.value },
       });
+      validateAfterChange();
     } else {
       logger.warn(
         `Field ${impl(field).path} received illegal value: ${JSON.stringify(
@@ -183,6 +214,7 @@ export const useFormts = <Values extends object, Err>(
 
       handleBlur: () => {
         touchField(opaque(rootDescriptor));
+        validateField(opaque(rootDescriptor), "blur");
       },
 
       setValue: val => {
@@ -191,6 +223,10 @@ export const useFormts = <Values extends object, Err>(
 
       setError: error => {
         setFieldErrors({ field: opaque(rootDescriptor), error });
+      },
+
+      validate: () => {
+        validateField(opaque(rootDescriptor));
       },
     });
   };
@@ -224,6 +260,16 @@ export const useFormts = <Values extends object, Err>(
 
     get isValid() {
       return values(state.errors).filter(err => err != null).length === 0;
+    },
+
+    validate: () => {
+      if (options.validator == null) {
+        return;
+      }
+
+      const topLevelDescriptors = values(fields).map(it => it.descriptor);
+      const errors = options.validator.validate(topLevelDescriptors, getField);
+      setFieldErrors(...errors);
     },
 
     reset: values => {

@@ -57,7 +57,7 @@ type BaseFieldHandle<T, Err> = {
   setError: (error: null | Err) => void;
 
   /** runs all validation rules of the field, regardless of their validation triggers */
-  // validate: () => void;
+  validate: () => void;
 
   /**
    * Attempts to extract value out of React.ChangeEvent based on field type and event.target.
