@@ -9,8 +9,9 @@ import { FieldDescriptor } from "./field-descriptor";
  *
  * @returns validation error of type `Err`, or `null` when field is valid
  */
-export type Validator<T, Err> = Validator.Sync<T, Err>;
-// | Validator.Async<T, Err>;
+export type Validator<T, Err> =
+  | Validator.Sync<T, Err>
+  | Validator.Async<T, Err>;
 
 export namespace Validator {
   export type Sync<T, Err> = {
@@ -23,12 +24,17 @@ export namespace Validator {
 
 export type ValidationTrigger = "change" | "blur" | "submit";
 
+export type ValidationResult<Err> = Array<{
+  field: FieldDescriptor<unknown, Err>;
+  error: Err | null;
+}>;
+
 export type FormValidator<Values extends object, Err> = {
   validate: (
     fields: Array<FieldDescriptor<unknown, Err>>,
     getValue: <P>(field: FieldDescriptor<P, Err>) => P,
     trigger?: ValidationTrigger
-  ) => Array<{ field: FieldDescriptor<unknown, Err>; error: Err | null }>;
+  ) => Promise<ValidationResult<Err>>;
 };
 
 export type FieldValidator<T, Err, Dependencies extends any[]> = {

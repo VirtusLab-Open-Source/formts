@@ -355,12 +355,12 @@ describe("useFormts", () => {
     }
   });
 
-  it("validates fields when blur handler is called", () => {
+  it("validates fields when blur handler is called", async () => {
     const validator = {
       validate: jest
         .fn()
-        .mockReturnValueOnce([{ field: Schema.theNum, error: "ERR_1" }])
-        .mockReturnValueOnce([{ field: Schema.theNum, error: null }]),
+        .mockResolvedValueOnce([{ field: Schema.theNum, error: "ERR_1" }])
+        .mockResolvedValueOnce([{ field: Schema.theNum, error: null }]),
     };
 
     const hook = renderHook(() => useFormts({ Schema, validator }));
@@ -376,9 +376,9 @@ describe("useFormts", () => {
       expect(validator.validate).not.toHaveBeenCalled();
     }
 
-    act(() => {
+    await act(async () => {
       const [fields] = hook.result.current;
-      fields.theNum.handleBlur();
+      await fields.theNum.handleBlur();
     });
 
     {
@@ -392,9 +392,9 @@ describe("useFormts", () => {
       expect(validator.validate).toHaveBeenCalledTimes(1);
     }
 
-    act(() => {
+    await act(async () => {
       const [fields] = hook.result.current;
-      fields.theNum.handleBlur();
+      await fields.theNum.handleBlur();
     });
 
     {
@@ -409,12 +409,12 @@ describe("useFormts", () => {
     }
   });
 
-  it("validates fields when validate method is called", () => {
+  it("validates fields when validate method is called", async () => {
     const validator = {
       validate: jest
         .fn()
-        .mockReturnValueOnce([{ field: Schema.theNum, error: "ERR_1" }])
-        .mockReturnValueOnce([{ field: Schema.theNum, error: null }]),
+        .mockResolvedValueOnce([{ field: Schema.theNum, error: "ERR_1" }])
+        .mockResolvedValueOnce([{ field: Schema.theNum, error: null }]),
     };
 
     const hook = renderHook(() => useFormts({ Schema, validator }));
@@ -430,9 +430,9 @@ describe("useFormts", () => {
       expect(validator.validate).not.toHaveBeenCalled();
     }
 
-    act(() => {
+    await act(async () => {
       const [fields] = hook.result.current;
-      fields.theNum.validate();
+      await fields.theNum.validate();
     });
 
     {
@@ -446,9 +446,9 @@ describe("useFormts", () => {
       expect(validator.validate).toHaveBeenCalledTimes(1);
     }
 
-    act(() => {
+    await act(async () => {
       const [fields] = hook.result.current;
-      fields.theNum.validate();
+      await fields.theNum.validate();
     });
 
     {
@@ -463,13 +463,15 @@ describe("useFormts", () => {
     }
   });
 
-  it("validates fields when field value is changed", () => {
+  it("validates fields when field value is changed", async () => {
     const validator = {
       validate: jest.fn().mockImplementation((fields: any[], getValue: any) =>
-        fields.map(field => ({
-          field,
-          error: getValue(field) === "" ? "REQUIRED" : null,
-        }))
+        Promise.resolve(
+          fields.map(field => ({
+            field,
+            error: getValue(field) === "" ? "REQUIRED" : null,
+          }))
+        )
       ),
     };
 
@@ -486,9 +488,9 @@ describe("useFormts", () => {
       expect(validator.validate).not.toHaveBeenCalled();
     }
 
-    act(() => {
+    await act(async () => {
       const [fields] = hook.result.current;
-      fields.theNum.setValue(42);
+      await fields.theNum.setValue(42);
     });
 
     {
@@ -502,9 +504,9 @@ describe("useFormts", () => {
       expect(validator.validate).toHaveBeenCalledTimes(1);
     }
 
-    act(() => {
+    await act(async () => {
       const [fields] = hook.result.current;
-      fields.theNum.setValue("");
+      await fields.theNum.setValue("");
     });
 
     {
@@ -519,12 +521,12 @@ describe("useFormts", () => {
     }
   });
 
-  it("validates all fields when form validate method is called", () => {
+  it("validates all fields when form validate method is called", async () => {
     const validator = {
       validate: jest
         .fn()
         .mockImplementation((fields: any[]) =>
-          fields.map(field => ({ field, error: "ERROR" }))
+          Promise.resolve(fields.map(field => ({ field, error: "ERROR" })))
         ),
     };
 
@@ -537,9 +539,9 @@ describe("useFormts", () => {
       expect(form.errors).toEqual([]);
     }
 
-    act(() => {
+    await act(async () => {
       const [, form] = hook.result.current;
-      form.validate();
+      await form.validate();
     });
 
     {
@@ -559,14 +561,14 @@ describe("useFormts", () => {
     }
   });
 
-  it("creates submit handler which runs validation of all fields and invokes proper callback", () => {
+  it("creates submit handler which runs validation of all fields and invokes proper callback", async () => {
     const validator = {
       validate: jest
         .fn()
         .mockImplementationOnce((fields: any[]) =>
-          fields.map(field => ({ field, error: "ERROR" }))
+          Promise.resolve(fields.map(field => ({ field, error: "ERROR" })))
         )
-        .mockReturnValueOnce([]),
+        .mockResolvedValueOnce([]),
     };
 
     const hook = renderHook(() => useFormts({ Schema, validator }));
@@ -581,8 +583,8 @@ describe("useFormts", () => {
     expect(onSuccess).not.toHaveBeenCalled();
     expect(onFailure).not.toHaveBeenCalled();
 
-    act(() => {
-      submitHandler();
+    await act(async () => {
+      await submitHandler();
     });
 
     expect(validator.validate).toHaveBeenCalledTimes(1);
@@ -599,8 +601,8 @@ describe("useFormts", () => {
       { path: "theObjectArray", error: "ERROR" },
     ]);
 
-    act(() => {
-      submitHandler();
+    await act(async () => {
+      await submitHandler();
     });
 
     expect(validator.validate).toHaveBeenCalledTimes(2);

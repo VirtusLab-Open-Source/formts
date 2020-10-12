@@ -4,7 +4,6 @@ import {
   DeepPartial,
   entries,
   get,
-  handleMaybePromise,
   keys,
   logger,
   toIdentityDict,
@@ -31,7 +30,11 @@ import {
   objectDescriptorKeys,
   _DescriptorApprox_,
 } from "../../types/form-schema-approx";
-import { FormValidator, ValidationTrigger } from "../../types/form-validator";
+import {
+  FormValidator,
+  ValidationResult,
+  ValidationTrigger,
+} from "../../types/form-validator";
 import { impl, opaque } from "../../types/type-mapper-util";
 
 import { createInitialValues } from "./create-initial-values";
@@ -87,25 +90,40 @@ export const useFormts = <Values extends object, Err>(
   const validateField = <T>(
     field: FieldDescriptor<T, Err>,
     trigger?: ValidationTrigger
-  ) => {
-    const errors = options.validator?.validate([field], getField, trigger);
-    if (errors) {
-      setFieldErrors(...errors);
+  ): Promise<void> => {
+    if (!options.validator) {
+      return Promise.resolve();
     }
+
+    dispatch({ type: "setIsValidating", payload: { isValidating: true } });
+    return options.validator
+      .validate([field], getField, trigger)
+      .then(errors => {
+        setFieldErrors(...errors);
+        dispatch({ type: "setIsValidating", payload: { isValidating: false } });
+      });
   };
 
-  const validateForm = () => {
+  const validateForm = (): Promise<ValidationResult<Err>> => {
     if (options.validator == null) {
-      return [];
+      return Promise.resolve([]);
     }
-
     const topLevelDescriptors = values(fields).map(it => it.descriptor);
-    const errors = options.validator.validate(topLevelDescriptors, getField);
-    setFieldErrors(...errors);
-    return errors;
+
+    dispatch({ type: "setIsValidating", payload: { isValidating: true } });
+    return options.validator
+      .validate(topLevelDescriptors, getField)
+      .then(errors => {
+        setFieldErrors(...errors);
+        dispatch({ type: "setIsValidating", payload: { isValidating: false } });
+        return errors;
+      });
   };
 
-  const setField = <T>(field: FieldDescriptor<T, Err>, value: T): void => {
+  const setField = <T>(
+    field: FieldDescriptor<T, Err>,
+    value: T
+  ): Promise<void> => {
     const decodeResult = impl(field).decode(value);
     if (!decodeResult.ok) {
       logger.warn(
@@ -113,10 +131,14 @@ export const useFormts = <Values extends object, Err>(
           value
         )}`
       );
-      return;
+      return Promise.resolve();
     }
 
     const validateAfterChange = () => {
+      if (!options.validator) {
+        return Promise.resolve();
+      }
+
       // TODO: getField is problematic when relaying on useReducer, should be solved when Atom based state is implemented
       const modifiedGetField = <T>(
         fieldToValidate: FieldDescriptor<T, Err>
@@ -126,21 +148,25 @@ export const useFormts = <Values extends object, Err>(
         }
         return getField(fieldToValidate);
       };
-      const errors = options.validator?.validate(
-        [field],
-        modifiedGetField,
-        "change"
-      );
-      if (errors) {
-        setFieldErrors(...errors);
-      }
+
+      dispatch({ type: "setIsValidating", payload: { isValidating: true } });
+
+      return options.validator
+        .validate([field], modifiedGetField, "change")
+        .then(errors => {
+          setFieldErrors(...errors);
+          dispatch({
+            type: "setIsValidating",
+            payload: { isValidating: false },
+          });
+        });
     };
 
     dispatch({
       type: "setValue",
       payload: { path: impl(field).path, value: decodeResult.value },
     });
-    validateAfterChange();
+    return validateAfterChange();
   };
 
   const touchField = <T>(field: FieldDescriptor<T, Err>) =>
@@ -227,11 +253,11 @@ export const useFormts = <Values extends object, Err>(
 
       handleBlur: () => {
         touchField(opaque(rootDescriptor));
-        validateField(opaque(rootDescriptor), "blur");
+        return validateField(opaque(rootDescriptor), "blur");
       },
 
       setValue: val => {
-        setField(opaque(rootDescriptor), val);
+        return setField(opaque(rootDescriptor), val);
       },
 
       setError: error => {
@@ -239,7 +265,7 @@ export const useFormts = <Values extends object, Err>(
       },
 
       validate: () => {
-        validateField(opaque(rootDescriptor));
+        return validateField(opaque(rootDescriptor));
       },
     });
   };
@@ -262,7 +288,7 @@ export const useFormts = <Values extends object, Err>(
 
     isSubmitting: state.isSubmitting,
 
-    isValidating: false, // TODO: async validation
+    isValidating: state.isValidating,
 
     get errors() {
       return entries(state.errors)
@@ -279,7 +305,7 @@ export const useFormts = <Values extends object, Err>(
     },
 
     validate: () => {
-      validateForm();
+      return validateForm();
     },
 
     reset: () => {
@@ -301,22 +327,28 @@ export const useFormts = <Values extends object, Err>(
           payload: { isSubmitting: false },
         });
 
-      const errors = validateForm()
-        .filter(({ error }) => error != null)
-        .map(({ field, error }) => ({
-          path: impl(field).path,
-          error: error!,
-        }));
-
-      if (errors.length > 0) {
-        clearSubmitting();
-        onFailure?.(errors);
-      } else {
-        handleMaybePromise(() => onSuccess(state.values), {
-          then: clearSubmitting,
-          catch: clearSubmitting,
+      return validateForm()
+        .then(errors =>
+          errors
+            .filter(({ error }) => error != null)
+            .map(({ field, error }) => ({
+              path: impl(field).path,
+              error: error!,
+            }))
+        )
+        .then(errors => {
+          if (errors.length > 0) {
+            clearSubmitting();
+            onFailure?.(errors);
+          } else {
+            return Promise.resolve(onSuccess(state.values))
+              .then(clearSubmitting)
+              .catch(err => {
+                clearSubmitting();
+                throw err;
+              });
+          }
         });
-      }
     },
   };
 

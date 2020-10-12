@@ -41,7 +41,7 @@ type BaseFieldHandle<T, Err> = {
   isValid: boolean;
 
   /** True if validation process of the field is ongoing */
-  // isValidating: boolean;
+  // isValidating: boolean; // TODO: post-mvp
 
   /** FieldDescriptor corresponding to the field */
   descriptor: FieldDescriptor<T, Err>;

@@ -12,6 +12,7 @@ export type FormtsAction<Values, Err> =
   | { type: "touchValue"; payload: { path: string } }
   | { type: "setValue"; payload: { path: string; value: any } }
   | { type: "setErrors"; payload: Array<{ path: string; error: Err | null }> }
+  | { type: "setIsValidating"; payload: { isValidating: boolean } }
   | { type: "setIsSubmitting"; payload: { isSubmitting: boolean } };
 
 export const createReducer = <Values extends object, Err>(): Reducer<
@@ -27,6 +28,7 @@ export const createReducer = <Values extends object, Err>(): Reducer<
         values,
         touched,
         errors: {},
+        isValidating: false,
         isSubmitting: false,
       };
     }
@@ -65,6 +67,10 @@ export const createReducer = <Values extends object, Err>(): Reducer<
       return { ...state, errors };
     }
 
+    case "setIsValidating": {
+      const { isValidating } = action.payload;
+      return { ...state, isValidating };
+    }
     case "setIsSubmitting": {
       const { isSubmitting } = action.payload;
       return { ...state, isSubmitting };
@@ -83,6 +89,7 @@ export const getInitialState = <Values extends object, Err>({
     values,
     touched,
     errors: {},
+    isValidating: false,
     isSubmitting: false,
   };
 };
