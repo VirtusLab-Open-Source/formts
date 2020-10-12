@@ -107,39 +107,40 @@ export const useFormts = <Values extends object, Err>(
 
   const setField = <T>(field: FieldDescriptor<T, Err>, value: T): void => {
     const decodeResult = impl(field).decode(value);
-    if (decodeResult.ok) {
-      const validateAfterChange = () => {
-        // TODO: getField is problematic when relaying on useReducer, should be solved when Atom based state is implemented
-        const modifiedGetField = <T>(
-          fieldToValidate: FieldDescriptor<T, Err>
-        ): T => {
-          if (impl(field).path === impl(fieldToValidate).path) {
-            return decodeResult.value as any;
-          }
-          return getField(fieldToValidate);
-        };
-        const errors = options.validator?.validate(
-          [field],
-          modifiedGetField,
-          "change"
-        );
-        if (errors) {
-          setFieldErrors(...errors);
-        }
-      };
-
-      dispatch({
-        type: "setValue",
-        payload: { path: impl(field).path, value: decodeResult.value },
-      });
-      validateAfterChange();
-    } else {
+    if (!decodeResult.ok) {
       logger.warn(
         `Field ${impl(field).path} received illegal value: ${JSON.stringify(
           value
         )}`
       );
+      return;
     }
+
+    const validateAfterChange = () => {
+      // TODO: getField is problematic when relaying on useReducer, should be solved when Atom based state is implemented
+      const modifiedGetField = <T>(
+        fieldToValidate: FieldDescriptor<T, Err>
+      ): T => {
+        if (impl(field).path === impl(fieldToValidate).path) {
+          return decodeResult.value as any;
+        }
+        return getField(fieldToValidate);
+      };
+      const errors = options.validator?.validate(
+        [field],
+        modifiedGetField,
+        "change"
+      );
+      if (errors) {
+        setFieldErrors(...errors);
+      }
+    };
+
+    dispatch({
+      type: "setValue",
+      payload: { path: impl(field).path, value: decodeResult.value },
+    });
+    validateAfterChange();
   };
 
   const touchField = <T>(field: FieldDescriptor<T, Err>) =>
@@ -281,10 +282,12 @@ export const useFormts = <Values extends object, Err>(
       validateForm();
     },
 
-    reset: values => {
+    reset: () => {
       dispatch({
         type: "reset",
-        payload: { values: createInitialValues(options.Schema, values) },
+        payload: {
+          values: createInitialValues(options.Schema, options.initialValues),
+        },
       });
     },
 

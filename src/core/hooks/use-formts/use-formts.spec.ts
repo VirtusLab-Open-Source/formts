@@ -302,6 +302,59 @@ describe("useFormts", () => {
     });
   });
 
+  it("resets form state to initial when form reset method is called", () => {
+    const hook = renderHook(() =>
+      useFormts({
+        Schema,
+        initialValues: { theNum: 42 },
+      })
+    );
+
+    act(() => {
+      const [fields] = hook.result.current;
+      fields.theNum.setValue(666);
+      fields.theNum.setError("ERROR!");
+      fields.theObject.children.foo.setValue("bar");
+    });
+
+    {
+      const [, form] = hook.result.current;
+      expect(form.isValid).toBe(false);
+      expect(form.isTouched).toBe(true);
+      expect(form.values).toEqual({
+        theString: "",
+        theChoice: "A",
+        theNum: 666,
+        theBool: false,
+        theInstance: null,
+        theArray: [],
+        theObject: { foo: "bar" },
+        theObjectArray: { arr: [] },
+      });
+    }
+
+    act(() => {
+      const [, form] = hook.result.current;
+      form.reset();
+    });
+
+    {
+      const [, form] = hook.result.current;
+      expect(form.isValid).toBe(true);
+      expect(form.isTouched).toBe(false);
+      expect(form.values).toEqual({
+        theString: "",
+        theChoice: "A",
+        theNum: 42,
+        theBool: false,
+        theInstance: null,
+        theArray: [],
+        theObject: { foo: "" },
+        theObjectArray: { arr: [] },
+      });
+    }
+  });
+
   it("validates fields when blur handler is called", () => {
     const validator = {
       validate: jest

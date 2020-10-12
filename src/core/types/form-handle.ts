@@ -1,5 +1,3 @@
-import { DeepPartial } from "../../utils";
-
 type FieldError<Err> = {
   path: string;
   error: Err;
@@ -29,9 +27,9 @@ export type FormHandle<Values extends object, Err> = {
 
   /**
    * Resets the form cleaning all validation errors and touched flags.
-   * Form values will be set to initial values or to provided object.
+   * Form values will be set to initial values.
    */
-  reset: (values?: DeepPartial<Values>) => void;
+  reset: () => void;
 
   /**
    * Runs validation of all fields.
