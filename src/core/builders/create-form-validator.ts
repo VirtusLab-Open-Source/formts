@@ -6,6 +6,7 @@ import {
   FormValidator,
   ValidateFn,
   ValidationTrigger,
+  Validator,
 } from "../types/form-validator";
 import { impl } from "../types/type-mapper-util";
 
@@ -41,38 +42,41 @@ export const createFormValidator = <Values extends object, Err>(
   _schema: FormSchema<Values, Err>,
   builder: (validate: ValidateFn) => Array<FieldValidator<any, Err, any[]>>
 ): FormValidator<Values, Err> => {
-  const validators = builder(validate).reduce((acc, x) => {
-    (acc as any)[impl(x.field).path] = x;
-    return acc;
-  }, {} as Record<string, FieldValidator<any, Err, any[]>>);
+  const allValidators = builder(validate);
 
-  const shouldFireValidation = (
+  const getValidatorsForField = (
     descriptor: FieldDescriptor<unknown, Err>,
     trigger?: ValidationTrigger
-  ): boolean => {
-    if (!trigger) {
-      return true;
-    } else {
-      const fieldValidator = validators[impl(descriptor).path];
-      return fieldValidator
-        ? fieldValidator.triggers
-          ? fieldValidator.triggers.includes(trigger)
-          : true
-        : false;
-    }
+  ): FieldValidator<any, Err, any[]>[] => {
+    const path = impl(descriptor).path;
+    const rootArrayPath = getRootArrayPath(path);
+
+    return allValidators.filter(x => {
+      const xPath = impl(x.field).path;
+      const isInnerMatch = x.type === "inner" && xPath === path;
+      const isOuterMatch = x.type === "outer" && xPath === rootArrayPath;
+      const triggerMatches =
+        trigger && x.triggers ? x.triggers.includes(trigger) : true;
+
+      return triggerMatches && (isInnerMatch || isOuterMatch);
+    });
   };
 
   const formValidator: FormValidator<Values, Err> = {
     validate: (fields, getValue, trigger) => {
-      const fieldsToValidate = fields.filter(x =>
-        shouldFireValidation(x, trigger)
-      );
+      const fieldsToValidate = fields
+        .map(field => ({
+          field,
+          validators: getValidatorsForField(field, trigger),
+        }))
+        .filter(x => x.validators.length > 0);
 
       return Promise.all(
-        fieldsToValidate.map(async field => {
-          const fieldValidator = validators[impl(field).path]!;
+        fieldsToValidate.map(async ({ field, validators }) => {
           const value = getValue(field);
-          const error = await runValidationForField(fieldValidator, value);
+          const error = await firstNonNullPromise(validators, x =>
+            runValidationForField(x, value)
+          );
 
           return { field, error };
         })
@@ -91,17 +95,43 @@ const validate: ValidateFn = config => ({
   dependencies: config.dependencies,
 });
 
+validate.each = config => ({
+  type: "outer",
+  field: config.field as any,
+  triggers: config.triggers,
+  validators: config.rules,
+  dependencies: config.dependencies,
+});
+
 const runValidationForField = async <Value, Err>(
   validator: FieldValidator<Value, Err, unknown[]>,
   value: Value
 ): Promise<Err | null> => {
-  const rules = validator.validators([] as any);
-  for (const rule of rules) {
-    if (!isFalsy(rule)) {
-      const result = await rule(value);
-      if (result !== null) {
-        return result;
-      }
+  const rules = validator
+    .validators([] as any)
+    .filter(x => !isFalsy(x)) as Validator<Value, Err>[];
+
+  return firstNonNullPromise(rules, async rule => await rule(value));
+};
+
+const getRootArrayPath = (path: string): string | undefined => {
+  const isArrayElement = path.lastIndexOf("]") === path.length - 1;
+  if (!isArrayElement) {
+    return undefined;
+  } else {
+    const indexStart = path.lastIndexOf("[");
+    return path.slice(0, indexStart);
+  }
+};
+
+const firstNonNullPromise = async <T, V>(
+  list: T[],
+  mapper: (x: T) => Promise<V | null>
+): Promise<V | null> => {
+  for (const x of list) {
+    const result = await mapper(x);
+    if (result != null) {
+      return result;
     }
   }
   return null;

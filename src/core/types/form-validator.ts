@@ -36,7 +36,7 @@ export type FieldValidator<T, Err, Dependencies extends any[]> = {
 };
 
 export type ValidateFn = {
-  // each: ValidateEachFn;
+  each: ValidateEachFn;
 
   <T, Err, Dependencies extends any[]>(config: {
     field: FieldDescriptor<T, Err>;
@@ -51,7 +51,7 @@ export type ValidateEachFn = <T, Err, Dependencies extends any[]>(config: {
   triggers?: ValidationTrigger[];
   dependencies?: readonly [...FieldDescTuple<Dependencies>];
   rules: (...deps: [...Dependencies]) => Array<Falsy | Validator<T, Err>>;
-}) => FieldValidator<T[], Err, Dependencies>;
+}) => FieldValidator<T, Err, Dependencies>;
 
 type FieldDescTuple<ValuesTuple extends readonly any[]> = {
   [Index in keyof ValuesTuple]: FieldDescriptor<ValuesTuple[Index]>;

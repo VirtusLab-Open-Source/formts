@@ -5,6 +5,11 @@ import { FormValidator } from "../types/form-validator";
 import { createFormSchema } from "./create-form-schema";
 import { createFormValidator } from "./create-form-validator";
 
+export const wait = <T extends string | null>(
+  value: T,
+  ms: number
+): Promise<T> => new Promise(resolve => setTimeout(() => resolve(value), ms));
+
 describe("createFormValidator types", () => {
   const Schema = createFormSchema(
     fields => ({
@@ -266,9 +271,46 @@ describe("createFormValidator", () => {
 
     expect(validation).toEqual([{ field: Schema.object.root, error: null }]);
   });
-});
 
-export const wait = <T extends string | null>(
-  value: T,
-  ms: number
-): Promise<T> => new Promise(resolve => setTimeout(() => resolve(value), ms));
+  it("validate.each should run for each field", async () => {
+    const { validate } = createFormValidator(Schema, validate => [
+      validate.each({
+        field: Schema.arrayObjectString.root,
+        rules: () => [
+          x => wait(x.str === "invalid" ? "INVALID_VALUE" : null, 100),
+          x => (x.str === "" ? "REQUIRED" : null),
+          x => wait(x.str?.length < 3 ? "TOO_SHORT" : null, 500),
+        ],
+      }),
+    ]);
+    const getValue = ({ path }: any): any => {
+      switch (path) {
+        case "arrayObjectString[0]":
+          return { str: "sm" };
+        case "arrayObjectString[1]":
+          return { str: "" };
+        case "arrayObjectString[2]":
+          return { str: "valid string" };
+        case "arrayObjectString[3]":
+          return { str: "invalid" };
+      }
+    };
+
+    const validation = await validate(
+      [
+        Schema.arrayObjectString.nth(0).root,
+        Schema.arrayObjectString.nth(1).root,
+        Schema.arrayObjectString.nth(2).root,
+        Schema.arrayObjectString.nth(3).root,
+      ],
+      getValue
+    );
+
+    expect(validation).toEqual([
+      { field: Schema.arrayObjectString.nth(0).root, error: "TOO_SHORT" },
+      { field: Schema.arrayObjectString.nth(1).root, error: "REQUIRED" },
+      { field: Schema.arrayObjectString.nth(2).root, error: null },
+      { field: Schema.arrayObjectString.nth(3).root, error: "INVALID_VALUE" },
+    ]);
+  });
+});
