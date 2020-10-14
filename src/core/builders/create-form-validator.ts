@@ -39,14 +39,12 @@ import { impl } from "../types/type-mapper-util";
  */
 export const createFormValidator = <Values extends object, Err>(
   _schema: FormSchema<Values, Err>,
-  builder: (
-    validate: ValidateFn
-  ) => Array<FieldValidator<unknown, Err, unknown[]>>
+  builder: (validate: ValidateFn) => Array<FieldValidator<any, Err, any[]>>
 ): FormValidator<Values, Err> => {
   const validators = builder(validate).reduce((acc, x) => {
     (acc as any)[impl(x.field).path] = x;
     return acc;
-  }, {} as Record<string, FieldValidator<unknown, Err, unknown[]>>);
+  }, {} as Record<string, FieldValidator<any, Err, any[]>>);
 
   const shouldFireValidation = (
     descriptor: FieldDescriptor<unknown, Err>,
