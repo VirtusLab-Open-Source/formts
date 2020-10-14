@@ -53,12 +53,12 @@ export const createFormValidator = <Values extends object, Err>(
 
     return allValidators.filter(x => {
       const xPath = impl(x.field).path;
-      const isInnerMatch = x.type === "field" && xPath === path;
-      const isOuterMatch = x.type === "each" && xPath === rootArrayPath;
+      const isFieldMatch = x.type === "field" && xPath === path;
+      const isEachMatch = x.type === "each" && xPath === rootArrayPath;
       const triggerMatches =
         trigger && x.triggers ? x.triggers.includes(trigger) : true;
 
-      return triggerMatches && (isInnerMatch || isOuterMatch);
+      return triggerMatches && (isFieldMatch || isEachMatch);
     });
   };
 
