@@ -469,4 +469,54 @@ describe("createFormValidator", () => {
     // arrayString was not passed for validation
     expect(arrayCheck).not.toHaveBeenCalled();
   });
+
+  it("worked when passed multiple validators for same field", async () => {
+    const { validate } = createFormValidator(Schema, validate => [
+      validate({
+        field: Schema.string,
+        rules: () => [x => (x === "" ? "INVALID_VALUE" : null)],
+      }),
+      validate({
+        field: Schema.string,
+        rules: () => [x => (x.length < 3 ? "TOO_SHORT" : null)],
+      }),
+      validate.each({
+        field: Schema.arrayString.root,
+        rules: () => [x => wait(x.length < 3 ? "TOO_SHORT" : null, 500)],
+      }),
+      validate({
+        field: Schema.arrayString.nth(0),
+        rules: () => [x => wait(x === "invalid" ? "INVALID_VALUE" : null, 100)],
+      }),
+    ]);
+    const getValue = ({ path }: any): any => {
+      switch (path) {
+        case "arrayString[0]":
+          return "invalid";
+        case "arrayString[1]":
+          return "invalid";
+        case "arrayString[2]":
+          return "";
+        case "string":
+          return "ab";
+      }
+    };
+
+    const validation = await validate(
+      [
+        Schema.arrayString.nth(0),
+        Schema.arrayString.nth(1),
+        Schema.arrayString.nth(2),
+        Schema.string,
+      ],
+      getValue
+    );
+
+    expect(validation).toEqual([
+      { field: Schema.arrayString.nth(0), error: "INVALID_VALUE" },
+      { field: Schema.arrayString.nth(1), error: null },
+      { field: Schema.arrayString.nth(2), error: "TOO_SHORT" },
+      { field: Schema.string, error: "TOO_SHORT" },
+    ]);
+  });
 });
