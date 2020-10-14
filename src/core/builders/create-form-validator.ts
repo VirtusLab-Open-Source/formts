@@ -53,8 +53,8 @@ export const createFormValidator = <Values extends object, Err>(
 
     return allValidators.filter(x => {
       const xPath = impl(x.field).path;
-      const isInnerMatch = x.type === "inner" && xPath === path;
-      const isOuterMatch = x.type === "outer" && xPath === rootArrayPath;
+      const isInnerMatch = x.type === "field" && xPath === path;
+      const isOuterMatch = x.type === "each" && xPath === rootArrayPath;
       const triggerMatches =
         trigger && x.triggers ? x.triggers.includes(trigger) : true;
 
@@ -88,7 +88,7 @@ export const createFormValidator = <Values extends object, Err>(
 };
 
 const validate: ValidateFn = config => ({
-  type: "inner",
+  type: "field",
   field: config.field,
   triggers: config.triggers,
   validators: config.rules,
@@ -96,7 +96,7 @@ const validate: ValidateFn = config => ({
 });
 
 validate.each = config => ({
-  type: "outer",
+  type: "each",
   field: config.field as any,
   triggers: config.triggers,
   validators: config.rules,
@@ -114,16 +114,6 @@ const runValidationForField = async <Value, Err>(
   return firstNonNullPromise(rules, async rule => await rule(value));
 };
 
-const getRootArrayPath = (path: string): string | undefined => {
-  const isArrayElement = path.lastIndexOf("]") === path.length - 1;
-  if (!isArrayElement) {
-    return undefined;
-  } else {
-    const indexStart = path.lastIndexOf("[");
-    return path.slice(0, indexStart);
-  }
-};
-
 const firstNonNullPromise = async <T, V>(
   list: T[],
   mapper: (x: T) => Promise<V | null>
@@ -135,4 +125,15 @@ const firstNonNullPromise = async <T, V>(
     }
   }
   return null;
+};
+
+// TODO rethink
+const getRootArrayPath = (path: string): string | undefined => {
+  const isArrayElement = path.lastIndexOf("]") === path.length - 1;
+  if (!isArrayElement) {
+    return undefined;
+  } else {
+    const indexStart = path.lastIndexOf("[");
+    return path.slice(0, indexStart);
+  }
 };

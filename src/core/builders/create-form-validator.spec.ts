@@ -43,6 +43,7 @@ describe("createFormValidator", () => {
   const Schema = createFormSchema(
     fields => ({
       string: fields.string(),
+      number: fields.number(),
       choice: fields.choice("A", "B", "C"),
       instance: fields.instanceOf(Date),
       arrayString: fields.array(fields.string()),
@@ -272,7 +273,7 @@ describe("createFormValidator", () => {
     expect(validation).toEqual([{ field: Schema.object.root, error: null }]);
   });
 
-  it("validate.each should run for each field", async () => {
+  it("validate.each should run for each element of list", async () => {
     const { validate } = createFormValidator(Schema, validate => [
       validate.each({
         field: Schema.arrayObjectString.root,
@@ -312,5 +313,160 @@ describe("createFormValidator", () => {
       { field: Schema.arrayObjectString.nth(2).root, error: null },
       { field: Schema.arrayObjectString.nth(3).root, error: "INVALID_VALUE" },
     ]);
+  });
+
+  it("validate.each for multiple arrays should run for each element of corresponding list", async () => {
+    const { validate } = createFormValidator(Schema, validate => [
+      validate.each({
+        field: Schema.arrayObjectString.root,
+        rules: () => [x => wait(x.str?.length < 3 ? "TOO_SHORT" : null, 500)],
+      }),
+      validate.each({
+        field: Schema.arrayChoice.root,
+        rules: () => [x => wait(x === "c" ? "INVALID_VALUE" : null, 100)],
+      }),
+    ]);
+    const getValue = ({ path }: any): any => {
+      switch (path) {
+        case "arrayObjectString[0]":
+          return { str: "ok-string" };
+        case "arrayObjectString[1]":
+          return { str: "" };
+
+        case "arrayChoice[0]":
+          return "c";
+        case "arrayChoice[1]":
+          return "a";
+      }
+    };
+
+    const validation = await validate(
+      [
+        Schema.arrayChoice.nth(1),
+        Schema.arrayChoice.nth(0),
+        Schema.arrayObjectString.nth(0).root,
+        Schema.arrayObjectString.nth(1).root,
+      ],
+      getValue
+    );
+
+    expect(validation).toEqual([
+      { field: Schema.arrayChoice.nth(1), error: null },
+      { field: Schema.arrayChoice.nth(0), error: "INVALID_VALUE" },
+      { field: Schema.arrayObjectString.nth(0).root, error: null },
+      { field: Schema.arrayObjectString.nth(1).root, error: "TOO_SHORT" },
+    ]);
+  });
+
+  it("validation should run depending if corresponding trigger is present in builder", async () => {
+    const { validate } = createFormValidator(Schema, validate => [
+      validate({
+        field: Schema.string,
+        rules: () => [x => (x ? null : "REQUIRED")],
+        triggers: ["blur", "submit"],
+      }),
+      validate({
+        field: Schema.choice,
+        rules: () => [x => (x ? null : "REQUIRED")],
+        triggers: ["change", "submit"],
+      }),
+    ]);
+    const getValue = ({ path }: any): any => {
+      switch (path) {
+        case "string":
+          return "";
+        case "choice":
+          return "";
+      }
+    };
+
+    const validation = await validate(
+      [Schema.string, Schema.choice],
+      getValue,
+      "change"
+    );
+
+    expect(validation).toEqual([{ field: Schema.choice, error: "REQUIRED" }]);
+  });
+
+  it("validation is not making redundant calls", async () => {
+    const stringRequired = jest.fn((x: string) => (x ? null : "REQUIRED"));
+    const stringLength = jest.fn((x: string) =>
+      x.length < 3 ? "TOO_SHORT" : null
+    );
+    const numberRequired = jest.fn((x: number | "") =>
+      wait(x ? null : "REQUIRED", 300)
+    );
+    const numberValue = jest.fn((x: number | "") =>
+      wait(x < 18 ? "TOO_SHORT" : null, 500)
+    );
+
+    const choiceCheck = jest.fn((x: "A" | "B" | "C") =>
+      x === "C" ? "INVALID_VALUE" : null
+    );
+
+    const arrayCheck = jest.fn((x: string[]) =>
+      x === [] ? "TOO_SHORT" : null
+    );
+
+    const { validate } = createFormValidator(Schema, validate => [
+      validate({
+        field: Schema.string,
+        rules: () => [stringRequired, stringLength],
+        triggers: ["blur", "submit", "change"],
+      }),
+      validate({
+        field: Schema.number,
+        rules: () => [numberRequired, numberValue],
+        triggers: ["change", "submit"],
+      }),
+      validate({
+        field: Schema.choice,
+        rules: () => [choiceCheck],
+        triggers: ["submit"],
+      }),
+      validate({
+        field: Schema.arrayString.root,
+        rules: () => [arrayCheck],
+        triggers: ["submit", "change", "blur"],
+      }),
+    ]);
+
+    const getValue = ({ path }: any): any => {
+      switch (path) {
+        case "string":
+          return "ab";
+        case "number":
+          return "";
+        case "choice":
+          return "A";
+        case "arrayString":
+          return [];
+      }
+    };
+
+    const validation = await validate(
+      [Schema.string, Schema.number, Schema.choice],
+      getValue,
+      "change"
+    );
+
+    expect(validation).toEqual([
+      { field: Schema.string, error: "TOO_SHORT" },
+      { field: Schema.number, error: "REQUIRED" },
+    ]);
+
+    expect(stringRequired).toHaveBeenCalledTimes(1);
+    expect(stringLength).toHaveBeenCalledTimes(1);
+
+    expect(numberRequired).toHaveBeenCalledTimes(1);
+    // previous rule exited with error
+    expect(numberValue).not.toHaveBeenCalled();
+
+    // change trigger not included in builder
+    expect(choiceCheck).not.toHaveBeenCalled();
+
+    // arrayString was not passed for validation
+    expect(arrayCheck).not.toHaveBeenCalled();
   });
 });
