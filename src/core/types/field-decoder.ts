@@ -48,8 +48,8 @@ export const isArrayDecoder = <T>(
  * Object containing run-time type information about a field.
  * Should be used together with `createForm.schema` function.
  */
-export interface FieldDecoder<T>
-  extends Nominal<"FieldDecoder", { __ref?: [T] }> {}
+// @ts-ignore
+export interface FieldDecoder<T> extends Nominal<"FieldDecoder", {}> {}
 
 export type FieldType =
   | "number"

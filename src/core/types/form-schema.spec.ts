@@ -73,8 +73,7 @@ describe("FormSchema type", () => {
   it("handles array fields", () => {
     type Actual = Schema["arrayString"];
 
-    type Expected = {
-      root: FieldDescriptor<string[], SomeErr>;
+    type Expected = FieldDescriptor<string[], SomeErr> & {
       nth: (index: number) => FieldDescriptor<string, SomeErr>;
     };
 
@@ -84,12 +83,10 @@ describe("FormSchema type", () => {
   it("handles nested array fields", () => {
     type Actual = Schema["arrayArrayString"];
 
-    type Expected = {
-      root: FieldDescriptor<string[][], SomeErr>;
+    type Expected = FieldDescriptor<string[][], SomeErr> & {
       nth: (
         index: number
-      ) => {
-        root: FieldDescriptor<string[], SomeErr>;
+      ) => FieldDescriptor<string[], SomeErr> & {
         nth: (index: number) => FieldDescriptor<string, SomeErr>;
       };
     };
@@ -100,8 +97,7 @@ describe("FormSchema type", () => {
   it("handles object fields", () => {
     type Actual = Schema["obj"];
 
-    type Expected = {
-      root: FieldDescriptor<{ string: string }, SomeErr>;
+    type Expected = FieldDescriptor<{ string: string }, SomeErr> & {
       string: FieldDescriptor<string, SomeErr>;
     };
 
@@ -111,10 +107,11 @@ describe("FormSchema type", () => {
   it("handles nested object fields", () => {
     type Actual = Schema["objObj"];
 
-    type Expected = {
-      root: FieldDescriptor<{ nested: { num: number | "" } }, SomeErr>;
-      nested: {
-        root: FieldDescriptor<{ num: number | "" }, SomeErr>;
+    type Expected = FieldDescriptor<
+      { nested: { num: number | "" } },
+      SomeErr
+    > & {
+      nested: FieldDescriptor<{ num: number | "" }, SomeErr> & {
         num: FieldDescriptor<number | "", SomeErr>;
       };
     };
@@ -125,12 +122,12 @@ describe("FormSchema type", () => {
   it("handles deeply nested array fields", () => {
     type Actual = Schema["objObjArray"];
 
-    type Expected = {
-      root: FieldDescriptor<{ nested: { arrayString: string[] } }, SomeErr>;
-      nested: {
-        root: FieldDescriptor<{ arrayString: string[] }, SomeErr>;
-        arrayString: {
-          root: FieldDescriptor<string[], SomeErr>;
+    type Expected = FieldDescriptor<
+      { nested: { arrayString: string[] } },
+      SomeErr
+    > & {
+      nested: FieldDescriptor<{ arrayString: string[] }, SomeErr> & {
+        arrayString: FieldDescriptor<string[], SomeErr> & {
           nth: (index: number) => FieldDescriptor<string, SomeErr>;
         };
       };
@@ -142,12 +139,10 @@ describe("FormSchema type", () => {
   it("handles array of objects", () => {
     type Actual = Schema["arrayObj"];
 
-    type Expected = {
-      root: FieldDescriptor<Array<{ string: string }>, SomeErr>;
+    type Expected = FieldDescriptor<Array<{ string: string }>, SomeErr> & {
       nth: (
         index: number
-      ) => {
-        root: FieldDescriptor<{ string: string }, SomeErr>;
+      ) => FieldDescriptor<{ string: string }, SomeErr> & {
         string: FieldDescriptor<string, SomeErr>;
       };
     };

@@ -2,8 +2,6 @@ import { deepMerge, DeepPartial, entries } from "../../../utils";
 import { _FieldDescriptorImpl } from "../../types/field-descriptor";
 import { FormSchema } from "../../types/form-schema";
 import {
-  isArrayDesc,
-  isObjectDesc,
   schemaImpl,
   _DescriptorApprox_,
   _FormSchemaApprox_,
@@ -18,13 +16,7 @@ export const createInitialValues = <Values extends object>(
   const initialStateFromDecoders = entries(schema).reduce(
     (shape, [key, value]) => {
       const descriptor = value as _DescriptorApprox_<Values[typeof key]>;
-
-      const fieldInitialValue =
-        isArrayDesc(descriptor) || isObjectDesc(descriptor)
-          ? descriptor.root.init()
-          : descriptor.init();
-
-      shape[key] = fieldInitialValue;
+      shape[key] = descriptor.__decoder.init();
       return shape;
     },
     {} as Values

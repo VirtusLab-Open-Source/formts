@@ -9,33 +9,22 @@ import {
   toIdentityDict,
   values,
 } from "../../../utils";
-import {
-  isChoiceDecoder,
-  _ChoiceFieldDecoderImpl,
-} from "../../types/field-decoder";
-import {
-  FieldDescriptor,
-  _FieldDescriptorImpl,
-} from "../../types/field-descriptor";
+import { isChoiceDecoder } from "../../types/field-decoder";
+import { FieldDescriptor } from "../../types/field-descriptor";
 import { FieldHandle, toFieldHandle } from "../../types/field-handle";
 import { FieldHandleSchema } from "../../types/field-handle-schema";
 import { FormHandle } from "../../types/form-handle";
 import {
   FormSchema,
-  GenericFormDescriptorSchema,
+  isArrayDescriptor,
+  isObjectDescriptor,
 } from "../../types/form-schema";
-import {
-  isArrayDesc,
-  isObjectDesc,
-  objectDescriptorKeys,
-  _DescriptorApprox_,
-} from "../../types/form-schema-approx";
 import {
   FormValidator,
   ValidationResult,
   ValidationTrigger,
 } from "../../types/form-validator";
-import { impl, opaque } from "../../types/type-mapper-util";
+import { impl } from "../../types/type-mapper-util";
 
 import { createInitialValues } from "./create-initial-values";
 import { createReducer, getInitialState } from "./reducer";
@@ -74,18 +63,18 @@ export const useFormts = <Values extends object, Err>(
 
   /// INTERNAL HANDLERS
   const getField = <T>(field: FieldDescriptor<T, Err>): T =>
-    get(state.values, impl(field).path) as any;
+    get(state.values, impl(field).__path) as any;
 
   const getFieldError = (field: FieldDescriptor<any, Err>): Err | null => {
-    const error = state.errors[impl(field).path];
+    const error = state.errors[impl(field).__path];
     return error == null ? null : error;
   };
 
   const isFieldTouched = <T>(field: FieldDescriptor<T, Err>) =>
-    resolveTouched(get(state.touched as object, impl(field).path));
+    resolveTouched(get(state.touched as object, impl(field).__path));
 
   const isFieldValid = <T>(field: FieldDescriptor<T, Err>) =>
-    resolveIsValid(state.errors, impl(field).path);
+    resolveIsValid(state.errors, impl(field).__path);
 
   const validateField = <T>(
     field: FieldDescriptor<T, Err>,
@@ -124,10 +113,10 @@ export const useFormts = <Values extends object, Err>(
     field: FieldDescriptor<T, Err>,
     value: T
   ): Promise<void> => {
-    const decodeResult = impl(field).decode(value);
+    const decodeResult = impl(field).__decoder.decode(value);
     if (!decodeResult.ok) {
       logger.warn(
-        `Field ${impl(field).path} received illegal value: ${JSON.stringify(
+        `Field ${impl(field).__path} received illegal value: ${JSON.stringify(
           value
         )}`
       );
@@ -143,7 +132,7 @@ export const useFormts = <Values extends object, Err>(
       const modifiedGetField = <T>(
         fieldToValidate: FieldDescriptor<T, Err>
       ): T => {
-        if (impl(field).path === impl(fieldToValidate).path) {
+        if (impl(field).__path === impl(fieldToValidate).__path) {
           return decodeResult.value as any;
         }
         return getField(fieldToValidate);
@@ -164,13 +153,13 @@ export const useFormts = <Values extends object, Err>(
 
     dispatch({
       type: "setValue",
-      payload: { path: impl(field).path, value: decodeResult.value },
+      payload: { path: impl(field).__path, value: decodeResult.value },
     });
     return validateAfterChange();
   };
 
   const touchField = <T>(field: FieldDescriptor<T, Err>) =>
-    dispatch({ type: "touchValue", payload: { path: impl(field).path } });
+    dispatch({ type: "touchValue", payload: { path: impl(field).__path } });
 
   const setFieldErrors = (
     ...fields: Array<{
@@ -181,94 +170,83 @@ export const useFormts = <Values extends object, Err>(
     dispatch({
       type: "setErrors",
       payload: fields.map(it => ({
-        path: impl(it.field).path,
+        path: impl(it.field).__path,
         error: it.error,
       })),
     });
 
   /// FIELD HANDLE CREATOR
   const createFieldHandleNode = <T>(
-    // TODO: consider flattening descriptors, so that `Schema.obj` -> root and `Schema.obj.prop` -> prop
-    _descriptor: GenericFormDescriptorSchema<T, Err>
-  ): FieldHandle<T, Err> => {
-    const descriptor = (_descriptor as any) as _DescriptorApprox_<T>;
-    const rootDescriptor =
-      isArrayDesc(descriptor) || isObjectDesc(descriptor)
-        ? descriptor.root
-        : descriptor;
+    descriptor: FieldDescriptor<T, Err>
+  ): FieldHandle<T, Err> =>
+    toFieldHandle({
+      descriptor,
 
-    return toFieldHandle({
-      descriptor: opaque(rootDescriptor),
-
-      id: rootDescriptor.path,
+      id: impl(descriptor).__path,
 
       get value() {
-        return getField(opaque(rootDescriptor));
+        return getField(descriptor);
       },
 
       get isTouched() {
-        return isFieldTouched(opaque(rootDescriptor));
+        return isFieldTouched(descriptor);
       },
 
       get error() {
-        return getFieldError(opaque(rootDescriptor));
+        return getFieldError(descriptor);
       },
 
       get isValid() {
-        return isFieldValid(opaque(rootDescriptor));
+        return isFieldValid(descriptor);
       },
 
       get children() {
-        if (isObjectDesc(descriptor)) {
-          return objectDescriptorKeys(descriptor).reduce(
+        if (isObjectDescriptor(descriptor)) {
+          return keys(descriptor).reduce(
             (acc, key) =>
               Object.defineProperty(acc, key, {
                 enumerable: true,
                 get: function () {
                   const nestedDescriptor = descriptor[key];
-                  return createFieldHandleNode(nestedDescriptor as any);
+                  return createFieldHandleNode(nestedDescriptor);
                 },
               }),
             {}
           );
         }
 
-        if (isArrayDesc(descriptor)) {
-          const value = (getField(opaque(rootDescriptor)) as any) as Array<
-            unknown
-          >;
-          return value.map((_, idx) =>
-            createFieldHandleNode(descriptor.nth(idx) as any)
-          );
+        if (isArrayDescriptor(descriptor)) {
+          const value = getField(descriptor) as unknown[];
+          return value.map((_, i) => createFieldHandleNode(descriptor.nth(i)));
         }
 
         return undefined;
       },
 
       get options() {
-        return isChoiceDecoder(descriptor)
-          ? toIdentityDict(descriptor.options as string[])
+        const decoder = impl(descriptor).__decoder;
+        return isChoiceDecoder(decoder)
+          ? toIdentityDict(decoder.options as string[])
           : undefined;
       },
 
       handleBlur: () => {
-        touchField(opaque(rootDescriptor));
-        return validateField(opaque(rootDescriptor), "blur");
+        touchField(descriptor);
+        return validateField(descriptor, "blur");
       },
 
       setValue: val => {
-        return setField(opaque(rootDescriptor), val);
+        return setField(descriptor, val);
       },
 
       setError: error => {
-        setFieldErrors({ field: opaque(rootDescriptor), error });
+        setFieldErrors({ field: descriptor, error });
       },
 
       validate: () => {
-        return validateField(opaque(rootDescriptor));
+        return validateField(descriptor);
       },
     });
-  };
 
   /// PUBLIC API
   const fields = keys(options.Schema).reduce(
@@ -332,7 +310,7 @@ export const useFormts = <Values extends object, Err>(
           errors
             .filter(({ error }) => error != null)
             .map(({ field, error }) => ({
-              path: impl(field).path,
+              path: impl(field).__path,
               error: error!,
             }))
         )

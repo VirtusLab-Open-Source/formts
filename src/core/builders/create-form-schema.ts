@@ -75,32 +75,49 @@ const createFieldDescriptor = (
   decoder: _FieldDecoderImpl<any>,
   path: string
 ): _DescriptorApprox_<any> => {
+  // these properties are hidden implementation details and thus should not be enumerable
+  const rootDescriptor = Object.defineProperties(
+    {},
+    {
+      __decoder: {
+        value: decoder,
+        enumerable: false,
+        writable: false,
+        configurable: false,
+      },
+      __path: {
+        value: path,
+        enumerable: false,
+        writable: false,
+        configurable: false,
+      },
+    }
+  ) as _DescriptorApprox_<any>;
+
   switch (decoder.fieldType) {
     case "bool":
     case "number":
     case "string":
     case "class":
     case "choice":
-      return { ...decoder, path };
+      return rootDescriptor;
 
     case "array": {
-      const root = { ...decoder, path };
       const nth = (i: number) =>
         createFieldDescriptor(
           decoder.inner as _FieldDecoderImpl<any>,
           `${path}[${i}]`
         );
 
-      return { root, nth };
+      return Object.assign(rootDescriptor, { nth });
     }
 
     case "object": {
-      const root = { ...decoder, path };
       const props = createObjectSchema(
         decoder.inner as DecodersMap<object>,
         path
       );
-      return { root, ...props };
+      return Object.assign(rootDescriptor, props);
     }
 
     default:
