@@ -18,7 +18,7 @@ export interface FieldDescriptor<T, Err = unknown>
   extends Nominal<"FieldDescriptor", {}> {}
 
 // prettier-ignore
-export type GenericFieldDescriptor<T, Err> = 
+export type GenericFieldDescriptor<T, Err = unknown> = 
 [T] extends [Array<unknown>]
   ? ArrayFieldDescriptor<T, Err>
   : [T] extends [object]
@@ -27,13 +27,13 @@ export type GenericFieldDescriptor<T, Err> =
 
 // prettier-ignore
 export type ArrayFieldDescriptor<T extends Array<unknown>, Err> =
-& FieldDescriptor<T, Err> 
-& { readonly nth: (index: number) => GenericFieldDescriptor<T[number], Err>; };
+  & FieldDescriptor<T, Err> 
+  & { readonly nth: (index: number) => GenericFieldDescriptor<T[number], Err>; };
 
 // prettier-ignore
 export type ObjectFieldDescriptor<T extends object, Err> = 
-& FieldDescriptor<T, Err> 
-& { readonly [K in keyof T]: GenericFieldDescriptor<T[K], Err> };
+  & FieldDescriptor<T, Err> 
+  & { readonly [K in keyof T]: GenericFieldDescriptor<T[K], Err> };
 
 export const isArrayDescriptor = <T extends any[], Err>(
   it: FieldDescriptor<T, Err>

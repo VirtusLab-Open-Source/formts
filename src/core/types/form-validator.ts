@@ -1,6 +1,10 @@
 import { Falsy } from "../../utils";
 
-import { FieldDescriptor } from "./field-descriptor";
+import {
+  ArrayFieldDescriptor,
+  FieldDescriptor,
+  GenericFieldDescriptor,
+} from "./field-descriptor";
 
 /**
  * Function responsible for validating single field.
@@ -43,7 +47,7 @@ export type ValidateFn = {
   each: ValidateEachFn;
 
   <T, Err, Dependencies extends any[]>(config: {
-    field: FieldDescriptor<T, Err>;
+    field: GenericFieldDescriptor<T, Err>;
     triggers?: ValidationTrigger[];
     dependencies?: readonly [...FieldDescTuple<Dependencies>];
     rules: (...deps: [...Dependencies]) => Array<Falsy | Validator<T, Err>>;
@@ -51,12 +55,12 @@ export type ValidateFn = {
 };
 
 export type ValidateEachFn = <T, Err, Dependencies extends any[]>(config: {
-  field: FieldDescriptor<T[], Err>;
+  field: ArrayFieldDescriptor<T[], Err>;
   triggers?: ValidationTrigger[];
   dependencies?: readonly [...FieldDescTuple<Dependencies>];
   rules: (...deps: [...Dependencies]) => Array<Falsy | Validator<T, Err>>;
 }) => FieldValidator<T, Err, Dependencies>;
 
 type FieldDescTuple<ValuesTuple extends readonly any[]> = {
-  [Index in keyof ValuesTuple]: FieldDescriptor<ValuesTuple[Index]>;
+  [Index in keyof ValuesTuple]: GenericFieldDescriptor<ValuesTuple[Index]>;
 };

@@ -1,17 +1,20 @@
 import { assert, IsExact } from "conditional-type-checks";
 
-import { FieldDescriptor } from "./field-descriptor";
+import { GenericFieldDescriptor } from "./field-descriptor";
 import { FieldValidator, ValidateFn } from "./form-validator";
 
 const validator: ValidateFn = (() => {}) as any;
 
 describe("validateFn", () => {
   type Err = { code: "err1" | "err2" };
-  const fd1: FieldDescriptor<string, Err> = {} as any;
-  const fd2: FieldDescriptor<number, Err> = {} as any;
-  const fd3: FieldDescriptor<"a" | "b" | "c", Err> = {} as any;
-  const fd4: FieldDescriptor<Date[], Err> = {} as any;
-  const fd5: FieldDescriptor<{ parent: { child: string[] } }, Err> = {} as any;
+  const fd1: GenericFieldDescriptor<string, Err> = {} as any;
+  const fd2: GenericFieldDescriptor<number, Err> = {} as any;
+  const fd3: GenericFieldDescriptor<"a" | "b" | "c", Err> = {} as any;
+  const fd4: GenericFieldDescriptor<Date[], Err> = {} as any;
+  const fd5: GenericFieldDescriptor<
+    { parent: { child: string[] } },
+    Err
+  > = {} as any;
 
   it("resolves properly for string", () => {
     const stringFieldValidator = validator({
