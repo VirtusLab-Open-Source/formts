@@ -32,16 +32,16 @@ type BaseFieldHandle<T, Err> = {
   value: T;
 
   /** Field error */
-  // error: null | Err;
+  error: null | Err;
 
   /** True if `setValue` `handleChange` or `handleBlur` was called for this field */
   isTouched: boolean;
 
   /** True if the field has no error and none of its children fields have errors */
-  // isValid: boolean;
+  isValid: boolean;
 
   /** True if validation process of the field is ongoing */
-  // isValidating: boolean;
+  // isValidating: boolean; // TODO: post-mvp
 
   /** FieldDescriptor corresponding to the field */
   descriptor: FieldDescriptor<T, Err>;
@@ -54,10 +54,10 @@ type BaseFieldHandle<T, Err> = {
   setValue: SetValue<T>;
 
   /** Sets field error, affecting `isValid` flag */
-  // setError: (error: null | Err) => void;
+  setError: (error: null | Err) => void;
 
   /** runs all validation rules of the field, regardless of their validation triggers */
-  // validate: () => void;
+  validate: () => void;
 
   /**
    * Attempts to extract value out of React.ChangeEvent based on field type and event.target.

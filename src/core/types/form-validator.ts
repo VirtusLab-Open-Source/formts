@@ -17,14 +17,18 @@ export type ValidatorAsync<T, Err> = (value: T) => Promise<Err | null>;
 
 export type ValidationTrigger = "change" | "blur" | "submit";
 
+export type ValidationResult<Err> = Array<{
+  field: FieldDescriptor<unknown, Err>;
+  error: Err | null;
+}>;
+
+// @ts-ignore
 export type FormValidator<Values extends object, Err> = {
   validate: (
     fields: Array<FieldDescriptor<unknown, Err>>,
     getValue: <P>(field: FieldDescriptor<P, Err>) => P,
     trigger?: ValidationTrigger
-  ) => Promise<
-    Array<{ field: FieldDescriptor<unknown, Err>; error: Err | null }>
-  >;
+  ) => Promise<ValidationResult<Err>>;
 };
 
 export type FieldValidator<T, Err, Dependencies extends any[]> = {
