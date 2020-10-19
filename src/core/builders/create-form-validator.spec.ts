@@ -5,10 +5,8 @@ import { FormValidator } from "../types/form-validator";
 import { createFormSchema } from "./create-form-schema";
 import { createFormValidator } from "./create-form-validator";
 
-export const wait = <T extends string | null>(
-  value: T,
-  ms: number
-): Promise<T> => new Promise(resolve => setTimeout(() => resolve(value), ms));
+export const wait = <T extends string | null>(value: T): Promise<T> =>
+  new Promise(resolve => setTimeout(() => resolve(value), 0));
 
 describe("createFormValidator types", () => {
   const Schema = createFormSchema(
@@ -231,7 +229,7 @@ describe("createFormValidator", () => {
     const { validate } = createFormValidator(Schema, validate => [
       validate({
         field: Schema.object.root,
-        rules: () => [() => wait("INVALID_VALUE", 300)],
+        rules: () => [() => wait("INVALID_VALUE")],
       }),
     ]);
     const getValue = () => null as any;
@@ -247,7 +245,7 @@ describe("createFormValidator", () => {
     const { validate } = createFormValidator(Schema, validate => [
       validate({
         field: Schema.object.root,
-        rules: () => [() => wait(null, 300), () => wait("REQUIRED", 300)],
+        rules: () => [() => wait(null), () => wait("REQUIRED")],
       }),
     ]);
     const getValue = () => null as any;
@@ -263,7 +261,7 @@ describe("createFormValidator", () => {
     const { validate } = createFormValidator(Schema, validate => [
       validate({
         field: Schema.object.root,
-        rules: () => [() => wait(null, 300), () => wait(null, 300)],
+        rules: () => [() => wait(null), () => wait(null)],
       }),
     ]);
     const getValue = () => null as any;
@@ -278,9 +276,9 @@ describe("createFormValidator", () => {
       validate.each({
         field: Schema.arrayObjectString.root,
         rules: () => [
-          x => wait(x.str === "invalid" ? "INVALID_VALUE" : null, 100),
+          x => wait(x.str === "invalid" ? "INVALID_VALUE" : null),
           x => (x.str === "" ? "REQUIRED" : null),
-          x => wait(x.str?.length < 3 ? "TOO_SHORT" : null, 500),
+          x => wait(x.str?.length < 3 ? "TOO_SHORT" : null),
         ],
       }),
     ]);
@@ -319,11 +317,11 @@ describe("createFormValidator", () => {
     const { validate } = createFormValidator(Schema, validate => [
       validate.each({
         field: Schema.arrayObjectString.root,
-        rules: () => [x => wait(x.str?.length < 3 ? "TOO_SHORT" : null, 500)],
+        rules: () => [x => wait(x.str?.length < 3 ? "TOO_SHORT" : null)],
       }),
       validate.each({
         field: Schema.arrayChoice.root,
-        rules: () => [x => wait(x === "c" ? "INVALID_VALUE" : null, 100)],
+        rules: () => [x => wait(x === "c" ? "INVALID_VALUE" : null)],
       }),
     ]);
     const getValue = ({ path }: any): any => {
@@ -395,10 +393,10 @@ describe("createFormValidator", () => {
       x.length < 3 ? "TOO_SHORT" : null
     );
     const numberRequired = jest.fn((x: number | "") =>
-      wait(x ? null : "REQUIRED", 300)
+      wait(x ? null : "REQUIRED")
     );
     const numberValue = jest.fn((x: number | "") =>
-      wait(x < 18 ? "TOO_SHORT" : null, 500)
+      wait(x < 18 ? "TOO_SHORT" : null)
     );
 
     const choiceCheck = jest.fn((x: "A" | "B" | "C") =>
@@ -482,11 +480,11 @@ describe("createFormValidator", () => {
       }),
       validate.each({
         field: Schema.arrayString.root,
-        rules: () => [x => wait(x.length < 3 ? "TOO_SHORT" : null, 500)],
+        rules: () => [x => wait(x.length < 3 ? "TOO_SHORT" : null)],
       }),
       validate({
         field: Schema.arrayString.nth(0),
-        rules: () => [x => wait(x === "invalid" ? "INVALID_VALUE" : null, 100)],
+        rules: () => [x => wait(x === "invalid" ? "INVALID_VALUE" : null)],
       }),
     ]);
     const getValue = ({ path }: any): any => {
