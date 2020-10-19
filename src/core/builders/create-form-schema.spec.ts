@@ -413,11 +413,4 @@ describe("createFormSchema", () => {
       theObject: fields.object({}),
     }));
   });
-
-  it("does not allow creating schema with nested 'root' field", () => {
-    createFormSchema(fields => ({
-      // @ts-expect-error
-      theObject: fields.object({ foo: fields.string(), root: fields.string() }),
-    }));
-  });
 });
