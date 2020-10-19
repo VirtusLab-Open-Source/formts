@@ -10,15 +10,15 @@ import {
   values,
 } from "../../../utils";
 import { isChoiceDecoder } from "../../types/field-decoder";
-import { FieldDescriptor } from "../../types/field-descriptor";
+import {
+  FieldDescriptor,
+  isArrayDescriptor,
+  isObjectDescriptor,
+} from "../../types/field-descriptor";
 import { FieldHandle, toFieldHandle } from "../../types/field-handle";
 import { FieldHandleSchema } from "../../types/field-handle-schema";
 import { FormHandle } from "../../types/form-handle";
-import {
-  FormSchema,
-  isArrayDescriptor,
-  isObjectDescriptor,
-} from "../../types/form-schema";
+import { FormSchema } from "../../types/form-schema";
 import {
   FormValidator,
   ValidationResult,

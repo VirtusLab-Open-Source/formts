@@ -1,4 +1,4 @@
-import { assertNever, keys } from "../../utils";
+import { assertNever, defineProperties, keys } from "../../utils";
 import {
   bool,
   string,
@@ -11,10 +11,6 @@ import {
 import { FieldDecoder, _FieldDecoderImpl } from "../types/field-decoder";
 import { _FieldDescriptorImpl } from "../types/field-descriptor";
 import { FormSchema } from "../types/form-schema";
-import {
-  _DescriptorApprox_,
-  _FormSchemaApprox_,
-} from "../types/form-schema-approx";
 import { impl } from "../types/type-mapper-util";
 
 const Decoders = {
@@ -68,15 +64,15 @@ const createObjectSchema = <O extends object>(
       path ? `${path}.${key}` : `${key}`
     );
     return schema;
-  }, {} as _FormSchemaApprox_<O>);
+  }, {} as FormSchema<O, unknown>);
 };
 
 const createFieldDescriptor = (
   decoder: _FieldDecoderImpl<any>,
   path: string
-): _DescriptorApprox_<any> => {
+): _FieldDescriptorImpl<any> => {
   // these properties are hidden implementation details and thus should not be enumerable
-  const rootDescriptor = Object.defineProperties(
+  const rootDescriptor = defineProperties(
     {},
     {
       __decoder: {
@@ -92,7 +88,7 @@ const createFieldDescriptor = (
         configurable: false,
       },
     }
-  ) as _DescriptorApprox_<any>;
+  );
 
   switch (decoder.fieldType) {
     case "bool":

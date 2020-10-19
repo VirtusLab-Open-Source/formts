@@ -29,6 +29,7 @@ export type ValidationResult<Err> = Array<{
   error: Err | null;
 }>;
 
+// @ts-ignore
 export type FormValidator<Values extends object, Err> = {
   validate: (
     fields: Array<FieldDescriptor<unknown, Err>>,
