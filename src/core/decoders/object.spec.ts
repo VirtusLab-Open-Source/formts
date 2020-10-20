@@ -16,11 +16,6 @@ describe("object decoder", () => {
     assert<IsExact<typeof invalidDecoder, void>>(true);
   });
 
-  it("should force the user to NOT use the reserved 'root' property", () => {
-    const invalidDecoder = object({ root: bool(), foo: string() });
-    assert<IsExact<typeof invalidDecoder, void>>(true);
-  });
-
   it("should provide it's field type", () => {
     const decoder = impl(object({ str: string() }));
 

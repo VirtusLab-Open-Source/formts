@@ -1,6 +1,8 @@
 import { assert, IsExact } from "conditional-type-checks";
 
+import { FieldDescriptor } from "../types/field-descriptor";
 import { FormValidator } from "../types/form-validator";
+import { impl } from "../types/type-mapper-util";
 
 import { createFormSchema } from "./create-form-schema";
 import { createFormValidator } from "./create-form-validator";
@@ -192,7 +194,7 @@ describe("createFormValidator", () => {
   it("should return ERR for failing multiple-rule on string array field ", async () => {
     const { validate } = createFormValidator(Schema, validate => [
       validate({
-        field: Schema.arrayString.root,
+        field: Schema.arrayString,
         rules: () => [
           x => (x.length > 3 ? null : "TOO_SHORT"),
           x => (x.some(y => y === "invalid") ? "INVALID_VALUE" : null),
@@ -201,80 +203,78 @@ describe("createFormValidator", () => {
     ]);
     const getValue = () => ["ok", "very-ok", "invalid", "still-ok"] as any;
 
-    const validation = await validate([Schema.arrayString.root], getValue);
+    const validation = await validate([Schema.arrayString], getValue);
 
     expect(validation).toEqual([
-      { field: Schema.arrayString.root, error: "INVALID_VALUE" },
+      { field: Schema.arrayString, error: "INVALID_VALUE" },
     ]);
   });
 
   it("should return null for passing single-rule on string array array field ", async () => {
     const { validate } = createFormValidator(Schema, validate => [
       validate({
-        field: Schema.arrayArrayString.root,
+        field: Schema.arrayArrayString,
         rules: () => [x => (x.length > 3 ? null : "TOO_SHORT")],
       }),
     ]);
     const getValue = () =>
       [["ok"], ["very-ok"], ["invalid"], ["still-ok"]] as any;
 
-    const validation = await validate([Schema.arrayArrayString.root], getValue);
+    const validation = await validate([Schema.arrayArrayString], getValue);
 
     expect(validation).toEqual([
-      { field: Schema.arrayArrayString.root, error: null },
+      { field: Schema.arrayArrayString, error: null },
     ]);
   });
 
   it("should return ERR for failing async single-rule on object field ", async () => {
     const { validate } = createFormValidator(Schema, validate => [
       validate({
-        field: Schema.object.root,
+        field: Schema.object,
         rules: () => [() => wait("INVALID_VALUE")],
       }),
     ]);
     const getValue = () => null as any;
 
-    const validation = await validate([Schema.object.root], getValue);
+    const validation = await validate([Schema.object], getValue);
 
     expect(validation).toEqual([
-      { field: Schema.object.root, error: "INVALID_VALUE" },
+      { field: Schema.object, error: "INVALID_VALUE" },
     ]);
   });
 
   it("should return ERR for failing async multi-rule on object field ", async () => {
     const { validate } = createFormValidator(Schema, validate => [
       validate({
-        field: Schema.object.root,
+        field: Schema.object,
         rules: () => [() => wait(null), () => wait("REQUIRED")],
       }),
     ]);
     const getValue = () => null as any;
 
-    const validation = await validate([Schema.object.root], getValue);
+    const validation = await validate([Schema.object], getValue);
 
-    expect(validation).toEqual([
-      { field: Schema.object.root, error: "REQUIRED" },
-    ]);
+    expect(validation).toEqual([{ field: Schema.object, error: "REQUIRED" }]);
   });
 
   it("should return null for passing async multi-rule on object field ", async () => {
     const { validate } = createFormValidator(Schema, validate => [
       validate({
-        field: Schema.object.root,
+        field: Schema.object,
         rules: () => [() => wait(null), () => wait(null)],
       }),
     ]);
     const getValue = () => null as any;
 
-    const validation = await validate([Schema.object.root], getValue);
+    const validation = await validate([Schema.object], getValue);
 
-    expect(validation).toEqual([{ field: Schema.object.root, error: null }]);
+    expect(validation).toEqual([{ field: Schema.object, error: null }]);
   });
 
   it("validate.each should run for each element of list", async () => {
     const { validate } = createFormValidator(Schema, validate => [
       validate.each({
-        field: Schema.arrayObjectString.root,
+        field: Schema.arrayObjectString,
         rules: () => [
           x => wait(x.str === "invalid" ? "INVALID_VALUE" : null),
           x => (x.str === "" ? "REQUIRED" : null),
@@ -282,8 +282,8 @@ describe("createFormValidator", () => {
         ],
       }),
     ]);
-    const getValue = ({ path }: any): any => {
-      switch (path) {
+    const getValue = (field: FieldDescriptor<any>): any => {
+      switch (impl(field).__path) {
         case "arrayObjectString[0]":
           return { str: "sm" };
         case "arrayObjectString[1]":
@@ -297,35 +297,35 @@ describe("createFormValidator", () => {
 
     const validation = await validate(
       [
-        Schema.arrayObjectString.nth(0).root,
-        Schema.arrayObjectString.nth(1).root,
-        Schema.arrayObjectString.nth(2).root,
-        Schema.arrayObjectString.nth(3).root,
+        Schema.arrayObjectString.nth(0),
+        Schema.arrayObjectString.nth(1),
+        Schema.arrayObjectString.nth(2),
+        Schema.arrayObjectString.nth(3),
       ],
       getValue
     );
 
     expect(validation).toEqual([
-      { field: Schema.arrayObjectString.nth(0).root, error: "TOO_SHORT" },
-      { field: Schema.arrayObjectString.nth(1).root, error: "REQUIRED" },
-      { field: Schema.arrayObjectString.nth(2).root, error: null },
-      { field: Schema.arrayObjectString.nth(3).root, error: "INVALID_VALUE" },
+      { field: Schema.arrayObjectString.nth(0), error: "TOO_SHORT" },
+      { field: Schema.arrayObjectString.nth(1), error: "REQUIRED" },
+      { field: Schema.arrayObjectString.nth(2), error: null },
+      { field: Schema.arrayObjectString.nth(3), error: "INVALID_VALUE" },
     ]);
   });
 
   it("validate.each for multiple arrays should run for each element of corresponding list", async () => {
     const { validate } = createFormValidator(Schema, validate => [
       validate.each({
-        field: Schema.arrayObjectString.root,
+        field: Schema.arrayObjectString,
         rules: () => [x => wait(x.str?.length < 3 ? "TOO_SHORT" : null)],
       }),
       validate.each({
-        field: Schema.arrayChoice.root,
+        field: Schema.arrayChoice,
         rules: () => [x => wait(x === "c" ? "INVALID_VALUE" : null)],
       }),
     ]);
-    const getValue = ({ path }: any): any => {
-      switch (path) {
+    const getValue = (field: FieldDescriptor<any>): any => {
+      switch (impl(field).__path) {
         case "arrayObjectString[0]":
           return { str: "ok-string" };
         case "arrayObjectString[1]":
@@ -342,8 +342,8 @@ describe("createFormValidator", () => {
       [
         Schema.arrayChoice.nth(1),
         Schema.arrayChoice.nth(0),
-        Schema.arrayObjectString.nth(0).root,
-        Schema.arrayObjectString.nth(1).root,
+        Schema.arrayObjectString.nth(0),
+        Schema.arrayObjectString.nth(1),
       ],
       getValue
     );
@@ -351,8 +351,8 @@ describe("createFormValidator", () => {
     expect(validation).toEqual([
       { field: Schema.arrayChoice.nth(1), error: null },
       { field: Schema.arrayChoice.nth(0), error: "INVALID_VALUE" },
-      { field: Schema.arrayObjectString.nth(0).root, error: null },
-      { field: Schema.arrayObjectString.nth(1).root, error: "TOO_SHORT" },
+      { field: Schema.arrayObjectString.nth(0), error: null },
+      { field: Schema.arrayObjectString.nth(1), error: "TOO_SHORT" },
     ]);
   });
 
@@ -369,8 +369,8 @@ describe("createFormValidator", () => {
         triggers: ["change", "submit"],
       }),
     ]);
-    const getValue = ({ path }: any): any => {
-      switch (path) {
+    const getValue = (field: FieldDescriptor<any>): any => {
+      switch (impl(field).__path) {
         case "string":
           return "";
         case "choice":
@@ -424,14 +424,14 @@ describe("createFormValidator", () => {
         triggers: ["submit"],
       }),
       validate({
-        field: Schema.arrayString.root,
+        field: Schema.arrayString,
         rules: () => [arrayCheck],
         triggers: ["submit", "change", "blur"],
       }),
     ]);
 
-    const getValue = ({ path }: any): any => {
-      switch (path) {
+    const getValue = (field: FieldDescriptor<any>): any => {
+      switch (impl(field).__path) {
         case "string":
           return "ab";
         case "number":
@@ -479,7 +479,7 @@ describe("createFormValidator", () => {
         rules: () => [x => (x.length < 3 ? "TOO_SHORT" : null)],
       }),
       validate.each({
-        field: Schema.arrayString.root,
+        field: Schema.arrayString,
         rules: () => [x => wait(x.length < 3 ? "TOO_SHORT" : null)],
       }),
       validate({
@@ -487,8 +487,8 @@ describe("createFormValidator", () => {
         rules: () => [x => wait(x === "invalid" ? "INVALID_VALUE" : null)],
       }),
     ]);
-    const getValue = ({ path }: any): any => {
-      switch (path) {
+    const getValue = (field: FieldDescriptor<any>): any => {
+      switch (impl(field).__path) {
         case "arrayString[0]":
           return "invalid";
         case "arrayString[1]":

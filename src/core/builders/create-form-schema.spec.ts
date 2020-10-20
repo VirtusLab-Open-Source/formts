@@ -169,52 +169,50 @@ describe("createFormSchema", () => {
       }),
     }));
 
-    const expectPath = (path: string) => expect.objectContaining({ path });
-
     expect(Schema).toEqual({
-      string: expectPath("string"),
-      choice: expectPath("choice"),
-      num: expectPath("num"),
-      bool: expectPath("bool"),
-      instance: expectPath("instance"),
-      arrayString: {
-        root: expectPath("arrayString"),
+      string: expect.objectContaining({ __path: "string" }),
+      choice: expect.objectContaining({ __path: "choice" }),
+      num: expect.objectContaining({ __path: "num" }),
+      bool: expect.objectContaining({ __path: "bool" }),
+      instance: expect.objectContaining({ __path: "instance" }),
+      arrayString: expect.objectContaining({
+        __path: "arrayString",
         nth: expect.any(Function),
-      },
-      arrayChoice: {
-        root: expectPath("arrayChoice"),
+      }),
+      arrayChoice: expect.objectContaining({
+        __path: "arrayChoice",
         nth: expect.any(Function),
-      },
-      arrayArrayString: {
-        root: expectPath("arrayArrayString"),
+      }),
+      arrayArrayString: expect.objectContaining({
+        __path: "arrayArrayString",
         nth: expect.any(Function),
-      },
-      object: {
-        root: expectPath("object"),
-        str: expectPath("object.str"),
-        num: expectPath("object.num"),
-      },
-      arrayObjectString: {
-        root: expectPath("arrayObjectString"),
+      }),
+      object: expect.objectContaining({
+        __path: "object",
+        str: expect.objectContaining({ __path: "object.str" }),
+        num: expect.objectContaining({ __path: "object.num" }),
+      }),
+      arrayObjectString: expect.objectContaining({
+        __path: "arrayObjectString",
         nth: expect.any(Function),
-      },
-      objectArray: {
-        root: expectPath("objectArray"),
-        arrayString: {
-          root: expectPath("objectArray.arrayString"),
+      }),
+      objectArray: expect.objectContaining({
+        __path: "objectArray",
+        arrayString: expect.objectContaining({
+          __path: "objectArray.arrayString",
           nth: expect.any(Function),
-        },
-      },
-      objectObjectArrayObjectString: {
-        root: expectPath("objectObjectArrayObjectString"),
-        obj: {
-          root: expectPath("objectObjectArrayObjectString.obj"),
-          array: {
-            root: expectPath("objectObjectArrayObjectString.obj.array"),
+        }),
+      }),
+      objectObjectArrayObjectString: expect.objectContaining({
+        __path: "objectObjectArrayObjectString",
+        obj: expect.objectContaining({
+          __path: "objectObjectArrayObjectString.obj",
+          array: expect.objectContaining({
+            __path: "objectObjectArrayObjectString.obj.array",
             nth: expect.any(Function),
-          },
-        },
-      },
+          }),
+        }),
+      }),
     });
   });
 
@@ -225,11 +223,11 @@ describe("createFormSchema", () => {
 
     const descriptor = impl(Schema.theString);
 
-    expect(descriptor.fieldType).toBe("string");
-    expect(descriptor.path).toBe("theString");
-    expect(descriptor.init()).toBe("");
-    expect(descriptor.decode("foo").ok).toBe(true);
-    expect(descriptor.decode(42).ok).toBe(false);
+    expect(descriptor.__path).toBe("theString");
+    expect(descriptor.__decoder.fieldType).toBe("string");
+    expect(descriptor.__decoder.init()).toBe("");
+    expect(descriptor.__decoder.decode("foo").ok).toBe(true);
+    expect(descriptor.__decoder.decode(42).ok).toBe(false);
   });
 
   it("creates field descriptor for choice field", () => {
@@ -239,12 +237,12 @@ describe("createFormSchema", () => {
 
     const descriptor = impl(Schema.theChoice);
 
-    expect(descriptor.fieldType).toBe("choice");
-    expect(descriptor.path).toBe("theChoice");
-    expect(descriptor.options).toEqual(["A", "B", "C"]);
-    expect(descriptor.init()).toBe("A");
-    expect(descriptor.decode("C").ok).toBe(true);
-    expect(descriptor.decode("foo").ok).toBe(false);
+    expect(descriptor.__path).toBe("theChoice");
+    expect(descriptor.__decoder.fieldType).toBe("choice");
+    expect(descriptor.__decoder.options).toEqual(["A", "B", "C"]);
+    expect(descriptor.__decoder.init()).toBe("A");
+    expect(descriptor.__decoder.decode("C").ok).toBe(true);
+    expect(descriptor.__decoder.decode("foo").ok).toBe(false);
   });
 
   it("does not allow creating schema with empty choice field", () => {
@@ -261,11 +259,11 @@ describe("createFormSchema", () => {
 
     const descriptor = impl(Schema.theNumber);
 
-    expect(descriptor.fieldType).toBe("number");
-    expect(descriptor.path).toBe("theNumber");
-    expect(descriptor.init()).toBe("");
-    expect(descriptor.decode(666).ok).toBe(true);
-    expect(descriptor.decode("42").ok).toBe(false);
+    expect(descriptor.__path).toBe("theNumber");
+    expect(descriptor.__decoder.fieldType).toBe("number");
+    expect(descriptor.__decoder.init()).toBe("");
+    expect(descriptor.__decoder.decode(666).ok).toBe(true);
+    expect(descriptor.__decoder.decode("42").ok).toBe(false);
   });
 
   it("creates field descriptor for bool field", () => {
@@ -275,11 +273,11 @@ describe("createFormSchema", () => {
 
     const descriptor = impl(Schema.theBoolean);
 
-    expect(descriptor.fieldType).toBe("bool");
-    expect(descriptor.path).toBe("theBoolean");
-    expect(descriptor.init()).toBe(false);
-    expect(descriptor.decode(true).ok).toBe(true);
-    expect(descriptor.decode("true").ok).toBe(false);
+    expect(descriptor.__path).toBe("theBoolean");
+    expect(descriptor.__decoder.fieldType).toBe("bool");
+    expect(descriptor.__decoder.init()).toBe(false);
+    expect(descriptor.__decoder.decode(true).ok).toBe(true);
+    expect(descriptor.__decoder.decode("true").ok).toBe(false);
   });
 
   it("creates field descriptor for instanceOf field", () => {
@@ -293,11 +291,11 @@ describe("createFormSchema", () => {
 
     const descriptor = impl(Schema.theClass);
 
-    expect(descriptor.fieldType).toBe("class");
-    expect(descriptor.path).toBe("theClass");
-    expect(descriptor.init()).toBe(null);
-    expect(descriptor.decode(new MyClass("42")).ok).toBe(true);
-    expect(descriptor.decode({ foo: "42" }).ok).toBe(false);
+    expect(descriptor.__path).toBe("theClass");
+    expect(descriptor.__decoder.fieldType).toBe("class");
+    expect(descriptor.__decoder.init()).toBe(null);
+    expect(descriptor.__decoder.decode(new MyClass("42")).ok).toBe(true);
+    expect(descriptor.__decoder.decode({ foo: "42" }).ok).toBe(false);
   });
 
   it("creates field descriptor for array field", () => {
@@ -305,22 +303,22 @@ describe("createFormSchema", () => {
       theArray: fields.array(fields.string()),
     }));
 
-    const rootDescriptor = impl(Schema.theArray.root);
+    const rootDescriptor = impl(Schema.theArray);
 
-    expect(rootDescriptor.fieldType).toBe("array");
-    expect(rootDescriptor.path).toBe("theArray");
-    expect(rootDescriptor.init()).toEqual([]);
-    expect(rootDescriptor.decode(["foo", "bar"]).ok).toBe(true);
-    expect(rootDescriptor.decode("foo").ok).toBe(false);
-    expect(rootDescriptor.inner.fieldType).toBe("string");
+    expect(rootDescriptor.__path).toBe("theArray");
+    expect(rootDescriptor.__decoder.fieldType).toBe("array");
+    expect(rootDescriptor.__decoder.init()).toEqual([]);
+    expect(rootDescriptor.__decoder.decode(["foo", "bar"]).ok).toBe(true);
+    expect(rootDescriptor.__decoder.decode("foo").ok).toBe(false);
+    expect(rootDescriptor.__decoder.inner.fieldType).toBe("string");
 
     const elementDescriptor = impl(Schema.theArray.nth(42));
 
-    expect(elementDescriptor.fieldType).toBe("string");
-    expect(elementDescriptor.path).toBe("theArray[42]");
-    expect(elementDescriptor.init()).toEqual("");
-    expect(elementDescriptor.decode("foo").ok).toBe(true);
-    expect(elementDescriptor.decode(["foo", "bar"]).ok).toBe(false);
+    expect(elementDescriptor.__decoder.fieldType).toBe("string");
+    expect(elementDescriptor.__path).toBe("theArray[42]");
+    expect(elementDescriptor.__decoder.init()).toEqual("");
+    expect(elementDescriptor.__decoder.decode("foo").ok).toBe(true);
+    expect(elementDescriptor.__decoder.decode(["foo", "bar"]).ok).toBe(false);
   });
 
   it("creates field descriptor for nested array field", () => {
@@ -328,17 +326,17 @@ describe("createFormSchema", () => {
       theArray: fields.array(fields.array(fields.number())),
     }));
 
-    const rootDescriptor = impl(Schema.theArray.root);
-    expect(rootDescriptor.fieldType).toBe("array");
-    expect(rootDescriptor.path).toBe("theArray");
+    const rootDescriptor = impl(Schema.theArray);
+    expect(rootDescriptor.__decoder.fieldType).toBe("array");
+    expect(rootDescriptor.__path).toBe("theArray");
 
-    const elementDescriptor = impl(Schema.theArray.nth(42).root);
-    expect(elementDescriptor.fieldType).toBe("array");
-    expect(elementDescriptor.path).toBe("theArray[42]");
+    const elementDescriptor = impl(Schema.theArray.nth(42));
+    expect(elementDescriptor.__decoder.fieldType).toBe("array");
+    expect(elementDescriptor.__path).toBe("theArray[42]");
 
     const elementElementDescriptor = impl(Schema.theArray.nth(42).nth(666));
-    expect(elementElementDescriptor.fieldType).toBe("number");
-    expect(elementElementDescriptor.path).toBe("theArray[42][666]");
+    expect(elementElementDescriptor.__decoder.fieldType).toBe("number");
+    expect(elementElementDescriptor.__path).toBe("theArray[42][666]");
   });
 
   it("creates field descriptor for object field", () => {
@@ -346,17 +344,19 @@ describe("createFormSchema", () => {
       theObject: fields.object({ str: fields.string(), num: fields.number() }),
     }));
 
-    const rootDescriptor = impl(Schema.theObject.root);
-    expect(rootDescriptor.fieldType).toBe("object");
-    expect(rootDescriptor.path).toBe("theObject");
+    const rootDescriptor = impl(Schema.theObject);
+    expect(rootDescriptor.__decoder.fieldType).toBe("object");
+    expect(rootDescriptor.__path).toBe("theObject");
 
     const nestedStringDescriptor = impl(Schema.theObject.str);
-    expect(nestedStringDescriptor.fieldType).toBe("string");
-    expect(nestedStringDescriptor.path).toBe("theObject.str");
+    expect(nestedStringDescriptor.__decoder.fieldType).toBe("string");
+    expect(nestedStringDescriptor.__path).toBe("theObject.str");
 
     const nestedNumberDescriptor = impl(Schema.theObject.num);
-    expect(nestedNumberDescriptor.fieldType).toBe("number");
-    expect(nestedNumberDescriptor.path).toBe("theObject.num");
+    expect(nestedNumberDescriptor.__decoder.fieldType).toBe("number");
+    expect(nestedNumberDescriptor.__path).toBe("theObject.num");
+
+    expect(Object.keys(Schema.theObject)).toEqual(["str", "num"]);
   });
 
   it("creates field descriptor for a complex object field", () => {
@@ -369,38 +369,40 @@ describe("createFormSchema", () => {
       }),
     }));
 
-    const rootDescriptor = impl(Schema.theObject.root);
-    expect(rootDescriptor.fieldType).toBe("object");
-    expect(rootDescriptor.path).toBe("theObject");
+    const rootDescriptor = impl(Schema.theObject);
+    expect(rootDescriptor.__decoder.fieldType).toBe("object");
+    expect(rootDescriptor.__path).toBe("theObject");
 
     const nestedChoiceDescriptor = impl(Schema.theObject.choice);
-    expect(nestedChoiceDescriptor.fieldType).toBe("choice");
-    expect(nestedChoiceDescriptor.path).toBe("theObject.choice");
-    expect(nestedChoiceDescriptor.options).toEqual(["A", "B"]);
+    expect(nestedChoiceDescriptor.__decoder.fieldType).toBe("choice");
+    expect(nestedChoiceDescriptor.__path).toBe("theObject.choice");
+    expect(nestedChoiceDescriptor.__decoder.options).toEqual(["A", "B"]);
 
-    const nestedObjectDescriptor = impl(Schema.theObject.nested.root);
-    expect(nestedObjectDescriptor.fieldType).toBe("object");
-    expect(nestedObjectDescriptor.path).toBe("theObject.nested");
+    const nestedObjectDescriptor = impl(Schema.theObject.nested);
+    expect(nestedObjectDescriptor.__decoder.fieldType).toBe("object");
+    expect(nestedObjectDescriptor.__path).toBe("theObject.nested");
 
-    const nestedNestedArrayDescriptor = impl(
-      Schema.theObject.nested.array.root
-    );
-    expect(nestedNestedArrayDescriptor.fieldType).toBe("array");
-    expect(nestedNestedArrayDescriptor.path).toBe("theObject.nested.array");
+    const nestedNestedArrayDescriptor = impl(Schema.theObject.nested.array);
+    expect(nestedNestedArrayDescriptor.__decoder.fieldType).toBe("array");
+    expect(nestedNestedArrayDescriptor.__path).toBe("theObject.nested.array");
 
     const nestedNestedArrayElementRootDescriptor = impl(
-      Schema.theObject.nested.array.nth(42).root
+      Schema.theObject.nested.array.nth(42)
     );
-    expect(nestedNestedArrayElementRootDescriptor.fieldType).toBe("object");
-    expect(nestedNestedArrayElementRootDescriptor.path).toBe(
+    expect(nestedNestedArrayElementRootDescriptor.__decoder.fieldType).toBe(
+      "object"
+    );
+    expect(nestedNestedArrayElementRootDescriptor.__path).toBe(
       "theObject.nested.array[42]"
     );
 
     const nestedNestedArrayElementStringDescriptor = impl(
       Schema.theObject.nested.array.nth(42).str
     );
-    expect(nestedNestedArrayElementStringDescriptor.fieldType).toBe("string");
-    expect(nestedNestedArrayElementStringDescriptor.path).toBe(
+    expect(nestedNestedArrayElementStringDescriptor.__decoder.fieldType).toBe(
+      "string"
+    );
+    expect(nestedNestedArrayElementStringDescriptor.__path).toBe(
       "theObject.nested.array[42].str"
     );
   });
@@ -409,13 +411,6 @@ describe("createFormSchema", () => {
     createFormSchema(fields => ({
       // @ts-expect-error
       theObject: fields.object({}),
-    }));
-  });
-
-  it("does not allow creating schema with nested 'root' field", () => {
-    createFormSchema(fields => ({
-      // @ts-expect-error
-      theObject: fields.object({ foo: fields.string(), root: fields.string() }),
     }));
   });
 });
