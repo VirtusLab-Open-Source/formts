@@ -74,7 +74,7 @@ export const useFormts = <Values extends object, Err>(
     resolveTouched(get(state.touched as object, impl(field).__path));
 
   const isFieldValid = <T>(field: FieldDescriptor<T, Err>) =>
-    resolveIsValid(state.errors, impl(field).__path);
+    resolveIsValid(state.errors, field);
 
   const validateField = <T>(
     field: FieldDescriptor<T, Err>,
