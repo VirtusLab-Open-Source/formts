@@ -3,13 +3,30 @@ import React from "react";
 
 import "../basic.css";
 
-const Schema = createForm.schema(fields => ({
-  name: fields.string(),
-  age: fields.number(),
-}));
+const Schema = createForm.schema(
+  fields => ({
+    name: fields.string(),
+    age: fields.number(),
+  }),
+  error => error<string>()
+);
+
+const validator = createForm.validator(Schema, validate => [
+  validate({
+    field: Schema.name,
+    rules: () => [val => (val === "" ? "Required!" : null)],
+  }),
+  validate({
+    field: Schema.age,
+    rules: () => [
+      val => (val === "" ? "Required!" : null),
+      val => (val < 18 ? "Age must be at least 18." : null),
+    ],
+  }),
+]);
 
 const App: React.FC = () => {
-  const [fields, form] = useFormts({ Schema });
+  const [fields, form] = useFormts({ Schema, validator });
 
   const onSubmit = form.getSubmitHandler(values =>
     alert("submitted!\n" + JSON.stringify(values, null, 2))
@@ -25,6 +42,7 @@ const App: React.FC = () => {
           onChange={e => fields.name.setValue(e.target.value)}
           onBlur={fields.name.handleBlur}
         />
+        <div className="error">{fields.name.error}</div>
       </section>
 
       <section>
@@ -38,10 +56,13 @@ const App: React.FC = () => {
           }
           onBlur={fields.age.handleBlur}
         />
+        <div className="error">{fields.age.error}</div>
       </section>
 
       <section>
-        <button type="submit">Submit!</button>
+        <button type="submit" disabled={!form.isValid}>
+          Submit!
+        </button>
       </section>
 
       <pre>
