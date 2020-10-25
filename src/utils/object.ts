@@ -9,6 +9,17 @@ export const keys = <T extends object>(o: T): (keyof T)[] =>
 export const values = <T extends object>(o: T): T[keyof T][] =>
   Object.values(o) as T[keyof T][];
 
+export const filter = <T>(
+  obj: Record<string, T>,
+  predicate: (input: { key: string; value: T }) => boolean
+): Record<string, T> =>
+  entries(obj).reduce((acc, [key, value]) => {
+    if (predicate({ key, value })) {
+      acc[key] = value;
+    }
+    return acc;
+  }, {} as Record<string, T>);
+
 type JsPropertyDescriptor<T> = {
   configurable?: boolean;
   enumerable?: boolean;

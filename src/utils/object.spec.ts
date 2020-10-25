@@ -1,4 +1,24 @@
-import { deepMerge, get, set } from "./object";
+import { deepMerge, get, set, filter } from "./object";
+
+describe("filter", () => {
+  it("returns object with filtered out properties", () => {
+    const object = {
+      a: 1,
+      b: 2,
+      c: 3,
+      d: 4,
+      x: 42,
+    };
+
+    expect(
+      filter(object, ({ key, value }) => value < 3 || key === "x")
+    ).toEqual({
+      a: 1,
+      b: 2,
+      x: 42,
+    });
+  });
+});
 
 describe("get", () => {
   it("empty path should return origin ", () => {

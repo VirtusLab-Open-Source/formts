@@ -1,6 +1,6 @@
 import { Reducer } from "react";
 
-import { get, set } from "../../../utils";
+import { filter, get, range, set } from "../../../utils";
 import { FormtsState } from "../../types/formts-state";
 
 import { createInitialValues } from "./create-initial-values";
@@ -45,10 +45,30 @@ export const createReducer = <Values extends object, Err>(): Reducer<
     case "setValue": {
       const { path, value } = action.payload;
 
+      const resolveErrors = () => {
+        if (!Array.isArray(value)) {
+          return state.errors;
+        }
+
+        const currentValue = get(state.values, path) as unknown[];
+        if (currentValue.length <= value.length) {
+          return state.errors;
+        }
+
+        const hangingIndexes = range(value.length, currentValue.length - 1);
+        const errors = filter(
+          state.errors,
+          ({ key }) =>
+            !hangingIndexes.some(i => key.startsWith(`${path}[${i}]`))
+        );
+
+        return errors;
+      };
+
       const values = set(state.values, path, value);
       const touched = set(state.touched, path, makeTouchedValues(value));
 
-      return { ...state, values, touched };
+      return { ...state, values, touched, errors: resolveErrors() };
     }
 
     case "setErrors": {
