@@ -10,9 +10,7 @@ type ObjectFieldDecoderWithGuards<
   O extends object
 > = O[keyof O] extends undefined
   ? void
-  : Extract<keyof O, "root"> extends never
-    ? FieldDecoder<O>
-    : void;
+  : FieldDecoder<O>
 
 /**
  * Define nested object field with shape defined by `innerDecoders` param.

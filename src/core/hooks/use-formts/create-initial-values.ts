@@ -1,30 +1,15 @@
 import { deepMerge, DeepPartial, entries } from "../../../utils";
 import { _FieldDescriptorImpl } from "../../types/field-descriptor";
 import { FormSchema } from "../../types/form-schema";
-import {
-  isArrayDesc,
-  isObjectDesc,
-  schemaImpl,
-  _DescriptorApprox_,
-  _FormSchemaApprox_,
-} from "../../types/form-schema-approx";
+import { impl } from "../../types/type-mapper-util";
 
 export const createInitialValues = <Values extends object>(
-  _schema: FormSchema<Values, any>,
+  schema: FormSchema<Values, any>,
   initial?: DeepPartial<Values>
 ): Values => {
-  const schema = schemaImpl(_schema);
-
   const initialStateFromDecoders = entries(schema).reduce(
-    (shape, [key, value]) => {
-      const descriptor = value as _DescriptorApprox_<Values[typeof key]>;
-
-      const fieldInitialValue =
-        isArrayDesc(descriptor) || isObjectDesc(descriptor)
-          ? descriptor.root.init()
-          : descriptor.init();
-
-      shape[key] = fieldInitialValue;
+    (shape, [key, descriptor]) => {
+      shape[key] = impl(descriptor).__decoder.init();
       return shape;
     },
     {} as Values

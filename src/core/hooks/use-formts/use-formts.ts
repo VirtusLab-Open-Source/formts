@@ -1,31 +1,34 @@
 import React from "react";
 
-import { DeepPartial, get, keys, logger, toIdentityDict } from "../../../utils";
 import {
-  isChoiceDecoder,
-  _ChoiceFieldDecoderImpl,
-} from "../../types/field-decoder";
+  DeepPartial,
+  entries,
+  get,
+  keys,
+  logger,
+  toIdentityDict,
+  values,
+} from "../../../utils";
+import { isChoiceDecoder } from "../../types/field-decoder";
 import {
   FieldDescriptor,
-  _FieldDescriptorImpl,
+  isArrayDescriptor,
+  isObjectDescriptor,
 } from "../../types/field-descriptor";
 import { FieldHandle, toFieldHandle } from "../../types/field-handle";
 import { FieldHandleSchema } from "../../types/field-handle-schema";
 import { FormHandle } from "../../types/form-handle";
+import { FormSchema } from "../../types/form-schema";
 import {
-  FormSchema,
-  GenericFormDescriptorSchema,
-} from "../../types/form-schema";
-import {
-  isArrayDesc,
-  isObjectDesc,
-  objectDescriptorKeys,
-  _DescriptorApprox_,
-} from "../../types/form-schema-approx";
-import { impl, opaque } from "../../types/type-mapper-util";
+  FormValidator,
+  ValidationResult,
+  ValidationTrigger,
+} from "../../types/form-validator";
+import { impl } from "../../types/type-mapper-util";
 
 import { createInitialValues } from "./create-initial-values";
 import { createReducer, getInitialState } from "./reducer";
+import { resolveIsValid } from "./resolve-is-valid";
 import { resolveTouched } from "./resolve-touched";
 
 export type FormtsOptions<Values extends object, Err> = {
@@ -38,11 +41,14 @@ export type FormtsOptions<Values extends object, Err> = {
    * The defaults depend on field type (defined in the Schema).
    */
   initialValues?: DeepPartial<Values>;
+
+  /** Form validator created using `createForm.validator` function (optional). */
+  validator?: FormValidator<Values, Err>;
 };
 
 type FormtsReturn<Values extends object, Err> = [
   fields: FieldHandleSchema<Values, Err>,
-  form: Partial<FormHandle<Values, Err>> // TODO
+  form: FormHandle<Values, Err>
 ];
 
 export const useFormts = <Values extends object, Err>(
@@ -50,103 +56,197 @@ export const useFormts = <Values extends object, Err>(
 ): FormtsReturn<Values, Err> => {
   /// INTERNAL STATE
   const [state, dispatch] = React.useReducer(
-    createReducer<Values>(),
+    createReducer<Values, Err>(),
     options,
     getInitialState
   );
 
   /// INTERNAL HANDLERS
-  const getField = <T, Err>(field: FieldDescriptor<T, Err>): T =>
-    get(state.values, impl(field).path) as any;
+  const getField = <T>(field: FieldDescriptor<T, Err>): T =>
+    get(state.values, impl(field).__path) as any;
 
-  const isTouched = <T, Err>(field: FieldDescriptor<T, Err>) =>
-    resolveTouched(get(state.touched as object, impl(field).path));
+  const getFieldError = (field: FieldDescriptor<any, Err>): Err | null => {
+    const error = state.errors[impl(field).__path];
+    return error == null ? null : error;
+  };
 
-  const touchField = <T, Err>(field: FieldDescriptor<T, Err>) =>
-    dispatch({ type: "touchValue", payload: { path: impl(field).path } });
+  const isFieldTouched = <T>(field: FieldDescriptor<T, Err>) =>
+    resolveTouched(get(state.touched as object, impl(field).__path));
 
-  const setField = <T, Err>(field: FieldDescriptor<T, Err>, value: T): void => {
-    const decodeResult = impl(field).decode(value);
-    if (decodeResult.ok) {
-      dispatch({
-        type: "setValue",
-        payload: { path: impl(field).path, value: decodeResult.value },
+  const isFieldValid = <T>(field: FieldDescriptor<T, Err>) =>
+    resolveIsValid(state.errors, impl(field).__path);
+
+  const validateField = <T>(
+    field: FieldDescriptor<T, Err>,
+    trigger?: ValidationTrigger
+  ): Promise<void> => {
+    if (!options.validator) {
+      return Promise.resolve();
+    }
+
+    dispatch({ type: "setIsValidating", payload: { isValidating: true } });
+    return options.validator
+      .validate([field], getField, trigger)
+      .then(errors => {
+        setFieldErrors(...errors);
+        dispatch({ type: "setIsValidating", payload: { isValidating: false } });
       });
-    } else {
+  };
+
+  const validateForm = (): Promise<ValidationResult<Err>> => {
+    if (options.validator == null) {
+      return Promise.resolve([]);
+    }
+    const topLevelDescriptors = values(fields).map(it => it.descriptor);
+
+    dispatch({ type: "setIsValidating", payload: { isValidating: true } });
+    return options.validator
+      .validate(topLevelDescriptors, getField)
+      .then(errors => {
+        setFieldErrors(...errors);
+        dispatch({ type: "setIsValidating", payload: { isValidating: false } });
+        return errors;
+      });
+  };
+
+  const setField = <T>(
+    field: FieldDescriptor<T, Err>,
+    value: T
+  ): Promise<void> => {
+    const decodeResult = impl(field).__decoder.decode(value);
+    if (!decodeResult.ok) {
       logger.warn(
-        `Field ${impl(field).path} received illegal value: ${JSON.stringify(
+        `Field ${impl(field).__path} received illegal value: ${JSON.stringify(
           value
         )}`
       );
+      return Promise.resolve();
     }
+
+    const validateAfterChange = () => {
+      if (!options.validator) {
+        return Promise.resolve();
+      }
+
+      // TODO: getField is problematic when relaying on useReducer, should be solved when Atom based state is implemented
+      const modifiedGetField = <T>(
+        fieldToValidate: FieldDescriptor<T, Err>
+      ): T => {
+        if (impl(field).__path === impl(fieldToValidate).__path) {
+          return decodeResult.value as any;
+        }
+        return getField(fieldToValidate);
+      };
+
+      dispatch({ type: "setIsValidating", payload: { isValidating: true } });
+
+      return options.validator
+        .validate([field], modifiedGetField, "change")
+        .then(errors => {
+          setFieldErrors(...errors);
+          dispatch({
+            type: "setIsValidating",
+            payload: { isValidating: false },
+          });
+        });
+    };
+
+    dispatch({
+      type: "setValue",
+      payload: { path: impl(field).__path, value: decodeResult.value },
+    });
+    return validateAfterChange();
   };
 
+  const touchField = <T>(field: FieldDescriptor<T, Err>) =>
+    dispatch({ type: "touchValue", payload: { path: impl(field).__path } });
+
+  const setFieldErrors = (
+    ...fields: Array<{
+      field: FieldDescriptor<unknown, Err>;
+      error: Err | null;
+    }>
+  ) =>
+    dispatch({
+      type: "setErrors",
+      payload: fields.map(it => ({
+        path: impl(it.field).__path,
+        error: it.error,
+      })),
+    });
+
   /// FIELD HANDLE CREATOR
-  const createFieldHandleNode = <T, Err>(
-    // TODO: consider flattening descriptors, so that `Schema.obj` -> root and `Schema.obj.prop` -> prop
-    _descriptor: GenericFormDescriptorSchema<T, Err>
-  ): FieldHandle<T, Err> => {
-    const descriptor = (_descriptor as any) as _DescriptorApprox_<T>;
-    const rootDescriptor =
-      isArrayDesc(descriptor) || isObjectDesc(descriptor)
-        ? descriptor.root
-        : descriptor;
+  const createFieldHandleNode = <T>(
+    descriptor: FieldDescriptor<T, Err>
+  ): FieldHandle<T, Err> =>
+    toFieldHandle({
+      descriptor,
 
-    return toFieldHandle({
-      descriptor: opaque(rootDescriptor),
-
-      id: rootDescriptor.path,
+      id: impl(descriptor).__path,
 
       get value() {
-        return getField(opaque(rootDescriptor));
+        return getField(descriptor);
       },
 
       get isTouched() {
-        return isTouched(opaque(rootDescriptor));
+        return isFieldTouched(descriptor);
+      },
+
+      get error() {
+        return getFieldError(descriptor);
+      },
+
+      get isValid() {
+        return isFieldValid(descriptor);
       },
 
       get children() {
-        if (isObjectDesc(descriptor)) {
-          return objectDescriptorKeys(descriptor).reduce(
+        if (isObjectDescriptor(descriptor)) {
+          return keys(descriptor).reduce(
             (acc, key) =>
               Object.defineProperty(acc, key, {
                 enumerable: true,
                 get: function () {
                   const nestedDescriptor = descriptor[key];
-                  return createFieldHandleNode(nestedDescriptor as any);
+                  return createFieldHandleNode(nestedDescriptor);
                 },
               }),
             {}
           );
         }
 
-        if (isArrayDesc(descriptor)) {
-          const value = (getField(opaque(rootDescriptor)) as any) as Array<
-            unknown
-          >;
-          return value.map((_, idx) =>
-            createFieldHandleNode(descriptor.nth(idx) as any)
-          );
+        if (isArrayDescriptor(descriptor)) {
+          const value = getField(descriptor) as unknown[];
+          return value.map((_, i) => createFieldHandleNode(descriptor.nth(i)));
         }
 
         return undefined;
       },
 
       get options() {
-        return isChoiceDecoder(descriptor)
-          ? toIdentityDict(descriptor.options as string[])
+        const decoder = impl(descriptor).__decoder;
+        return isChoiceDecoder(decoder)
+          ? toIdentityDict(decoder.options as string[])
           : undefined;
       },
 
       handleBlur: () => {
-        touchField(opaque(rootDescriptor));
+        touchField(descriptor);
+        return validateField(descriptor, "blur");
       },
 
       setValue: val => {
-        setField(opaque(rootDescriptor), val);
+        return setField(descriptor, val);
+      },
+
+      setError: error => {
+        setFieldErrors({ field: descriptor, error });
+      },
+
+      validate: () => {
+        return validateField(descriptor);
       },
     });
-  };
 
   /// PUBLIC API
   const fields = keys(options.Schema).reduce(
@@ -161,19 +261,72 @@ export const useFormts = <Values extends object, Err>(
     {} as FieldHandleSchema<Values, Err>
   );
 
-  // TODO
-  const form: Partial<FormHandle<Values, Err>> = {
+  const form: FormHandle<Values, Err> = {
     values: state.values,
+
+    isSubmitting: state.isSubmitting,
+
+    isValidating: state.isValidating,
+
+    get errors() {
+      return entries(state.errors)
+        .filter(([, err]) => err != null)
+        .map(([path, error]) => ({ path, error: error! }));
+    },
 
     get isTouched() {
       return resolveTouched(state.touched);
     },
 
-    reset: values => {
+    get isValid() {
+      return values(state.errors).filter(err => err != null).length === 0;
+    },
+
+    validate: () => {
+      return validateForm();
+    },
+
+    reset: () => {
       dispatch({
         type: "reset",
-        payload: { values: createInitialValues(options.Schema, values) },
+        payload: {
+          values: createInitialValues(options.Schema, options.initialValues),
+        },
       });
+    },
+
+    getSubmitHandler: (onSuccess, onFailure) => event => {
+      event?.preventDefault();
+      dispatch({ type: "setIsSubmitting", payload: { isSubmitting: true } });
+
+      const clearSubmitting = () =>
+        dispatch({
+          type: "setIsSubmitting",
+          payload: { isSubmitting: false },
+        });
+
+      return validateForm()
+        .then(errors =>
+          errors
+            .filter(({ error }) => error != null)
+            .map(({ field, error }) => ({
+              path: impl(field).__path,
+              error: error!,
+            }))
+        )
+        .then(errors => {
+          if (errors.length > 0) {
+            clearSubmitting();
+            onFailure?.(errors);
+          } else {
+            return Promise.resolve(onSuccess(state.values))
+              .then(clearSubmitting)
+              .catch(err => {
+                clearSubmitting();
+                throw err;
+              });
+          }
+        });
     },
   };
 

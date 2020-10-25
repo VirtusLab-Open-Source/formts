@@ -29,3 +29,9 @@ export type DeepPartial<T> = T extends Function
 export type IdentityDict<T extends string> = IsUnion<T> extends true
   ? { [K in T]: K }
   : never;
+
+export type Falsy = null | undefined | false;
+
+export const isFalsy = (x: unknown): x is Falsy => {
+  return x === null || x === undefined || x === false;
+};

@@ -9,6 +9,21 @@ export const keys = <T extends object>(o: T): (keyof T)[] =>
 export const values = <T extends object>(o: T): T[keyof T][] =>
   Object.values(o) as T[keyof T][];
 
+type JsPropertyDescriptor<T> = {
+  configurable?: boolean;
+  enumerable?: boolean;
+  value?: T;
+  writable?: boolean;
+  get?(): T;
+  set?(v: T): void;
+};
+export const defineProperties = <T extends object, P extends object>(
+  obj: T,
+  props: {
+    [K in keyof P]: JsPropertyDescriptor<P[K]>;
+  }
+) => Object.defineProperties(obj, props) as T & P;
+
 export const toIdentityDict = <T extends string>(
   values: T[]
 ): IdentityDict<T> =>
