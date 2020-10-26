@@ -12,7 +12,8 @@ export type FormtsAction<Values, Err> =
   | { type: "touchValue"; payload: { path: string } }
   | { type: "setValue"; payload: { path: string; value: any } }
   | { type: "setErrors"; payload: Array<{ path: string; error: Err | null }> }
-  | { type: "setIsValidating"; payload: { isValidating: boolean } }
+  | { type: "validatingStart"; payload: { path: string; uuid: string } }
+  | { type: "validatingStop"; payload: { path: string; uuid: string } }
   | { type: "setIsSubmitting"; payload: { isSubmitting: boolean } };
 
 export const createReducer = <Values extends object, Err>(): Reducer<
@@ -28,7 +29,7 @@ export const createReducer = <Values extends object, Err>(): Reducer<
         values,
         touched,
         errors: {},
-        isValidating: false,
+        validating: {},
         isSubmitting: false,
       };
     }
@@ -87,10 +88,41 @@ export const createReducer = <Values extends object, Err>(): Reducer<
       return { ...state, errors };
     }
 
-    case "setIsValidating": {
-      const { isValidating } = action.payload;
-      return { ...state, isValidating };
+    case "validatingStart": {
+      const { path, uuid } = action.payload;
+
+      const validating = {
+        ...state.validating,
+        [path]: { ...state.validating[path], [uuid]: true as const },
+      };
+
+      return { ...state, validating };
     }
+
+    case "validatingStop": {
+      const { path, uuid } = action.payload;
+
+      const validating = (() => {
+        if (state.validating[path] == null) {
+          return state.validating;
+        }
+
+        const validating = { ...state.validating };
+        const uuids = { ...validating[path] };
+        validating[path] = uuids;
+
+        delete uuids[uuid];
+
+        if (Object.keys(uuids).length === 0) {
+          delete validating[path];
+        }
+
+        return validating;
+      })();
+
+      return { ...state, validating };
+    }
+
     case "setIsSubmitting": {
       const { isSubmitting } = action.payload;
       return { ...state, isSubmitting };
@@ -109,7 +141,7 @@ export const getInitialState = <Values extends object, Err>({
     values,
     touched,
     errors: {},
-    isValidating: false,
+    validating: {},
     isSubmitting: false,
   };
 };

@@ -3,7 +3,7 @@ export type FormtsState<Values extends object, Err> = {
   values: Values;
   touched: TouchedValues<Values>;
   errors: FieldErrors<Err>;
-  isValidating: boolean;
+  validating: FieldValidatingState;
   isSubmitting: boolean;
 };
 
@@ -13,4 +13,9 @@ export type TouchedValues<V> = [V] extends [Array<infer U>]
   ? { [P in keyof V]: TouchedValues<V[P]> }
   : boolean;
 
-export type FieldErrors<Err> = Record<string, Err | undefined>;
+type FieldPath = string;
+type Uuid = string;
+
+export type FieldErrors<Err> = Record<FieldPath, Err | undefined>;
+
+export type FieldValidatingState = Record<FieldPath, Record<Uuid, true>>;

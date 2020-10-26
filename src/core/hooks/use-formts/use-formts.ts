@@ -29,6 +29,7 @@ import { impl } from "../../types/type-mapper-util";
 import { createInitialValues } from "./create-initial-values";
 import { createReducer, getInitialState } from "./reducer";
 import { resolveIsValid } from "./resolve-is-valid";
+import { resolveIsValidating } from "./resolve-is-validating";
 import { resolveTouched } from "./resolve-touched";
 
 export type FormtsOptions<Values extends object, Err> = {
@@ -76,18 +77,23 @@ export const useFormts = <Values extends object, Err>(
   const isFieldValid = <T>(field: FieldDescriptor<T, Err>) =>
     resolveIsValid(state.errors, field);
 
+  const isFieldValidating = <T>(field: FieldDescriptor<T, Err>) =>
+    resolveIsValidating(state.validating, field);
+
   const makeValidationHandlers = () => {
-    const timestamp = new Date().valueOf();
+    const uuid = new Date().valueOf().toString();
     return {
       onFieldValidationStart: (field: FieldDescriptor<unknown, Err>) => {
-        console.log(
-          `onFieldValidationStart: ${impl(field).__path} (${timestamp})`
-        );
+        dispatch({
+          type: "validatingStart",
+          payload: { path: impl(field).__path, uuid },
+        });
       },
       onFieldValidationEnd: (field: FieldDescriptor<unknown, Err>) => {
-        console.log(
-          `onFieldValidationEnd: ${impl(field).__path} (${timestamp})`
-        );
+        dispatch({
+          type: "validatingStop",
+          payload: { path: impl(field).__path, uuid },
+        });
       },
     };
   };
@@ -104,7 +110,6 @@ export const useFormts = <Values extends object, Err>(
       onFieldValidationEnd,
     } = makeValidationHandlers();
 
-    dispatch({ type: "setIsValidating", payload: { isValidating: true } });
     return options.validator
       .validate({
         fields: [field],
@@ -115,7 +120,6 @@ export const useFormts = <Values extends object, Err>(
       })
       .then(errors => {
         setFieldErrors(...errors);
-        dispatch({ type: "setIsValidating", payload: { isValidating: false } });
       });
   };
 
@@ -129,7 +133,6 @@ export const useFormts = <Values extends object, Err>(
       onFieldValidationEnd,
     } = makeValidationHandlers();
 
-    dispatch({ type: "setIsValidating", payload: { isValidating: true } });
     return options.validator
       .validate({
         fields: topLevelDescriptors,
@@ -139,7 +142,6 @@ export const useFormts = <Values extends object, Err>(
       })
       .then(errors => {
         setFieldErrors(...errors);
-        dispatch({ type: "setIsValidating", payload: { isValidating: false } });
         return errors;
       });
   };
@@ -178,8 +180,6 @@ export const useFormts = <Values extends object, Err>(
         onFieldValidationEnd,
       } = makeValidationHandlers();
 
-      dispatch({ type: "setIsValidating", payload: { isValidating: true } });
-
       return options.validator
         .validate({
           fields: [field],
@@ -190,10 +190,6 @@ export const useFormts = <Values extends object, Err>(
         })
         .then(errors => {
           setFieldErrors(...errors);
-          dispatch({
-            type: "setIsValidating",
-            payload: { isValidating: false },
-          });
         });
     };
 
@@ -247,7 +243,7 @@ export const useFormts = <Values extends object, Err>(
       },
 
       get isValidating() {
-        return false; // TODO
+        return isFieldValidating(descriptor);
       },
 
       get children() {
@@ -316,8 +312,6 @@ export const useFormts = <Values extends object, Err>(
 
     isSubmitting: state.isSubmitting,
 
-    isValidating: state.isValidating,
-
     get errors() {
       return entries(state.errors)
         .filter(([, err]) => err != null)
@@ -330,6 +324,10 @@ export const useFormts = <Values extends object, Err>(
 
     get isValid() {
       return values(state.errors).filter(err => err != null).length === 0;
+    },
+
+    get isValidating() {
+      return keys(state.validating).length > 0;
     },
 
     validate: () => {
