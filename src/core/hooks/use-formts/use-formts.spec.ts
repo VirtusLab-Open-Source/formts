@@ -1,6 +1,7 @@
 import { act, renderHook } from "@testing-library/react-hooks";
 
 import { createFormSchema } from "../../builders/create-form-schema";
+import { ValidateIn } from "../../types/form-validator";
 
 import { useFormts } from "./use-formts";
 
@@ -505,14 +506,16 @@ describe("useFormts", () => {
 
   it("validates fields when field value is changed", async () => {
     const validator = {
-      validate: jest.fn().mockImplementation((fields: any[], getValue: any) =>
-        Promise.resolve(
-          fields.map(field => ({
-            field,
-            error: getValue(field) === "" ? "REQUIRED" : null,
-          }))
-        )
-      ),
+      validate: jest
+        .fn()
+        .mockImplementation(({ fields, getValue }: ValidateIn<any>) =>
+          Promise.resolve(
+            fields.map(field => ({
+              field,
+              error: getValue(field) === "" ? "REQUIRED" : null,
+            }))
+          )
+        ),
     };
 
     const hook = renderHook(() => useFormts({ Schema, validator }));
@@ -565,7 +568,7 @@ describe("useFormts", () => {
     const validator = {
       validate: jest
         .fn()
-        .mockImplementation((fields: any[]) =>
+        .mockImplementation(({ fields }: ValidateIn<any>) =>
           Promise.resolve(fields.map(field => ({ field, error: "ERROR" })))
         ),
     };
@@ -605,7 +608,7 @@ describe("useFormts", () => {
     const validator = {
       validate: jest
         .fn()
-        .mockImplementationOnce((fields: any[]) =>
+        .mockImplementationOnce(({ fields }: ValidateIn<any>) =>
           Promise.resolve(fields.map(field => ({ field, error: "ERROR" })))
         )
         .mockResolvedValueOnce([]),

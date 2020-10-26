@@ -73,7 +73,7 @@ describe("createFormValidator", () => {
     ]);
     const getValue = () => "" as any;
 
-    const validation = await validate([Schema.string], getValue);
+    const validation = await validate({ fields: [Schema.string], getValue });
 
     expect(validation).toEqual([{ field: Schema.string, error: "REQUIRED" }]);
   });
@@ -88,7 +88,7 @@ describe("createFormValidator", () => {
     ]);
     const getValue = () => "defined string" as any;
 
-    const validation = await validate([Schema.string], getValue);
+    const validation = await validate({ fields: [Schema.string], getValue });
 
     expect(validation).toEqual([{ field: Schema.string, error: null }]);
   });
@@ -106,7 +106,7 @@ describe("createFormValidator", () => {
     ]);
     const getValue = () => "" as any;
 
-    const validation = await validate([Schema.string], getValue);
+    const validation = await validate({ fields: [Schema.string], getValue });
 
     expect(validation).toEqual([{ field: Schema.string, error: "REQUIRED" }]);
   });
@@ -124,7 +124,7 @@ describe("createFormValidator", () => {
     ]);
     const getValue = () => "ab" as any;
 
-    const validation = await validate([Schema.string], getValue);
+    const validation = await validate({ fields: [Schema.string], getValue });
 
     expect(validation).toEqual([{ field: Schema.string, error: "TOO_SHORT" }]);
   });
@@ -142,7 +142,7 @@ describe("createFormValidator", () => {
     ]);
     const getValue = () => "abcd" as any;
 
-    const validation = await validate([Schema.string], getValue);
+    const validation = await validate({ fields: [Schema.string], getValue });
 
     expect(validation).toEqual([{ field: Schema.string, error: null }]);
   });
@@ -156,7 +156,7 @@ describe("createFormValidator", () => {
     ]);
     const getValue = () => "A" as any;
 
-    const validation = await validate([Schema.choice], getValue);
+    const validation = await validate({ fields: [Schema.choice], getValue });
 
     expect(validation).toEqual([
       { field: Schema.choice, error: "INVALID_VALUE" },
@@ -172,7 +172,7 @@ describe("createFormValidator", () => {
     ]);
     const getValue = () => "C" as any;
 
-    const validation = await validate([Schema.choice], getValue);
+    const validation = await validate({ fields: [Schema.choice], getValue });
 
     expect(validation).toEqual([{ field: Schema.choice, error: null }]);
   });
@@ -186,7 +186,7 @@ describe("createFormValidator", () => {
     ]);
     const getValue = () => null as any;
 
-    const validation = await validate([Schema.instance], getValue);
+    const validation = await validate({ fields: [Schema.instance], getValue });
 
     expect(validation).toEqual([{ field: Schema.instance, error: "REQUIRED" }]);
   });
@@ -203,7 +203,10 @@ describe("createFormValidator", () => {
     ]);
     const getValue = () => ["ok", "very-ok", "invalid", "still-ok"] as any;
 
-    const validation = await validate([Schema.arrayString], getValue);
+    const validation = await validate({
+      fields: [Schema.arrayString],
+      getValue,
+    });
 
     expect(validation).toEqual([
       { field: Schema.arrayString, error: "INVALID_VALUE" },
@@ -220,7 +223,10 @@ describe("createFormValidator", () => {
     const getValue = () =>
       [["ok"], ["very-ok"], ["invalid"], ["still-ok"]] as any;
 
-    const validation = await validate([Schema.arrayArrayString], getValue);
+    const validation = await validate({
+      fields: [Schema.arrayArrayString],
+      getValue,
+    });
 
     expect(validation).toEqual([
       { field: Schema.arrayArrayString, error: null },
@@ -236,7 +242,7 @@ describe("createFormValidator", () => {
     ]);
     const getValue = () => null as any;
 
-    const validation = await validate([Schema.object], getValue);
+    const validation = await validate({ fields: [Schema.object], getValue });
 
     expect(validation).toEqual([
       { field: Schema.object, error: "INVALID_VALUE" },
@@ -252,7 +258,7 @@ describe("createFormValidator", () => {
     ]);
     const getValue = () => null as any;
 
-    const validation = await validate([Schema.object], getValue);
+    const validation = await validate({ fields: [Schema.object], getValue });
 
     expect(validation).toEqual([{ field: Schema.object, error: "REQUIRED" }]);
   });
@@ -266,7 +272,7 @@ describe("createFormValidator", () => {
     ]);
     const getValue = () => null as any;
 
-    const validation = await validate([Schema.object], getValue);
+    const validation = await validate({ fields: [Schema.object], getValue });
 
     expect(validation).toEqual([{ field: Schema.object, error: null }]);
   });
@@ -295,15 +301,15 @@ describe("createFormValidator", () => {
       }
     };
 
-    const validation = await validate(
-      [
+    const validation = await validate({
+      fields: [
         Schema.arrayObjectString.nth(0),
         Schema.arrayObjectString.nth(1),
         Schema.arrayObjectString.nth(2),
         Schema.arrayObjectString.nth(3),
       ],
-      getValue
-    );
+      getValue,
+    });
 
     expect(validation).toEqual([
       { field: Schema.arrayObjectString.nth(0), error: "TOO_SHORT" },
@@ -338,15 +344,15 @@ describe("createFormValidator", () => {
       }
     };
 
-    const validation = await validate(
-      [
+    const validation = await validate({
+      fields: [
         Schema.arrayChoice.nth(1),
         Schema.arrayChoice.nth(0),
         Schema.arrayObjectString.nth(0),
         Schema.arrayObjectString.nth(1),
       ],
-      getValue
-    );
+      getValue,
+    });
 
     expect(validation).toEqual([
       { field: Schema.arrayChoice.nth(1), error: null },
@@ -378,11 +384,11 @@ describe("createFormValidator", () => {
       }
     };
 
-    const validation = await validate(
-      [Schema.string, Schema.choice],
+    const validation = await validate({
+      fields: [Schema.string, Schema.choice],
       getValue,
-      "change"
-    );
+      trigger: "change",
+    });
 
     expect(validation).toEqual([{ field: Schema.choice, error: "REQUIRED" }]);
   });
@@ -443,11 +449,11 @@ describe("createFormValidator", () => {
       }
     };
 
-    const validation = await validate(
-      [Schema.string, Schema.number, Schema.choice],
+    const validation = await validate({
+      fields: [Schema.string, Schema.number, Schema.choice],
       getValue,
-      "change"
-    );
+      trigger: "change",
+    });
 
     expect(validation).toEqual([
       { field: Schema.string, error: "TOO_SHORT" },
@@ -500,21 +506,103 @@ describe("createFormValidator", () => {
       }
     };
 
-    const validation = await validate(
-      [
+    const result = await validate({
+      fields: [
         Schema.arrayString.nth(0),
         Schema.arrayString.nth(1),
         Schema.arrayString.nth(2),
         Schema.string,
       ],
-      getValue
-    );
+      getValue,
+    });
 
-    expect(validation).toEqual([
+    expect(result).toEqual([
       { field: Schema.arrayString.nth(0), error: "INVALID_VALUE" },
       { field: Schema.arrayString.nth(1), error: null },
       { field: Schema.arrayString.nth(2), error: "TOO_SHORT" },
       { field: Schema.string, error: "TOO_SHORT" },
     ]);
+  });
+
+  it("calls callback functions to signal start and end of validation for every affected field", async () => {
+    const pass = <T>(_val: T) => wait(null);
+
+    const { validate } = createFormValidator(Schema, validate => [
+      validate({
+        field: Schema.string,
+        rules: () => [pass],
+      }),
+      validate({
+        field: Schema.string,
+        rules: () => [pass],
+      }),
+      validate.each({
+        field: Schema.arrayString,
+        rules: () => [pass],
+      }),
+      validate({
+        field: Schema.arrayString.nth(0),
+        rules: () => [pass],
+      }),
+    ]);
+
+    const onFieldValidationStart = jest.fn();
+    const onFieldValidationEnd = jest.fn();
+
+    const fields = [
+      Schema.number,
+      Schema.arrayString.nth(0),
+      Schema.arrayString.nth(1),
+      Schema.arrayString.nth(2),
+      Schema.string,
+    ];
+
+    await validate({
+      fields,
+      getValue: () => "foo" as any,
+      onFieldValidationStart,
+      onFieldValidationEnd,
+    });
+
+    const expectField = (desc: FieldDescriptor<any>) =>
+      expect.objectContaining({ __path: impl(desc).__path });
+
+    expect(onFieldValidationStart).toHaveBeenCalledWith(
+      expectField(Schema.arrayString.nth(0))
+    );
+    expect(onFieldValidationStart).toHaveBeenCalledWith(
+      expectField(Schema.arrayString.nth(1))
+    );
+    expect(onFieldValidationStart).toHaveBeenCalledWith(
+      expectField(Schema.arrayString.nth(2))
+    );
+    expect(onFieldValidationStart).toHaveBeenCalledWith(
+      expectField(Schema.string)
+    );
+    expect(onFieldValidationStart).not.toHaveBeenCalledWith(
+      expectField(Schema.number)
+    );
+    expect(onFieldValidationStart).not.toHaveBeenCalledWith(
+      expectField(Schema.arrayString)
+    );
+
+    expect(onFieldValidationEnd).toHaveBeenCalledWith(
+      expectField(Schema.arrayString.nth(0))
+    );
+    expect(onFieldValidationEnd).toHaveBeenCalledWith(
+      expectField(Schema.arrayString.nth(1))
+    );
+    expect(onFieldValidationEnd).toHaveBeenCalledWith(
+      expectField(Schema.arrayString.nth(2))
+    );
+    expect(onFieldValidationEnd).toHaveBeenCalledWith(
+      expectField(Schema.string)
+    );
+    expect(onFieldValidationEnd).not.toHaveBeenCalledWith(
+      expectField(Schema.number)
+    );
+    expect(onFieldValidationEnd).not.toHaveBeenCalledWith(
+      expectField(Schema.arrayString)
+    );
   });
 });

@@ -63,7 +63,13 @@ export const createFormValidator = <Values extends object, Err>(
   };
 
   const formValidator: FormValidator<Values, Err> = {
-    validate: (fields, getValue, trigger) => {
+    validate: ({
+      fields,
+      trigger,
+      getValue,
+      onFieldValidationStart,
+      onFieldValidationEnd,
+    }) => {
       const fieldsToValidate = fields
         .map(field => ({
           field,
@@ -72,13 +78,16 @@ export const createFormValidator = <Values extends object, Err>(
         .filter(x => x.validators.length > 0);
 
       return Promise.all(
-        fieldsToValidate.map(async ({ field, validators }) => {
+        fieldsToValidate.map(({ field, validators }) => {
           const value = getValue(field);
-          const error = await firstNonNullPromise(validators, x =>
-            runValidationForField(x, value)
-          );
 
-          return { field, error };
+          onFieldValidationStart?.(field);
+          return firstNonNullPromise(validators, v =>
+            runValidationForField(v, value)
+          ).then(error => {
+            onFieldValidationEnd?.(field);
+            return { field, error };
+          });
         })
       );
     },
@@ -103,7 +112,7 @@ validate.each = config => ({
   dependencies: config.dependencies,
 });
 
-const runValidationForField = async <Value, Err>(
+const runValidationForField = <Value, Err>(
   validator: FieldValidator<Value, Err, unknown[]>,
   value: Value
 ): Promise<Err | null> => {
@@ -111,20 +120,21 @@ const runValidationForField = async <Value, Err>(
     .validators([] as any)
     .filter(x => !isFalsy(x)) as Validator<Value, Err>[];
 
-  return firstNonNullPromise(rules, async rule => await rule(value));
+  return firstNonNullPromise(rules, rule => Promise.resolve(rule(value)));
 };
 
-const firstNonNullPromise = async <T, V>(
+const firstNonNullPromise = <T, V>(
   list: T[],
-  mapper: (x: T) => Promise<V | null>
+  provider: (x: T) => Promise<V | null>
 ): Promise<V | null> => {
-  for (const x of list) {
-    const result = await mapper(x);
-    if (result != null) {
-      return result;
-    }
+  if (list.length === 0) {
+    return Promise.resolve(null);
   }
-  return null;
+
+  const [el, ...rest] = list;
+  return provider(el).then(result =>
+    result != null ? result : firstNonNullPromise(rest, provider)
+  );
 };
 
 // TODO rethink

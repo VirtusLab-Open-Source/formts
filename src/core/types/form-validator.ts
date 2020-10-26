@@ -26,13 +26,17 @@ export type ValidationResult<Err> = Array<{
   error: Err | null;
 }>;
 
+export type ValidateIn<Err> = {
+  fields: Array<FieldDescriptor<unknown, Err>>;
+  trigger?: ValidationTrigger;
+  getValue: <P>(field: FieldDescriptor<P, Err>) => P;
+  onFieldValidationStart?: (field: FieldDescriptor<unknown, Err>) => void;
+  onFieldValidationEnd?: (field: FieldDescriptor<unknown, Err>) => void;
+};
+
 // @ts-ignore
 export type FormValidator<Values extends object, Err> = {
-  validate: (
-    fields: Array<FieldDescriptor<unknown, Err>>,
-    getValue: <P>(field: FieldDescriptor<P, Err>) => P,
-    trigger?: ValidationTrigger
-  ) => Promise<ValidationResult<Err>>;
+  validate: (input: ValidateIn<Err>) => Promise<ValidationResult<Err>>;
 };
 
 export type FieldValidator<T, Err, Dependencies extends any[]> = {
