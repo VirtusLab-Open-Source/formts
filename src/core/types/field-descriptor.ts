@@ -44,3 +44,9 @@ export const isObjectDescriptor = <T extends {}, Err>(
   it: FieldDescriptor<T, Err>
 ): it is ObjectFieldDescriptor<T, Err> =>
   impl(it).__decoder.fieldType === "object";
+
+export const isPrimitiveDescriptor = (
+  field: FieldDescriptor<unknown>
+): boolean => {
+  return !isArrayDescriptor(field) && !isObjectDescriptor(field);
+};

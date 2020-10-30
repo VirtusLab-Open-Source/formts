@@ -1,6 +1,6 @@
 import { Reducer } from "react";
 
-import { get, set } from "../../../utils";
+import { filter, get, range, set } from "../../../utils";
 import { FormtsState } from "../../types/formts-state";
 
 import { createInitialValues } from "./create-initial-values";
@@ -12,7 +12,8 @@ export type FormtsAction<Values, Err> =
   | { type: "touchValue"; payload: { path: string } }
   | { type: "setValue"; payload: { path: string; value: any } }
   | { type: "setErrors"; payload: Array<{ path: string; error: Err | null }> }
-  | { type: "setIsValidating"; payload: { isValidating: boolean } }
+  | { type: "validatingStart"; payload: { path: string; uuid: string } }
+  | { type: "validatingStop"; payload: { path: string; uuid: string } }
   | { type: "setIsSubmitting"; payload: { isSubmitting: boolean } };
 
 export const createReducer = <Values extends object, Err>(): Reducer<
@@ -28,7 +29,7 @@ export const createReducer = <Values extends object, Err>(): Reducer<
         values,
         touched,
         errors: {},
-        isValidating: false,
+        validating: {},
         isSubmitting: false,
       };
     }
@@ -45,10 +46,30 @@ export const createReducer = <Values extends object, Err>(): Reducer<
     case "setValue": {
       const { path, value } = action.payload;
 
+      const resolveErrors = () => {
+        if (!Array.isArray(value)) {
+          return state.errors;
+        }
+
+        const currentValue = get(state.values, path) as unknown[];
+        if (currentValue.length <= value.length) {
+          return state.errors;
+        }
+
+        const hangingIndexes = range(value.length, currentValue.length - 1);
+        const errors = filter(
+          state.errors,
+          ({ key }) =>
+            !hangingIndexes.some(i => key.startsWith(`${path}[${i}]`))
+        );
+
+        return errors;
+      };
+
       const values = set(state.values, path, value);
       const touched = set(state.touched, path, makeTouchedValues(value));
 
-      return { ...state, values, touched };
+      return { ...state, values, touched, errors: resolveErrors() };
     }
 
     case "setErrors": {
@@ -67,10 +88,41 @@ export const createReducer = <Values extends object, Err>(): Reducer<
       return { ...state, errors };
     }
 
-    case "setIsValidating": {
-      const { isValidating } = action.payload;
-      return { ...state, isValidating };
+    case "validatingStart": {
+      const { path, uuid } = action.payload;
+
+      const validating = {
+        ...state.validating,
+        [path]: { ...state.validating[path], [uuid]: true as const },
+      };
+
+      return { ...state, validating };
     }
+
+    case "validatingStop": {
+      const { path, uuid } = action.payload;
+
+      const validating = (() => {
+        if (state.validating[path] == null) {
+          return state.validating;
+        }
+
+        const validating = { ...state.validating };
+        const uuids = { ...validating[path] };
+        validating[path] = uuids;
+
+        delete uuids[uuid];
+
+        if (Object.keys(uuids).length === 0) {
+          delete validating[path];
+        }
+
+        return validating;
+      })();
+
+      return { ...state, validating };
+    }
+
     case "setIsSubmitting": {
       const { isSubmitting } = action.payload;
       return { ...state, isSubmitting };
@@ -89,7 +141,7 @@ export const getInitialState = <Values extends object, Err>({
     values,
     touched,
     errors: {},
-    isValidating: false,
+    validating: {},
     isSubmitting: false,
   };
 };

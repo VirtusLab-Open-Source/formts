@@ -1,6 +1,20 @@
+import { FieldDescriptor } from "../../types/field-descriptor";
 import { FieldErrors } from "../../types/formts-state";
+import { opaque } from "../../types/type-mapper-util";
 
 import { resolveIsValid } from "./resolve-is-valid";
+
+const primitiveDescriptor = (path: string): FieldDescriptor<unknown> =>
+  opaque({
+    __path: path,
+    __decoder: { fieldType: "string" } as any,
+  });
+
+const complexDescriptor = (path: string): FieldDescriptor<unknown> =>
+  opaque({
+    __path: path,
+    __decoder: { fieldType: "object" } as any,
+  });
 
 describe("resolveIsValid", () => {
   it("handles primitive field errors", () => {
@@ -9,9 +23,9 @@ describe("resolveIsValid", () => {
       bar: undefined,
     };
 
-    expect(resolveIsValid(errors, "foo")).toBe(false);
-    expect(resolveIsValid(errors, "bar")).toBe(true);
-    expect(resolveIsValid(errors, "baz")).toBe(true);
+    expect(resolveIsValid(errors, primitiveDescriptor("foo"))).toBe(false);
+    expect(resolveIsValid(errors, primitiveDescriptor("bar"))).toBe(true);
+    expect(resolveIsValid(errors, primitiveDescriptor("baz"))).toBe(true);
   });
 
   it("handles root array field errors", () => {
@@ -19,8 +33,8 @@ describe("resolveIsValid", () => {
       array: "error!",
     };
 
-    expect(resolveIsValid(errors, "array")).toBe(false);
-    expect(resolveIsValid(errors, "array[42]")).toBe(true);
+    expect(resolveIsValid(errors, complexDescriptor("array"))).toBe(false);
+    expect(resolveIsValid(errors, primitiveDescriptor("array[42]"))).toBe(true);
   });
 
   it("handles array item field errors", () => {
@@ -28,9 +42,10 @@ describe("resolveIsValid", () => {
       "array[0]": "error!",
     };
 
-    expect(resolveIsValid(errors, "array")).toBe(false);
-    expect(resolveIsValid(errors, "array[0]")).toBe(false);
-    expect(resolveIsValid(errors, "array[42]")).toBe(true);
+    expect(resolveIsValid(errors, primitiveDescriptor("array"))).toBe(true);
+    expect(resolveIsValid(errors, complexDescriptor("array"))).toBe(false);
+    expect(resolveIsValid(errors, primitiveDescriptor("array[0]"))).toBe(false);
+    expect(resolveIsValid(errors, primitiveDescriptor("array[42]"))).toBe(true);
   });
 
   it("handles root object field errors", () => {
@@ -38,8 +53,10 @@ describe("resolveIsValid", () => {
       object: "error!",
     };
 
-    expect(resolveIsValid(errors, "object")).toBe(false);
-    expect(resolveIsValid(errors, "object.prop")).toBe(true);
+    expect(resolveIsValid(errors, complexDescriptor("object"))).toBe(false);
+    expect(resolveIsValid(errors, primitiveDescriptor("object.prop"))).toBe(
+      true
+    );
   });
 
   it("handles object property field errors", () => {
@@ -47,9 +64,14 @@ describe("resolveIsValid", () => {
       "object.prop": "error!",
     };
 
-    expect(resolveIsValid(errors, "object")).toBe(false);
-    expect(resolveIsValid(errors, "object.prop")).toBe(false);
-    expect(resolveIsValid(errors, "object.otherProp")).toBe(true);
+    expect(resolveIsValid(errors, primitiveDescriptor("object"))).toBe(true);
+    expect(resolveIsValid(errors, complexDescriptor("object"))).toBe(false);
+    expect(resolveIsValid(errors, primitiveDescriptor("object.prop"))).toBe(
+      false
+    );
+    expect(
+      resolveIsValid(errors, primitiveDescriptor("object.otherProp"))
+    ).toBe(true);
   });
 
   it("handles nested object and array fields", () => {
@@ -57,13 +79,33 @@ describe("resolveIsValid", () => {
       "nested.nestedArr[42].foo": "error!",
     };
 
-    expect(resolveIsValid(errors, "nested")).toBe(false);
-    expect(resolveIsValid(errors, "nested.nestedArr")).toBe(false);
-    expect(resolveIsValid(errors, "nested.nestedArr[42]")).toBe(false);
-    expect(resolveIsValid(errors, "nested.nestedArr[42].foo")).toBe(false);
+    expect(resolveIsValid(errors, complexDescriptor("nested"))).toBe(false);
 
-    expect(resolveIsValid(errors, "nested.otherProp")).toBe(true);
-    expect(resolveIsValid(errors, "nested.nestedArr[43]")).toBe(true);
-    expect(resolveIsValid(errors, "nested.nestedArr[42].otherProp")).toBe(true);
+    expect(resolveIsValid(errors, complexDescriptor("nested.nestedArr"))).toBe(
+      false
+    );
+
+    expect(
+      resolveIsValid(errors, complexDescriptor("nested.nestedArr[42]"))
+    ).toBe(false);
+
+    expect(
+      resolveIsValid(errors, primitiveDescriptor("nested.nestedArr[42].foo"))
+    ).toBe(false);
+
+    expect(
+      resolveIsValid(errors, primitiveDescriptor("nested.otherProp"))
+    ).toBe(true);
+
+    expect(
+      resolveIsValid(errors, complexDescriptor("nested.nestedArr[43]"))
+    ).toBe(true);
+
+    expect(
+      resolveIsValid(
+        errors,
+        complexDescriptor("nested.nestedArr[42].otherProp")
+      )
+    ).toBe(true);
   });
 });

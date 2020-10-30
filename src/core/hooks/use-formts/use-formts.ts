@@ -29,6 +29,7 @@ import { impl } from "../../types/type-mapper-util";
 import { createInitialValues } from "./create-initial-values";
 import { createReducer, getInitialState } from "./reducer";
 import { resolveIsValid } from "./resolve-is-valid";
+import { resolveIsValidating } from "./resolve-is-validating";
 import { resolveTouched } from "./resolve-touched";
 
 export type FormtsOptions<Values extends object, Err> = {
@@ -74,7 +75,28 @@ export const useFormts = <Values extends object, Err>(
     resolveTouched(get(state.touched as object, impl(field).__path));
 
   const isFieldValid = <T>(field: FieldDescriptor<T, Err>) =>
-    resolveIsValid(state.errors, impl(field).__path);
+    resolveIsValid(state.errors, field);
+
+  const isFieldValidating = <T>(field: FieldDescriptor<T, Err>) =>
+    resolveIsValidating(state.validating, field);
+
+  const makeValidationHandlers = () => {
+    const uuid = new Date().valueOf().toString();
+    return {
+      onFieldValidationStart: (field: FieldDescriptor<unknown, Err>) => {
+        dispatch({
+          type: "validatingStart",
+          payload: { path: impl(field).__path, uuid },
+        });
+      },
+      onFieldValidationEnd: (field: FieldDescriptor<unknown, Err>) => {
+        dispatch({
+          type: "validatingStop",
+          payload: { path: impl(field).__path, uuid },
+        });
+      },
+    };
+  };
 
   const validateField = <T>(
     field: FieldDescriptor<T, Err>,
@@ -83,13 +105,21 @@ export const useFormts = <Values extends object, Err>(
     if (!options.validator) {
       return Promise.resolve();
     }
+    const {
+      onFieldValidationStart,
+      onFieldValidationEnd,
+    } = makeValidationHandlers();
 
-    dispatch({ type: "setIsValidating", payload: { isValidating: true } });
     return options.validator
-      .validate([field], getField, trigger)
+      .validate({
+        fields: [field],
+        getValue: getField,
+        trigger,
+        onFieldValidationStart,
+        onFieldValidationEnd,
+      })
       .then(errors => {
         setFieldErrors(...errors);
-        dispatch({ type: "setIsValidating", payload: { isValidating: false } });
       });
   };
 
@@ -98,13 +128,20 @@ export const useFormts = <Values extends object, Err>(
       return Promise.resolve([]);
     }
     const topLevelDescriptors = values(fields).map(it => it.descriptor);
+    const {
+      onFieldValidationStart,
+      onFieldValidationEnd,
+    } = makeValidationHandlers();
 
-    dispatch({ type: "setIsValidating", payload: { isValidating: true } });
     return options.validator
-      .validate(topLevelDescriptors, getField)
+      .validate({
+        fields: topLevelDescriptors,
+        getValue: getField,
+        onFieldValidationStart,
+        onFieldValidationEnd,
+      })
       .then(errors => {
         setFieldErrors(...errors);
-        dispatch({ type: "setIsValidating", payload: { isValidating: false } });
         return errors;
       });
   };
@@ -138,16 +175,21 @@ export const useFormts = <Values extends object, Err>(
         return getField(fieldToValidate);
       };
 
-      dispatch({ type: "setIsValidating", payload: { isValidating: true } });
+      const {
+        onFieldValidationStart,
+        onFieldValidationEnd,
+      } = makeValidationHandlers();
 
       return options.validator
-        .validate([field], modifiedGetField, "change")
+        .validate({
+          fields: [field],
+          getValue: modifiedGetField,
+          trigger: "change",
+          onFieldValidationStart,
+          onFieldValidationEnd,
+        })
         .then(errors => {
           setFieldErrors(...errors);
-          dispatch({
-            type: "setIsValidating",
-            payload: { isValidating: false },
-          });
         });
     };
 
@@ -198,6 +240,10 @@ export const useFormts = <Values extends object, Err>(
 
       get isValid() {
         return isFieldValid(descriptor);
+      },
+
+      get isValidating() {
+        return isFieldValidating(descriptor);
       },
 
       get children() {
@@ -266,8 +312,6 @@ export const useFormts = <Values extends object, Err>(
 
     isSubmitting: state.isSubmitting,
 
-    isValidating: state.isValidating,
-
     get errors() {
       return entries(state.errors)
         .filter(([, err]) => err != null)
@@ -280,6 +324,10 @@ export const useFormts = <Values extends object, Err>(
 
     get isValid() {
       return values(state.errors).filter(err => err != null).length === 0;
+    },
+
+    get isValidating() {
+      return keys(state.validating).length > 0;
     },
 
     validate: () => {
