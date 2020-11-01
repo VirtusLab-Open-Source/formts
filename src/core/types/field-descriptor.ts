@@ -57,7 +57,7 @@ export const getArrayDescriptorChildren = <T extends Array<unknown>, Err>(
 ): Array<ReturnType<typeof descriptor["nth"]>> => {
   return Array.from(Array(numberOfChildren), (_, index) =>
     descriptor.nth(index)
-  ) as any;
+  );
 };
 
 export const getObjectDescriptorChildren = <T extends {}, Err>(
