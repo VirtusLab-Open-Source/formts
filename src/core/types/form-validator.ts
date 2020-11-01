@@ -13,11 +13,15 @@ import {
  *
  * @returns validation error of type `Err`, or `null` when field is valid
  */
-export type Validator<T, Err> = ValidatorSync<T, Err> | ValidatorAsync<T, Err>;
+export type Validator<T, Err> =
+  | Validator.Sync<T, Err>
+  | Validator.Async<T, Err>;
 
-export type ValidatorSync<T, Err> = (value: T) => Err | null;
+export namespace Validator {
+  export type Sync<T, Err> = (value: T) => Err | null;
 
-export type ValidatorAsync<T, Err> = (value: T) => Promise<Err | null>;
+  export type Async<T, Err> = (value: T) => Promise<Err | null>;
+}
 
 export type ValidationTrigger = "change" | "blur" | "submit";
 

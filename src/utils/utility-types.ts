@@ -35,3 +35,13 @@ export type Falsy = null | undefined | false;
 export const isFalsy = (x: unknown): x is Falsy => {
   return x === null || x === undefined || x === false;
 };
+
+export type Primitive = string | number | boolean;
+
+export type WidenType<T> = [T] extends [string]
+  ? string
+  : [T] extends [number]
+  ? number
+  : [T] extends [boolean]
+  ? boolean
+  : T;

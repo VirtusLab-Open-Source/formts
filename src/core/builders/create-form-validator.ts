@@ -84,10 +84,18 @@ export const createFormValidator = <Values extends object, Err>(
           onFieldValidationStart?.(field);
           return firstNonNullPromise(validators, v =>
             runValidationForField(v, value)
-          ).then(error => {
-            onFieldValidationEnd?.(field);
-            return { field, error };
-          });
+          )
+            .catch(err => {
+              if (err === true) {
+                return null; // optional validator edge-case
+              }
+              onFieldValidationEnd?.(field);
+              throw err;
+            })
+            .then(error => {
+              onFieldValidationEnd?.(field);
+              return { field, error };
+            });
         })
       );
     },
@@ -120,7 +128,13 @@ const runValidationForField = <Value, Err>(
     .validators([] as any)
     .filter(x => !isFalsy(x)) as Validator<Value, Err>[];
 
-  return firstNonNullPromise(rules, rule => Promise.resolve(rule(value)));
+  return firstNonNullPromise(rules, rule => {
+    try {
+      return Promise.resolve(rule(value));
+    } catch (err) {
+      return Promise.reject(err);
+    }
+  });
 };
 
 const firstNonNullPromise = <T, V>(
