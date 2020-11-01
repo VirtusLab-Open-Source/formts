@@ -1,5 +1,12 @@
 import { isFalsy } from "../../utils";
-import { FieldDescriptor } from "../types/field-descriptor";
+import { flatMap, uniqBy } from "../../utils/array";
+import {
+  FieldDescriptor,
+  getArrayDescriptorChildren,
+  getObjectDescriptorChildren,
+  isArrayDescriptor,
+  isObjectDescriptor,
+} from "../types/field-descriptor";
 import { FormSchema } from "../types/form-schema";
 import {
   FieldValidator,
@@ -70,7 +77,12 @@ export const createFormValidator = <Values extends object, Err>(
       onFieldValidationStart,
       onFieldValidationEnd,
     }) => {
-      const fieldsToValidate = fields
+      const allFields = flatMap(fields, x =>
+        getChildrenDescriptors(x, getValue)
+      );
+      const uniqueFields = uniqBy(allFields, x => impl(x).__path);
+
+      const fieldsToValidate = uniqueFields
         .map(field => ({
           field,
           validators: getValidatorsForField(field, trigger),
@@ -135,6 +147,28 @@ const firstNonNullPromise = <T, V>(
   return provider(el).then(result =>
     result != null ? result : firstNonNullPromise(rest, provider)
   );
+};
+
+const getChildrenDescriptors = (
+  descriptor: FieldDescriptor<any, any>,
+  getValue: (field: FieldDescriptor<any, any>) => any
+): Array<FieldDescriptor<any, any>> => {
+  const root = [descriptor];
+
+  if (isObjectDescriptor(descriptor)) {
+    const children = getObjectDescriptorChildren(descriptor);
+    return root.concat(
+      flatMap(children, x => getChildrenDescriptors(x, getValue))
+    );
+  } else if (isArrayDescriptor(descriptor)) {
+    const numberOfChildren = (getValue(descriptor) as any[]).length;
+    const children = getArrayDescriptorChildren(descriptor, numberOfChildren);
+    return root.concat(
+      flatMap(children, x => getChildrenDescriptors(x, getValue))
+    );
+  } else {
+    return root;
+  }
 };
 
 // TODO rethink
