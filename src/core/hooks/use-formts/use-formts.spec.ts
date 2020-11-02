@@ -189,6 +189,43 @@ describe("useFormts", () => {
     }
   });
 
+  it("allows for adding and removing array field items", () => {
+    const hook = renderHook(() => useFormts({ Schema }));
+
+    {
+      const [fields] = hook.result.current;
+      expect(fields.theArray.isTouched).toBe(false);
+      expect(fields.theArray.value).toEqual([]);
+    }
+
+    act(() => {
+      const [fields] = hook.result.current;
+      fields.theArray.addItem("foo");
+    });
+
+    act(() => {
+      const [fields] = hook.result.current;
+      fields.theArray.addItem("bar");
+    });
+
+    {
+      const [fields] = hook.result.current;
+      expect(fields.theArray.isTouched).toBe(true);
+      expect(fields.theArray.value).toEqual(["foo", "bar"]);
+    }
+
+    act(() => {
+      const [fields] = hook.result.current;
+      fields.theArray.removeItem(0);
+    });
+
+    {
+      const [fields] = hook.result.current;
+      expect(fields.theArray.isTouched).toBe(true);
+      expect(fields.theArray.value).toEqual(["bar"]);
+    }
+  });
+
   it("allows for setting errors using corresponding field handles and keeps track of isValid state", () => {
     const hook = renderHook(() => useFormts({ Schema }));
 
