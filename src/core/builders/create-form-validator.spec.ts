@@ -605,4 +605,134 @@ describe("createFormValidator", () => {
       expectField(Schema.arrayString)
     );
   });
+
+  it("array validation should fire validation for each field", async () => {
+    const { validate } = createFormValidator(Schema, validate => [
+      validate({
+        field: Schema.arrayObjectString,
+        rules: () => [x => (x.length < 3 ? "TOO_SHORT" : undefined)],
+      }),
+      validate.each({
+        field: Schema.arrayObjectString,
+        rules: () => [x => (x.str === "" ? "REQUIRED" : null)],
+      }),
+    ]);
+
+    const getValue = (field: FieldDescriptor<any>): any => {
+      switch (impl(field).__path) {
+        case "arrayObjectString":
+          return [{ str: "ok-string" }, { str: "" }];
+        case "arrayObjectString[0]":
+          return { str: "ok-string" };
+        case "arrayObjectString[1]":
+          return { str: "" };
+      }
+    };
+
+    const validation = await validate({
+      fields: [Schema.arrayObjectString],
+      getValue,
+    });
+
+    expect(validation).toEqual([
+      { field: Schema.arrayObjectString, error: "TOO_SHORT" },
+      { field: Schema.arrayObjectString.nth(0), error: null },
+      { field: Schema.arrayObjectString.nth(1), error: "REQUIRED" },
+    ]);
+  });
+
+  it("object validation should fire validation for each child", async () => {
+    const { validate } = createFormValidator(Schema, validate => [
+      validate({
+        field: Schema.object.num,
+        rules: () => [x => (x > 0 ? null : "REQUIRED")],
+      }),
+      validate({
+        field: Schema.object.str,
+        rules: () => [x => (x ? null : "REQUIRED")],
+      }),
+    ]);
+
+    const getValue = (field: FieldDescriptor<any>): any => {
+      switch (impl(field).__path) {
+        case "object":
+          return { str: "", num: 10 };
+        case "object.str":
+          return "";
+        case "object.num":
+          return 10;
+      }
+    };
+
+    const validation = await validate({ fields: [Schema.object], getValue });
+
+    expect(validation).toEqual([
+      { field: Schema.object.str, error: "REQUIRED" },
+      { field: Schema.object.num, error: null },
+    ]);
+  });
+
+  it("nested object validation should fire validation for each child without duplicates", async () => {
+    const arrayValidator = jest.fn(x => (x.length > 1 ? null : "TOO_SHORT"));
+    const arrayItemValidator = jest.fn(x => (x ? null : "REQUIRED"));
+    const stringValidator = jest.fn(x =>
+      x === "no-ok" ? "INVALID_VALUE" : null
+    );
+
+    const { validate } = createFormValidator(Schema, validate => [
+      validate({
+        field: Schema.objectObjectArrayObjectString.obj.array,
+        rules: () => [arrayValidator],
+      }),
+      validate.each({
+        field: Schema.objectObjectArrayObjectString.obj.array,
+        rules: () => [arrayItemValidator],
+      }),
+      validate({
+        field: Schema.objectObjectArrayObjectString.obj.array.nth(1).str,
+        rules: () => [stringValidator],
+      }),
+    ]);
+
+    const getValue = (field: FieldDescriptor<any>): any => {
+      switch (impl(field).__path) {
+        case "objectObjectArrayObjectString.obj.array":
+          return [{ str: "" }, { str: "no-ok" }];
+        case "objectObjectArrayObjectString.obj.array[0]":
+          return { str: "" };
+        case "objectObjectArrayObjectString.obj.array[1]":
+          return { str: "no-ok" };
+        case "objectObjectArrayObjectString.obj.array[1].str":
+          return "no-ok";
+      }
+    };
+
+    const validation = await validate({
+      fields: [
+        Schema.objectObjectArrayObjectString,
+        Schema.objectObjectArrayObjectString.obj.array.nth(0),
+      ],
+      getValue,
+    });
+
+    expect(validation).toEqual([
+      { field: Schema.objectObjectArrayObjectString.obj.array, error: null },
+      {
+        field: Schema.objectObjectArrayObjectString.obj.array.nth(0),
+        error: null,
+      },
+      {
+        field: Schema.objectObjectArrayObjectString.obj.array.nth(1),
+        error: null,
+      },
+      {
+        field: Schema.objectObjectArrayObjectString.obj.array.nth(1).str,
+        error: "INVALID_VALUE",
+      },
+    ]);
+
+    expect(arrayValidator).toHaveBeenCalledTimes(1);
+    expect(arrayItemValidator).toHaveBeenCalledTimes(2);
+    expect(stringValidator).toHaveBeenCalledTimes(1);
+  });
 });
