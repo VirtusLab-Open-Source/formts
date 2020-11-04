@@ -1,4 +1,4 @@
-import { IdentityDict, IsUnion } from "../../utils";
+import { ArrayElement, IdentityDict, IsUnion } from "../../utils";
 
 import { FieldDescriptor } from "./field-descriptor";
 
@@ -17,6 +17,8 @@ export type _FieldHandleApprox<T, Err> = BaseFieldHandle<T, Err> & {
     | Array<_FieldHandleApprox<unknown, Err>>
     | Record<string, _FieldHandleApprox<unknown, Err>>;
   options?: Record<string, string>;
+  addItem?: (item: ArrayElement<T>) => void;
+  removeItem?: (i: number) => void;
 };
 
 export const toApproxFieldHandle = <T, Err>(it: FieldHandle<T, Err>) =>
@@ -81,14 +83,14 @@ type ArrayFieldHandle<T, Err> = T extends Array<infer E>
        * Will run field validation with `change` trigger.
        * Will set `isTouched` to `true`.
        */
-      // pushItem: (item: E) => void;
+      addItem: (item: E) => void;
 
       /**
        * Will set the field value its copy with the item at index `i` removed.
        * Will run field validation with `change` trigger.
        * Will set `isTouched` to `true`.
        */
-      // removeItem: (i: number) => void;
+      removeItem: (i: number) => void;
 
       /**
        * Array of FieldHandles for each item stored in field value
