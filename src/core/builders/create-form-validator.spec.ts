@@ -673,18 +673,24 @@ describe("createFormValidator", () => {
   });
 
   it("nested object validation should fire validation for each child without duplicates", async () => {
+    const arrayValidator = jest.fn(x => (x.length > 1 ? null : "TOO_SHORT"));
+    const arrayItemValidator = jest.fn(x => (x ? null : "REQUIRED"));
+    const stringValidator = jest.fn(x =>
+      x === "no-ok" ? "INVALID_VALUE" : null
+    );
+
     const { validate } = createFormValidator(Schema, validate => [
       validate({
         field: Schema.objectObjectArrayObjectString.obj.array,
-        rules: () => [x => (x.length > 1 ? null : "TOO_SHORT")],
+        rules: () => [arrayValidator],
       }),
       validate.each({
         field: Schema.objectObjectArrayObjectString.obj.array,
-        rules: () => [x => (x ? null : "REQUIRED")],
+        rules: () => [arrayItemValidator],
       }),
       validate({
         field: Schema.objectObjectArrayObjectString.obj.array.nth(1).str,
-        rules: () => [x => (x === "no-ok" ? "INVALID_VALUE" : null)],
+        rules: () => [stringValidator],
       }),
     ]);
 
@@ -724,5 +730,9 @@ describe("createFormValidator", () => {
         error: "INVALID_VALUE",
       },
     ]);
+
+    expect(arrayValidator).toHaveBeenCalledTimes(1);
+    expect(arrayItemValidator).toHaveBeenCalledTimes(2);
+    expect(stringValidator).toHaveBeenCalledTimes(1);
   });
 });

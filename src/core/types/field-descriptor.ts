@@ -1,4 +1,4 @@
-import { Nominal, values } from "../../utils";
+import { Nominal, range, values } from "../../utils";
 
 import { _FieldDecoderImpl } from "./field-decoder";
 import { impl } from "./type-mapper-util";
@@ -55,9 +55,7 @@ export const getArrayDescriptorChildren = <T extends Array<unknown>, Err>(
   descriptor: ArrayFieldDescriptor<T, Err>,
   numberOfChildren: number
 ): Array<ReturnType<typeof descriptor["nth"]>> => {
-  return Array.from(Array(numberOfChildren), (_, index) =>
-    descriptor.nth(index)
-  );
+  return range(0, numberOfChildren - 1).map(descriptor.nth);
 };
 
 export const getObjectDescriptorChildren = <T extends {}, Err>(

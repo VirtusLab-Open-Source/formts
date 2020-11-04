@@ -150,9 +150,9 @@ const firstNonNullPromise = <T, V>(
 };
 
 const getChildrenDescriptors = (
-  descriptor: FieldDescriptor<any, any>,
-  getValue: (field: FieldDescriptor<any, any>) => any
-): Array<FieldDescriptor<any, any>> => {
+  descriptor: FieldDescriptor<unknown, unknown>,
+  getValue: (field: FieldDescriptor<unknown, unknown>) => unknown
+): Array<FieldDescriptor<unknown, unknown>> => {
   const root = [descriptor];
 
   if (isObjectDescriptor(descriptor)) {
