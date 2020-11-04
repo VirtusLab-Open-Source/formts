@@ -1,4 +1,4 @@
-import { Nominal } from "../../utils";
+import { Nominal, range, values } from "../../utils";
 
 import { _FieldDecoderImpl } from "./field-decoder";
 import { impl } from "./type-mapper-util";
@@ -18,21 +18,21 @@ export interface FieldDescriptor<T, Err = unknown>
   extends Nominal<"FieldDescriptor", {}> {}
 
 // prettier-ignore
-export type GenericFieldDescriptor<T, Err = unknown> = 
-[T] extends [Array<unknown>]
+export type GenericFieldDescriptor<T, Err = unknown> =
+  [T] extends [Array<unknown>]
   ? ArrayFieldDescriptor<T, Err>
   : [T] extends [object]
-    ? ObjectFieldDescriptor<T, Err>
-    : FieldDescriptor<T, Err>;
+  ? ObjectFieldDescriptor<T, Err>
+  : FieldDescriptor<T, Err>;
 
 // prettier-ignore
 export type ArrayFieldDescriptor<T extends Array<unknown>, Err> =
-  & FieldDescriptor<T, Err> 
+  & FieldDescriptor<T, Err>
   & { readonly nth: (index: number) => GenericFieldDescriptor<T[number], Err>; };
 
 // prettier-ignore
-export type ObjectFieldDescriptor<T extends object, Err> = 
-  & FieldDescriptor<T, Err> 
+export type ObjectFieldDescriptor<T extends object, Err> =
+  & FieldDescriptor<T, Err>
   & { readonly [K in keyof T]: GenericFieldDescriptor<T[K], Err> };
 
 export const isArrayDescriptor = <T extends any[], Err>(
@@ -49,4 +49,17 @@ export const isPrimitiveDescriptor = (
   field: FieldDescriptor<unknown>
 ): boolean => {
   return !isArrayDescriptor(field) && !isObjectDescriptor(field);
+};
+
+export const getArrayDescriptorChildren = <T extends Array<unknown>, Err>(
+  descriptor: ArrayFieldDescriptor<T, Err>,
+  numberOfChildren: number
+): Array<ReturnType<typeof descriptor["nth"]>> => {
+  return range(0, numberOfChildren - 1).map(descriptor.nth);
+};
+
+export const getObjectDescriptorChildren = <T extends {}, Err>(
+  descriptor: ObjectFieldDescriptor<T, Err>
+): Array<typeof descriptor[keyof typeof descriptor]> => {
+  return values(descriptor);
 };

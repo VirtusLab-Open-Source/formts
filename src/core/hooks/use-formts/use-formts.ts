@@ -289,6 +289,26 @@ export const useFormts = <Values extends object, Err>(
         setFieldErrors({ field: descriptor, error });
       },
 
+      addItem: item => {
+        if (isArrayDescriptor(descriptor)) {
+          const array = getField(descriptor) as unknown[];
+          const updatedArray = [...array, item];
+          return setField(descriptor, updatedArray);
+        }
+
+        return undefined;
+      },
+
+      removeItem: index => {
+        if (isArrayDescriptor(descriptor)) {
+          const array = getField(descriptor) as unknown[];
+          const updatedArray = array.filter((_, i) => i !== index);
+          return setField(descriptor, updatedArray);
+        }
+
+        return undefined;
+      },
+
       validate: () => {
         return validateField(descriptor);
       },
