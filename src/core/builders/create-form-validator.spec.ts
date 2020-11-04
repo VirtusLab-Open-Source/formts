@@ -1,5 +1,6 @@
 import { assert, IsExact } from "conditional-type-checks";
 
+import { validators } from "../../validators";
 import { FieldDescriptor } from "../types/field-descriptor";
 import { FormValidator } from "../types/form-validator";
 import { impl } from "../types/type-mapper-util";
@@ -604,6 +605,63 @@ describe("createFormValidator", () => {
     expect(onFieldValidationEnd).not.toHaveBeenCalledWith(
       expectField(Schema.arrayString)
     );
+  });
+
+  it("should cancel validation when optional rule is used", async () => {
+    const rule1 = jest.fn().mockReturnValue("ERR_1");
+    const rule2 = jest.fn().mockReturnValue("ERR_2");
+
+    const { validate } = createFormValidator(Schema, validate => [
+      validate({
+        field: Schema.string,
+        rules: () => [validators.optional(), rule1, rule2],
+      }),
+    ]);
+
+    const getValue = jest
+      .fn()
+      .mockReturnValueOnce("")
+      .mockReturnValueOnce("foo");
+
+    {
+      const result = await validate({ fields: [Schema.string], getValue });
+
+      expect(result).toEqual([
+        { field: Schema.arrayString.nth(0), error: null },
+      ]);
+      expect(rule1).not.toHaveBeenCalled();
+      expect(rule2).not.toHaveBeenCalled();
+    }
+
+    {
+      const result = await validate({ fields: [Schema.string], getValue });
+
+      expect(result).toEqual([
+        { field: Schema.arrayString.nth(0), error: "ERR_1" },
+      ]);
+      expect(rule1).toHaveBeenCalled();
+      expect(rule2).not.toHaveBeenCalled();
+    }
+  });
+
+  it("should re-throw any errors thrown by validation rules", async () => {
+    const error = new Error("test error");
+
+    const rule1 = jest.fn().mockReturnValue(null);
+    const rule2 = jest.fn().mockRejectedValue(error);
+
+    const { validate } = createFormValidator(Schema, validate => [
+      validate({
+        field: Schema.string,
+        rules: () => [rule1, rule2],
+      }),
+    ]);
+
+    const getValue = jest.fn().mockReturnValue("foo");
+
+    await expect(() =>
+      validate({ fields: [Schema.string], getValue })
+    ).rejects.toBe(error);
   });
 
   it("array validation should fire validation for each field", async () => {
