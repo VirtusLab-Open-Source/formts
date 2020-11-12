@@ -1,4 +1,4 @@
-export { createForm } from "./builders";
+export { createFormSchema, createFormValidator } from "./builders";
 export { useFormts, FormtsOptions } from "./hooks/use-formts";
 
 export { FieldDecoder } from "./types/field-decoder";
