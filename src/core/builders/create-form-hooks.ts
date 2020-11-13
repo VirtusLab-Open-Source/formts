@@ -1,5 +1,6 @@
 import React from "react";
 
+import { UseFieldHook, useFieldHookFactory } from "../hooks/use-field";
 import {
   UseFormHandleHook,
   useFormHandleHookFactory,
@@ -8,12 +9,18 @@ import {
   UseFormProviderHook,
   useFormProviderHookFactory,
 } from "../hooks/use-form-provider";
+import {
+  UseFormValuesHook,
+  useFormValuesHookFactory,
+} from "../hooks/use-form-values";
 import { FormSchema } from "../types/form-schema";
 import { InternalFormtsContext } from "../types/formts-context";
 
 type FormHooks<Values extends object, Err> = {
   useFormProvider: UseFormProviderHook<Values, Err>;
   useFormHandle: UseFormHandleHook<Values, Err>;
+  useFormValues: UseFormValuesHook<Values, Err>;
+  useField: UseFieldHook<Values, Err>;
 };
 
 export const createFormHooks = <Values extends object, Err>(
@@ -25,5 +32,7 @@ export const createFormHooks = <Values extends object, Err>(
   return {
     useFormProvider: useFormProviderHookFactory({ Schema, Context }),
     useFormHandle: useFormHandleHookFactory({ Schema, Context }),
+    useFormValues: useFormValuesHookFactory({ Schema, Context }),
+    useField: useFieldHookFactory({ Schema, Context }),
   };
 };

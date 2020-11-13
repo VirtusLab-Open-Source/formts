@@ -1,2 +1,2 @@
-export * from "./use-form-provider-factory";
+export * from "./use-form-provider-hook-factory";
 export * from "./use-internal-formts-context";
