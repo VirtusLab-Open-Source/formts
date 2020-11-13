@@ -1,4 +1,4 @@
-type FieldError<Err> = {
+export type FieldError<Err> = {
   path: string;
   error: Err;
 };
@@ -7,10 +7,18 @@ type FieldError<Err> = {
  * Used to interact with the form as a whole
  */
 export type FormHandle<Values extends object, Err> = {
-  /** Form values */
+  /**
+   * Form values
+   *
+   * @deprecated
+   * */
   values: Values;
 
-  /** Array containing all form errors together with respective field paths */
+  /**
+   * Array containing all form errors together with respective field paths
+   *
+   * @deprecated
+   * */
   errors: Array<FieldError<Err>>;
 
   /** True if any form field is touched */

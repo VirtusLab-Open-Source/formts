@@ -1,10 +1,10 @@
-import { entries } from "../../../utils";
+import { entries } from "../../utils";
 import {
   FieldDescriptor,
   isPrimitiveDescriptor,
-} from "../../types/field-descriptor";
-import { FieldValidatingState } from "../../types/formts-state";
-import { impl } from "../../types/type-mapper-util";
+} from "../types/field-descriptor";
+import { FieldValidatingState } from "../types/formts-state";
+import { impl } from "../types/type-mapper-util";
 
 export const resolveIsValidating = (
   validatingState: FieldValidatingState,

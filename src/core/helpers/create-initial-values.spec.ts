@@ -1,4 +1,4 @@
-import { createFormSchema } from "../../builders/create-form-schema";
+import { createFormSchema } from "../builders/create-form-schema";
 
 import { createInitialValues } from "./create-initial-values";
 

@@ -1,5 +1,5 @@
-import { entries, isPlainObject } from "../../../utils";
-import { TouchedValues } from "../../types/formts-state";
+import { entries, isPlainObject } from "../../utils";
+import { TouchedValues } from "../types/formts-state";
 
 export const makeUntouchedValues = <T>(value: T): TouchedValues<T> =>
   transformToBoolObject(value, false);

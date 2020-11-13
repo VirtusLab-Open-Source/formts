@@ -9,6 +9,13 @@ import {
   toIdentityDict,
   values,
 } from "../../../utils";
+import {
+  createInitialValues,
+  makeValidationHandlers,
+  resolveIsValid,
+  resolveIsValidating,
+  resolveTouched,
+} from "../../helpers";
 import { isChoiceDecoder } from "../../types/field-decoder";
 import {
   FieldDescriptor,
@@ -26,11 +33,7 @@ import {
 } from "../../types/form-validator";
 import { impl } from "../../types/type-mapper-util";
 
-import { createInitialValues } from "./create-initial-values";
 import { createReducer, getInitialState } from "./reducer";
-import { resolveIsValid } from "./resolve-is-valid";
-import { resolveIsValidating } from "./resolve-is-validating";
-import { resolveTouched } from "./resolve-touched";
 
 export type FormtsOptions<Values extends object, Err> = {
   /** Definition of form fields created using `createForm.schema` function.  */
@@ -80,24 +83,6 @@ export const useFormts = <Values extends object, Err>(
   const isFieldValidating = <T>(field: FieldDescriptor<T, Err>) =>
     resolveIsValidating(state.validating, field);
 
-  const makeValidationHandlers = () => {
-    const uuid = new Date().valueOf().toString();
-    return {
-      onFieldValidationStart: (field: FieldDescriptor<unknown, Err>) => {
-        dispatch({
-          type: "validatingStart",
-          payload: { path: impl(field).__path, uuid },
-        });
-      },
-      onFieldValidationEnd: (field: FieldDescriptor<unknown, Err>) => {
-        dispatch({
-          type: "validatingStop",
-          payload: { path: impl(field).__path, uuid },
-        });
-      },
-    };
-  };
-
   const validateField = <T>(
     field: FieldDescriptor<T, Err>,
     trigger?: ValidationTrigger
@@ -108,7 +93,7 @@ export const useFormts = <Values extends object, Err>(
     const {
       onFieldValidationStart,
       onFieldValidationEnd,
-    } = makeValidationHandlers();
+    } = makeValidationHandlers(dispatch);
 
     return options.validator
       .validate({
@@ -131,7 +116,7 @@ export const useFormts = <Values extends object, Err>(
     const {
       onFieldValidationStart,
       onFieldValidationEnd,
-    } = makeValidationHandlers();
+    } = makeValidationHandlers(dispatch);
 
     return options.validator
       .validate({
@@ -178,7 +163,7 @@ export const useFormts = <Values extends object, Err>(
       const {
         onFieldValidationStart,
         onFieldValidationEnd,
-      } = makeValidationHandlers();
+      } = makeValidationHandlers(dispatch);
 
       return options.validator
         .validate({

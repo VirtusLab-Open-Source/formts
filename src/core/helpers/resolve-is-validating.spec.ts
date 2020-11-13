@@ -1,6 +1,6 @@
-import { FieldDescriptor } from "../../types/field-descriptor";
-import { FieldValidatingState } from "../../types/formts-state";
-import { opaque } from "../../types/type-mapper-util";
+import { FieldDescriptor } from "../types/field-descriptor";
+import { FieldValidatingState } from "../types/formts-state";
+import { opaque } from "../types/type-mapper-util";
 
 import { resolveIsValidating } from "./resolve-is-validating";
 

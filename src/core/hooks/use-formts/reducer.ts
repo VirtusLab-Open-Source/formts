@@ -1,10 +1,13 @@
 import { Reducer } from "react";
 
 import { filter, get, range, set } from "../../../utils";
+import {
+  createInitialValues,
+  makeTouchedValues,
+  makeUntouchedValues,
+} from "../../helpers";
 import { FormtsState } from "../../types/formts-state";
 
-import { createInitialValues } from "./create-initial-values";
-import { makeTouchedValues, makeUntouchedValues } from "./make-touched-values";
 import { FormtsOptions } from "./use-formts";
 
 export type FormtsAction<Values, Err> =

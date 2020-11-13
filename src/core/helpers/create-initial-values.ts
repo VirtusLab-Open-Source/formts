@@ -1,7 +1,7 @@
-import { deepMerge, DeepPartial, entries } from "../../../utils";
-import { _FieldDescriptorImpl } from "../../types/field-descriptor";
-import { FormSchema } from "../../types/form-schema";
-import { impl } from "../../types/type-mapper-util";
+import { deepMerge, DeepPartial, entries } from "../../utils";
+import { _FieldDescriptorImpl } from "../types/field-descriptor";
+import { FormSchema } from "../types/form-schema";
+import { impl } from "../types/type-mapper-util";
 
 export const createInitialValues = <Values extends object>(
   schema: FormSchema<Values, any>,

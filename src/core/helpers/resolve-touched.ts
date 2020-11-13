@@ -1,5 +1,5 @@
-import { values } from "../../../utils";
-import { TouchedValues } from "../../types/formts-state";
+import { values } from "../../utils";
+import { TouchedValues } from "../types/formts-state";
 
 export const resolveTouched = (it: unknown): boolean => {
   if (isBool(it)) {
