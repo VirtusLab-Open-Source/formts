@@ -1,8 +1,5 @@
-import React from "react";
-
 import { FieldDescriptor } from "./field-descriptor";
 import { FieldError } from "./form-handle";
-import { FormSchema } from "./form-schema";
 import { ValidationResult, ValidationTrigger } from "./form-validator";
 import { FormtsOptions } from "./formts-options";
 import { FormtsState } from "./formts-state";
@@ -34,9 +31,4 @@ export type InternalFormtsContext<Values extends object, Err> = {
   options: FormtsOptions<Values, Err>;
   state: FormtsState<Values, Err>;
   methods: InternalFormtsMethods<Values, Err>;
-};
-
-export type HookFactoryContext<Values extends object, Err> = {
-  Schema: FormSchema<Values, Err>;
-  Context: React.Context<InternalFormtsContext<Values, Err> | undefined>;
 };

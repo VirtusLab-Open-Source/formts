@@ -9,7 +9,6 @@ import {
   resolveTouched,
 } from "../../helpers";
 import { FieldDescriptor } from "../../types/field-descriptor";
-import { FormSchema } from "../../types/form-schema";
 import {
   ValidationResult,
   ValidationTrigger,
@@ -23,14 +22,12 @@ import { FormtsAction, FormtsState } from "../../types/formts-state";
 import { impl } from "../../types/type-mapper-util";
 
 type Input<Values extends object, Err> = {
-  Schema: FormSchema<Values, Err>;
   options: FormtsOptions<Values, Err>;
   state: FormtsState<Values, Err>;
   dispatch: React.Dispatch<FormtsAction<Values, Err>>;
 };
 
 export const createFormtsMethods = <Values extends object, Err>({
-  Schema,
   options,
   state,
   dispatch,
@@ -81,7 +78,7 @@ export const createFormtsMethods = <Values extends object, Err>({
     if (options.validator == null) {
       return Promise.resolve([]);
     }
-    const topLevelDescriptors = values(Schema);
+    const topLevelDescriptors = values(options.Schema);
     const {
       onFieldValidationStart,
       onFieldValidationEnd,
@@ -175,7 +172,7 @@ export const createFormtsMethods = <Values extends object, Err>({
     dispatch({
       type: "reset",
       payload: {
-        values: createInitialValues(Schema, options.initialValues),
+        values: createInitialValues(options.Schema, options.initialValues),
       },
     });
   };

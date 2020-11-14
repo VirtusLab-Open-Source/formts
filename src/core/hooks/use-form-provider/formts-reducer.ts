@@ -1,12 +1,12 @@
 import { Reducer } from "react";
 
-import { DeepPartial, filter, get, range, set } from "../../../utils";
+import { filter, get, range, set } from "../../../utils";
 import {
   createInitialValues,
   makeTouchedValues,
   makeUntouchedValues,
 } from "../../helpers";
-import { FormSchema } from "../../types/form-schema";
+import { FormtsOptions } from "../../types/formts-options";
 import { FormtsAction, FormtsState } from "../../types/formts-state";
 
 export const createReducer = <Values extends object, Err>(): Reducer<
@@ -123,15 +123,10 @@ export const createReducer = <Values extends object, Err>(): Reducer<
   }
 };
 
-type GetInitialStateInput<Values extends object, Err> = {
-  Schema: FormSchema<Values, Err>;
-  initialValues?: DeepPartial<Values>;
-};
-
 export const getInitialState = <Values extends object, Err>({
   Schema,
   initialValues,
-}: GetInitialStateInput<Values, Err>): FormtsState<Values, Err> => {
+}: FormtsOptions<Values, Err>): FormtsState<Values, Err> => {
   const values = createInitialValues(Schema, initialValues);
   const touched = makeUntouchedValues(values);
 

@@ -7,42 +7,22 @@ import {
 } from "../../types/field-descriptor";
 import { FieldHandle, toFieldHandle } from "../../types/field-handle";
 import { FormProvider } from "../../types/form-provider";
-import {
-  HookFactoryContext,
-  InternalFormtsMethods,
-} from "../../types/formts-context";
+import { InternalFormtsMethods } from "../../types/formts-context";
 import { impl } from "../../types/type-mapper-util";
 import { useInternalFormtsContext } from "../use-form-provider";
 
-export type UseFieldHook<Values extends object, Err> = {
-  /**
-   * useField // TODO
-   */
-  <T>(
-    field: FieldDescriptor<T, Err>,
-    Provider?: FormProvider<Values, Err>
-  ): FieldHandle<T, Err>;
-};
-
-export const useFieldHookFactory = <Values extends object, Err>({
-  Schema,
-  Context,
-}: HookFactoryContext<Values, Err>): UseFieldHook<Values, Err> => <T>(
+export const useField = <T, Err>(
   field: FieldDescriptor<T, Err>,
-  Provider?: FormProvider<Values, Err>
-) => {
-  const { methods } = useInternalFormtsContext({
-    Schema,
-    Context,
-    Provider,
-  });
+  Provider?: FormProvider
+): FieldHandle<T, Err> => {
+  const { methods } = useInternalFormtsContext<object, Err>({ Provider });
 
   return createFieldHandle(field, methods);
 };
 
-const createFieldHandle = <T, Values extends object, Err>(
+const createFieldHandle = <T, Err>(
   descriptor: FieldDescriptor<T, Err>,
-  methods: InternalFormtsMethods<Values, Err>
+  methods: InternalFormtsMethods<object, Err>
 ): FieldHandle<T, Err> =>
   toFieldHandle({
     descriptor,

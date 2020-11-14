@@ -2,26 +2,15 @@ import { entries, keys, values } from "../../../utils";
 import { resolveTouched } from "../../helpers";
 import { FormHandle } from "../../types/form-handle";
 import { FormProvider } from "../../types/form-provider";
-import { HookFactoryContext } from "../../types/formts-context";
+import { FormSchema } from "../../types/form-schema";
 import { useInternalFormtsContext } from "../use-form-provider";
 
-export type UseFormHandleHook<Values extends object, Err> = {
-  /**
-   * useFormHandle // TODO
-   */
-  (Provider?: FormProvider<Values, Err>): FormHandle<Values, Err>;
-};
-
-export const useFormHandleHookFactory = <Values extends object, Err>({
-  Schema,
-  Context,
-}: HookFactoryContext<Values, Err>): UseFormHandleHook<
-  Values,
-  Err
-> => Provider => {
+export const useFormHandle = <Values extends object, Err>(
+  Schema: FormSchema<Values, Err>,
+  Provider?: FormProvider
+): FormHandle<Values, Err> => {
   const { state, methods } = useInternalFormtsContext({
     Schema,
-    Context,
     Provider,
   });
 

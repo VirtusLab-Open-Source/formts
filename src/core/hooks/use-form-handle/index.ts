@@ -1,1 +1,1 @@
-export * from "./use-form-handle-hook-factory";
+export * from "./use-form-handle";
