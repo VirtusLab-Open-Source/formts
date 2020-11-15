@@ -1,4 +1,5 @@
 import { keys, toIdentityDict } from "../../../utils";
+import { useFormtsContext } from "../../context";
 import { isChoiceDecoder } from "../../types/field-decoder";
 import {
   FieldDescriptor,
@@ -7,16 +8,15 @@ import {
   isObjectDescriptor,
 } from "../../types/field-descriptor";
 import { FieldHandle, toFieldHandle } from "../../types/field-handle";
-import { FormProvider } from "../../types/form-provider";
+import { FormControl } from "../../types/form-control";
 import { InternalFormtsMethods } from "../../types/formts-context";
 import { impl } from "../../types/type-mapper-util";
-import { useInternalFormtsContext } from "../use-form-provider";
 
 export const useField = <T, Err>(
   field: GenericFieldDescriptor<T, Err>,
-  Provider?: FormProvider
+  control?: FormControl
 ): FieldHandle<T, Err> => {
-  const { methods } = useInternalFormtsContext<object, Err>({ Provider });
+  const { methods } = useFormtsContext<object, Err>(control);
 
   return createFieldHandle(field, methods);
 };

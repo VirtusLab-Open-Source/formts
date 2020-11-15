@@ -1,18 +1,15 @@
 import { entries, keys, values } from "../../../utils";
+import { useFormtsContext } from "../../context";
 import { resolveTouched } from "../../helpers";
+import { FormControl } from "../../types/form-control";
 import { FormHandle } from "../../types/form-handle";
-import { FormProvider } from "../../types/form-provider";
 import { FormSchema } from "../../types/form-schema";
-import { useInternalFormtsContext } from "../use-form-provider";
 
 export const useFormHandle = <Values extends object, Err>(
-  Schema: FormSchema<Values, Err>,
-  Provider?: FormProvider
+  _Schema: FormSchema<Values, Err>,
+  control?: FormControl
 ): FormHandle<Values, Err> => {
-  const { state, methods } = useInternalFormtsContext({
-    Schema,
-    Provider,
-  });
+  const { state, methods } = useFormtsContext<Values, Err>(control);
 
   return {
     // TODO: remove

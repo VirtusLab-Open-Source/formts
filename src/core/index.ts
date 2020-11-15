@@ -1,11 +1,13 @@
 export { createFormSchema, createFormValidator } from "./builders";
 
 export {
-  useFormProvider,
+  useFormController,
   useFormHandle,
   useFormValues,
   useField,
 } from "./hooks";
+
+export { FormProvider } from "./context";
 
 export { FormtsOptions } from "./types/formts-options";
 export { FieldDecoder } from "./types/field-decoder";
@@ -13,4 +15,4 @@ export { FieldDescriptor } from "./types/field-descriptor";
 export { FieldHandle } from "./types/field-handle";
 export { FormSchema } from "./types/form-schema";
 export { FormValidator, Validator } from "./types/form-validator";
-export { FormProvider } from "./types/form-provider";
+export { FormControl } from "./types/form-control";

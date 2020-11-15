@@ -5,7 +5,7 @@ import {
   ObjectFieldDescriptor,
   _FieldDescriptorImpl,
 } from "./field-descriptor";
-import { FormProvider, _FormProviderImpl } from "./form-provider";
+import { FormControl, _FormControlImpl } from "./form-control";
 
 /**
  * expose implementation details of opaque type.
@@ -25,7 +25,7 @@ type GetImplFn = {
 
   <T>(it: FieldDecoder<T>): _FieldDecoderImpl<T>;
 
-  <V extends object, Err>(it: FormProvider): _FormProviderImpl<V, Err>;
+  <V extends object, Err>(it: FormControl): _FormControlImpl<V, Err>;
 };
 
 /**
@@ -36,5 +36,5 @@ export const opaque: GetOpaque = (it: any) => it;
 type GetOpaque = {
   <T, Err>(it: _FieldDescriptorImpl<T>): FieldDescriptor<T, Err>;
   <T>(it: _FieldDecoderImpl<T>): FieldDecoder<T>;
-  <V extends object, Err>(it: _FormProviderImpl<V, Err>): FormProvider;
+  <V extends object, Err>(it: _FormControlImpl<V, Err>): FormControl;
 };
