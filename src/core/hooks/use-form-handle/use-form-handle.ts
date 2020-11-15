@@ -43,9 +43,7 @@ export const useFormHandle = <Values extends object, Err>(
 
     reset: methods.resetForm,
 
-    getSubmitHandler: (onSuccess, onFailure) => event => {
-      event?.preventDefault();
-
+    submit: (onSuccess, onFailure) => {
       return methods.submitForm().then(resp => {
         if (resp.ok) {
           return onSuccess(resp.values);
@@ -53,6 +51,14 @@ export const useFormHandle = <Values extends object, Err>(
           return onFailure?.(resp.errors);
         }
       });
+    },
+
+    setFieldValue: (field, value) => {
+      return methods.setFieldValue(field, value);
+    },
+
+    setFieldError: (field, error) => {
+      methods.setFieldErrors({ field, error });
     },
   };
 };

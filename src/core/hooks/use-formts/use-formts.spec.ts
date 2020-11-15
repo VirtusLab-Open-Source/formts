@@ -654,17 +654,14 @@ describe("useFormts", () => {
     const hook = renderHook(() => useFormts({ Schema, validator }));
     const onSuccess = jest.fn();
     const onFailure = jest.fn();
-    const submitHandler = hook.result.current[1].getSubmitHandler(
-      onSuccess,
-      onFailure
-    );
 
     expect(validator.validate).not.toHaveBeenCalled();
     expect(onSuccess).not.toHaveBeenCalled();
     expect(onFailure).not.toHaveBeenCalled();
 
     await act(async () => {
-      await submitHandler();
+      const { submit } = hook.result.current[1];
+      await submit(onSuccess, onFailure);
     });
 
     expect(validator.validate).toHaveBeenCalledTimes(1);
@@ -682,7 +679,8 @@ describe("useFormts", () => {
     ]);
 
     await act(async () => {
-      await submitHandler();
+      const { submit } = hook.result.current[1];
+      await submit(onSuccess, onFailure);
     });
 
     expect(validator.validate).toHaveBeenCalledTimes(2);

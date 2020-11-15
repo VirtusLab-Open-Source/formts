@@ -348,8 +348,7 @@ export const useFormts = <Values extends object, Err>(
       });
     },
 
-    getSubmitHandler: (onSuccess, onFailure) => event => {
-      event?.preventDefault();
+    submit: (onSuccess, onFailure) => {
       dispatch({ type: "setIsSubmitting", payload: { isSubmitting: true } });
 
       const clearSubmitting = () =>
@@ -380,6 +379,14 @@ export const useFormts = <Values extends object, Err>(
               });
           }
         });
+    },
+
+    setFieldValue: (field, value) => {
+      return setField(field, value);
+    },
+
+    setFieldError: (field, error) => {
+      setFieldErrors({ field, error });
     },
   };
 
