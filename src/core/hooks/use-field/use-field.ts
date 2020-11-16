@@ -8,15 +8,15 @@ import {
   isObjectDescriptor,
 } from "../../types/field-descriptor";
 import { FieldHandle, toFieldHandle } from "../../types/field-handle";
-import { FormControl } from "../../types/form-control";
+import { FormController } from "../../types/form-controller";
 import { InternalFormtsMethods } from "../../types/formts-context";
 import { impl } from "../../types/type-mapper-util";
 
 export const useField = <T, Err>(
   field: GenericFieldDescriptor<T, Err>,
-  control?: FormControl
+  controller?: FormController
 ): FieldHandle<T, Err> => {
-  const { methods } = useFormtsContext<object, Err>(control);
+  const { methods } = useFormtsContext<object, Err>(controller);
 
   return createFieldHandle(field, methods);
 };

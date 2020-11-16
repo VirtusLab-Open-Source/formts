@@ -5,8 +5,8 @@ import { InternalFormtsContext } from "./formts-context";
 /**
  * Used to connect together hooks or FormProvider component with the actual form state
  */
-export interface FormControl extends Nominal<"FormControl", {}> {}
+export interface FormController extends Nominal<"FormControl", {}> {}
 
-export type _FormControlImpl<Values extends object, Err> = {
+export type _FormControllerImpl<Values extends object, Err> = {
   __ctx: InternalFormtsContext<Values, Err>;
 };
