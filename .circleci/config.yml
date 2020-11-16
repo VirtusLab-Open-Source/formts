@@ -38,35 +38,12 @@ jobs:
   deploy_master:
     <<: *defaults
     steps:
-      - checkout
+      - attach_workspace:
+          at: ~/repo
 
       - add_ssh_keys:
           fingerprints:
             - "33:e2:ad:92:10:1e:8e:15:25:a2:d1:8a:2d:07:a0:b4"
-
-      - restore_cache:
-          keys:
-          - v1-dependencies-{{ checksum "package.json" }}
-          - v1-dependencies-
-
-      - run: npm install
-
-      - run:
-          name: Build
-          command: npm run build
-
-      - run:
-          name: Run tests
-          command: npm test
-
-      - save_cache:
-          paths:
-            - node_modules
-          key: v1-dependencies-{{ checksum "package.json" }}
-
-      - persist_to_workspace:
-          root: ~/repo
-          paths: .
 
       - run:
           name: Create release
@@ -96,7 +73,7 @@ workflows:
               only: /^v.*/
       - deploy_master:
           requires:
-            - test
+            - branch_check
           filters:
             tags:
               only: /^v.*/
