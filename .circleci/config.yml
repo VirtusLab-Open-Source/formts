@@ -16,15 +16,15 @@ jobs:
           - v1-dependencies-{{ checksum "package.json" }}
           - v1-dependencies-
 
-      - run: npm install
+      - run: yarn install
 
       - run:
           name: Build
-          command: npm run build
+          command: yarn run build
 
       - run:
           name: Run tests
-          command: npm test
+          command: yarn test
 
       - save_cache:
           paths:
@@ -57,7 +57,7 @@ jobs:
 
       - run:
           name: Create release
-          command: npm run release
+          command: yarn run release
 
       - run:
           name: Push release to GH
