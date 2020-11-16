@@ -34,17 +34,57 @@ jobs:
       - persist_to_workspace:
           root: ~/repo
           paths: .
-  # deploy:
-  #   <<: *defaults
-  #   steps:
-  #     - attach_workspace:
-  #         at: ~/repo
-  #     - run:
-  #         name: Authenticate with registry
-  #         command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/repo/.npmrc
-  #     - run:
-  #         name: Publish package
-  #         command: npm publish
+
+  deploy_master:
+    <<: *defaults
+    steps:
+      - checkout
+
+      - add_ssh_keys:
+          fingerprints:
+            - "33:e2:ad:92:10:1e:8e:15:25:a2:d1:8a:2d:07:a0:b4"
+
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "package.json" }}
+          - v1-dependencies-
+
+      - run: npm install
+
+      - run:
+          name: Build
+          command: npm run build
+
+      - run:
+          name: Run tests
+          command: npm test
+
+      - save_cache:
+          paths:
+            - node_modules
+          key: v1-dependencies-{{ checksum "package.json" }}
+
+      - persist_to_workspace:
+          root: ~/repo
+          paths: .
+
+      - run:
+          name: Create release
+          command: npm run release
+
+      - run:
+          name: Push release to GH
+          command: |
+            git config user.name "CircleCI Release Job"
+            git push --follow-tags origin fix/cicd-test
+
+      - run:
+          name: Authenticate with registry
+          command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/repo/.npmrc
+
+      - run:
+          name: Publish package
+          command: npm publish
 
 workflows:
   version: 2
@@ -54,11 +94,11 @@ workflows:
           filters:
             tags:
               only: /^v.*/
-      # - deploy:
-      #     requires:
-      #       - test
-      #     filters:
-      #       tags:
-      #         only: /^v.*/
-      #       branches:
-      #         ignore: /.*/
+      - deploy_master:
+          requires:
+            - test
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
