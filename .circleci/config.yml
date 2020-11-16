@@ -58,7 +58,7 @@ jobs:
 
       - run:
           name: Push release to GH
-          command: git push --follow-tags origin fix/cicd-test
+          command: git push --follow-tags origin master:cicd-test
 
       - run:
           name: Authenticate with registry
