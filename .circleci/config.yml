@@ -43,7 +43,7 @@ jobs:
 
       - add_ssh_keys:
           fingerprints:
-            - "33:e2:ad:92:10:1e:8e:15:25:a2:d1:8a:2d:07:a0:b4"
+            - e1:a6:de:60:53:1f:e5:65:d5:3a:c0:ab:26:ac:0a:42
 
       - run:
           name: Set GH user name&email
