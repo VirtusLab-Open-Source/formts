@@ -1,5 +1,5 @@
 {
-  "version": "0.1.0",
+  "version": "0.1.1",
   "name": "@virtuslab/formts",
   "description": "Typescript-focused, schema-based React form library",
   "repository": "git@github.com:VirtusLab/formts.git",
