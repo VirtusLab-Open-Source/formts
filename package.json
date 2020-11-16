@@ -24,7 +24,7 @@
     "build:esnext": "tsc -p ./tsconfig.esnext.json",
     "lint": "eslint 'src/**/*.{ts,tsx}' --fix",
     "test": "jest",
-    "release": "standard-version"
+    "release": "standard-version --releaseCommitMessageFormat \"chore(release): {{currentTag}} [ci skip]\""
   },
   "husky": {
     "hooks": {
