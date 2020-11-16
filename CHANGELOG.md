@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.3](https://github.com/VirtusLab/formts/compare/v0.1.2...v0.1.3) (2020-11-16)
+
+
+### Bug Fixes
+
+* **ci:** release commits ci skip ([bb36261](https://github.com/VirtusLab/formts/commit/bb36261bd1afea644fb596fca448c66ed4e8c7c0))
+
 ### [0.1.2](https://github.com/VirtusLab/formts/compare/v0.1.1...v0.1.2) (2020-11-16)
 
 ### 0.1.1 (2020-11-16)
