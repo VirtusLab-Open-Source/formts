@@ -75,16 +75,11 @@ workflows:
   version: 2
   branch:
     jobs:
-      - branch_check:
-          filters:
-            tags:
-              only: /^v.*/
+      - branch_check
       - deploy_master:
           requires:
             - branch_check
           filters:
-            tags:
-              only: /^v.*/
             branches:
               only:
               - master
