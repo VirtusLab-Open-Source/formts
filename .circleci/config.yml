@@ -6,7 +6,7 @@ defaults: &defaults
     - image: circleci/node:12.18.4
 
 jobs:
-  test:
+  branch_check:
     <<: *defaults
     steps:
       - checkout
@@ -50,7 +50,7 @@ workflows:
   version: 2
   test-deploy:
     jobs:
-      - test:
+      - branch_check:
           filters:
             tags:
               only: /^v.*/
