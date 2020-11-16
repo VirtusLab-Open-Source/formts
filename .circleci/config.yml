@@ -53,8 +53,7 @@ jobs:
           name: Set GH user name&email
           command: |
             git config user.name "CircleCI Release Job"
-            git config user.email "circle@ci.com"
-                
+            git config user.email "circle@ci.com"     
 
       - run:
           name: Create release
