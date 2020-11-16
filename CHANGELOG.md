@@ -8,8 +8,6 @@ for commit guidelines.
 
 ### Features
 
-- package-lock.json added
-  ([fd11471](https://github.com/VirtusLab/formts/commit/fd114716eac5046e2ba4905bebd2a82c0752e51a))
 - **core:** addItem and removeItem methods for array field handle
   ([#30](https://github.com/VirtusLab/formts/issues/30))
   ([a9bb040](https://github.com/VirtusLab/formts/commit/a9bb040340916f8ff7f886de05f1dfce723585e7))
@@ -40,14 +38,3 @@ for commit guidelines.
 - **core:** use-formts setup
   ([#11](https://github.com/VirtusLab/formts/issues/11))
   ([8236189](https://github.com/VirtusLab/formts/commit/823618942a8a45d9ca4d8f0471bedb4cfad11704))
-
-### Bug Fixes
-
-- added build step
-  ([5c38573](https://github.com/VirtusLab/formts/commit/5c385731ebf2d578c3e6cb4139aac4ecf3bd81e9))
-- fixed build step
-  ([0e6db01](https://github.com/VirtusLab/formts/commit/0e6db0107e6280f5ac7429e0d9fd5f1e8e8673d9))
-- job renamed
-  ([b00cc6f](https://github.com/VirtusLab/formts/commit/b00cc6f20c0894309dc33a13134737e8cd16f20c))
-- wip
-  ([7f6a8b5](https://github.com/VirtusLab/formts/commit/7f6a8b527fd06f3ad4415a92d588b259f7e7bdd4))
