@@ -72,8 +72,8 @@ workflows:
       #       tags:
       #         only: /^v.*/
       - deploy_master:
-          requires:
-            - branch_check
+          # requires:
+          #   - branch_check
           filters:
             tags:
               only: /^v.*/
