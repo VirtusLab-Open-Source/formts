@@ -1,0 +1,90 @@
+version: 2
+
+defaults: &defaults
+  working_directory: ~/repo
+  docker:
+    - image: circleci/node:12.18.4
+
+jobs:
+  branch_check:
+    <<: *defaults
+    steps:
+      - checkout
+
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "package.json" }}
+          - v1-dependencies-
+
+      - run: yarn install
+
+      - run:
+          name: Build
+          command: yarn run build
+
+      - run:
+          name: Run tests
+          command: yarn test
+
+      - save_cache:
+          paths:
+            - node_modules
+          key: v1-dependencies-{{ checksum "package.json" }}
+
+      - persist_to_workspace:
+          root: ~/repo
+          paths: .
+
+  deploy_master:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/repo
+
+      - run:
+          name: Avoid hosts unknown for github
+          command: mkdir ~/.ssh/ && echo -e "Host github.com\n\tStrictHostKeyChecking no\n" > ~/.ssh/config
+
+      - add_ssh_keys:
+          fingerprints:
+            - e1:a6:de:60:53:1f:e5:65:d5:3a:c0:ab:26:ac:0a:42
+
+      - run:
+          name: Set GH user name&email
+          command: |
+            git config user.name "CircleCI Release Job"
+            git config user.email "circle@ci.com"     
+
+      - run:
+          name: Create release
+          command: yarn run release
+
+      - run:
+          name: Push release to GH
+          command: git push --follow-tags origin master
+
+      - run:
+          name: Authenticate with registry
+          command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/repo/.npmrc
+
+      - run:
+          name: Publish package
+          command: npm publish --access public
+
+workflows:
+  version: 2
+  branch:
+    jobs:
+      - branch_check:
+          filters:
+            tags:
+              only: /^v.*/
+      - deploy_master:
+          requires:
+            - branch_check
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              only:
+              - master
