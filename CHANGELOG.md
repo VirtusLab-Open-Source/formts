@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.4](https://github.com/VirtusLab/formts/compare/v0.1.3...v0.1.4) (2020-11-17)
+
+
+### Bug Fixes
+
+* **cicid:** removed tags from build triggers ([#33](https://github.com/VirtusLab/formts/issues/33)) ([1ee4cc4](https://github.com/VirtusLab/formts/commit/1ee4cc4b77d09140f58e0ec82e8db85859456a92))
+
 ### [0.1.3](https://github.com/VirtusLab/formts/compare/v0.1.2...v0.1.3) (2020-11-16)
 
 
