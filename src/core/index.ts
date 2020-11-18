@@ -15,4 +15,4 @@ export { FieldDescriptor } from "./types/field-descriptor";
 export { FieldHandle } from "./types/field-handle";
 export { FormSchema } from "./types/form-schema";
 export { FormValidator, Validator } from "./types/form-validator";
-export { FormController as FormControl } from "./types/form-controller";
+export { FormController } from "./types/form-controller";

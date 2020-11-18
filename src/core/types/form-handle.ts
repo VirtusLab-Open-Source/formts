@@ -9,20 +9,6 @@ export type FieldError<Err> = {
  * Used to interact with the form as a whole
  */
 export type FormHandle<Values extends object, Err> = {
-  /**
-   * Form values
-   *
-   * @deprecated
-   * */
-  values: Values;
-
-  /**
-   * Array containing all form errors together with respective field paths
-   *
-   * @deprecated
-   * */
-  errors: Array<FieldError<Err>>;
-
   /** True if any form field is touched */
   isTouched: boolean;
 

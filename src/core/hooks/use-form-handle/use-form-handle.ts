@@ -1,4 +1,4 @@
-import { entries, keys, values } from "../../../utils";
+import { keys, values } from "../../../utils";
 import { useFormtsContext } from "../../context";
 import { resolveTouched } from "../../helpers";
 import { FormController } from "../../types/form-controller";
@@ -12,17 +12,7 @@ export const useFormHandle = <Values extends object, Err>(
   const { state, methods } = useFormtsContext<Values, Err>(controller);
 
   return {
-    // TODO: remove
-    values: state.values,
-
     isSubmitting: state.isSubmitting,
-
-    // TODO: remove
-    get errors() {
-      return entries(state.errors)
-        .filter(([, err]) => err != null)
-        .map(([path, error]) => ({ path, error: error! }));
-    },
 
     get isTouched() {
       return resolveTouched(state.touched);
