@@ -24,7 +24,7 @@ import { impl } from "../types/type-mapper-util";
  *
  * @example
  * ```
- * const validator = createForm.validator(Schema, validate => [
+ * const validator = createFormValidator(Schema, validate => [
  *   validate({
  *     field: Schema.password,
  *     rules: () => [required(), minLength(6)]

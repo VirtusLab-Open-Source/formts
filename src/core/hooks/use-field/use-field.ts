@@ -12,13 +12,35 @@ import { FormController } from "../../types/form-controller";
 import { InternalFormtsMethods } from "../../types/formts-context";
 import { impl } from "../../types/type-mapper-util";
 
+/**
+ * Hook used to gain access to field-specific state and methods
+ * Causes the component to subscribe to all changes of the field's state.
+ *
+ * @param fieldDescriptor - pointer to a field containing type information and more. Obtained from FormSchema.
+ * @param controller - obtained by using `useFormController` hook, used to connect to form state.
+ * Injected automatically via React Context when used inside `FormProvider` component.
+ *
+ * @returns `FormHandle` object used to interact with the field
+ *
+ * @example
+ * ```ts
+ * const Schema = createFormSchema(...);
+ *
+ * const MyForm: React.FC = () => {
+ *   const controller = useFormController({ Schema })
+ *   const username = useField(Schema.username, controller)
+ *
+ *   ...
+ * }
+ * ```
+ */
 export const useField = <T, Err>(
-  field: GenericFieldDescriptor<T, Err>,
+  fieldDescriptor: GenericFieldDescriptor<T, Err>,
   controller?: FormController
 ): FieldHandle<T, Err> => {
   const { methods } = useFormtsContext<object, Err>(controller);
 
-  return createFieldHandle(field, methods);
+  return createFieldHandle(fieldDescriptor, methods);
 };
 
 const createFieldHandle = <T, Err>(

@@ -39,7 +39,7 @@ type ErrorsMarker<Err> = (errors: <Err>() => Err) => Err;
  *
  * @example
  * ```
- * const Schema = createForm.schema(
+ * const Schema = createFormSchema(
  *   fields => ({
  *     name: fields.string(),
  *     age: fields.number(),
