@@ -1,20 +1,13 @@
 import { Reducer } from "react";
 
 import { filter, get, range, set } from "../../../utils";
-import { FormtsState } from "../../types/formts-state";
-
-import { createInitialValues } from "./create-initial-values";
-import { makeTouchedValues, makeUntouchedValues } from "./make-touched-values";
-import { FormtsOptions } from "./use-formts";
-
-export type FormtsAction<Values, Err> =
-  | { type: "reset"; payload: { values: Values } }
-  | { type: "touchValue"; payload: { path: string } }
-  | { type: "setValue"; payload: { path: string; value: any } }
-  | { type: "setErrors"; payload: Array<{ path: string; error: Err | null }> }
-  | { type: "validatingStart"; payload: { path: string; uuid: string } }
-  | { type: "validatingStop"; payload: { path: string; uuid: string } }
-  | { type: "setIsSubmitting"; payload: { isSubmitting: boolean } };
+import {
+  createInitialValues,
+  makeTouchedValues,
+  makeUntouchedValues,
+} from "../../helpers";
+import { FormtsOptions } from "../../types/formts-options";
+import { FormtsAction, FormtsState } from "../../types/formts-state";
 
 export const createReducer = <Values extends object, Err>(): Reducer<
   FormtsState<Values, Err>,
@@ -133,7 +126,7 @@ export const createReducer = <Values extends object, Err>(): Reducer<
 export const getInitialState = <Values extends object, Err>({
   Schema,
   initialValues,
-}: FormtsOptions<Values, any>): FormtsState<Values, Err> => {
+}: FormtsOptions<Values, Err>): FormtsState<Values, Err> => {
   const values = createInitialValues(Schema, initialValues);
   const touched = makeUntouchedValues(values);
 

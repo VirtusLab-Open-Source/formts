@@ -1,10 +1,10 @@
-import { entries } from "../../../utils";
+import { entries } from "../../utils";
 import {
   FieldDescriptor,
   isPrimitiveDescriptor,
-} from "../../types/field-descriptor";
-import { FieldErrors } from "../../types/formts-state";
-import { impl } from "../../types/type-mapper-util";
+} from "../types/field-descriptor";
+import { FieldErrors } from "../types/formts-state";
+import { impl } from "../types/type-mapper-util";
 
 export const resolveIsValid = <Err>(
   errors: FieldErrors<Err>,

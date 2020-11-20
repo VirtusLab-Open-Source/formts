@@ -1,4 +1,6 @@
-type FieldError<Err> = {
+import { GenericFieldDescriptor } from "./field-descriptor";
+
+export type FieldError<Err> = {
   path: string;
   error: Err;
 };
@@ -7,12 +9,6 @@ type FieldError<Err> = {
  * Used to interact with the form as a whole
  */
 export type FormHandle<Values extends object, Err> = {
-  /** Form values */
-  values: Values;
-
-  /** Array containing all form errors together with respective field paths */
-  errors: Array<FieldError<Err>>;
-
   /** True if any form field is touched */
   isTouched: boolean;
 
@@ -38,15 +34,29 @@ export type FormHandle<Values extends object, Err> = {
   validate: () => void;
 
   /**
-   * Creates `onSubmit` handler function which can be passed to `<form>` or `<button>` or invoked imperatively.
+   * Runs form validation with 'submit' trigger and invokes `onSuccess` or `onFailure` callback.
+   * Sets `isSubmitting` flag to true when validation and `onSuccess` callback are running.
    *
-   * @param onSuccess - function invoked after successful submit validation.
+   * @param onSuccess - callback invoked after successful submit validation.
    * Receives form values. Can return Promise which will affect `isSubmitting` flag.
    *
-   * @param onFailure - function invoked after failed submit validation. Receives form errors. (optional)
+   * @param onFailure - callback invoked after failed submit validation. Receives form errors. (optional)
    */
-  getSubmitHandler: (
+  submit: (
     onSuccess: (values: Values) => void | Promise<unknown>,
     onFailure?: (errors: Array<FieldError<Err>>) => void
-  ) => (event?: React.SyntheticEvent) => void;
+  ) => void;
+
+  /**
+   * Sets value for given field.
+   * Will cause field validation to run with the `change` trigger.
+   * Will set `isTouched` flag for the field to `true`.
+   */
+  setFieldValue: <T>(field: GenericFieldDescriptor<T, Err>, value: T) => void;
+
+  /** Sets error for given field, affecting it's `isValid` flag */
+  setFieldError: <T>(
+    field: GenericFieldDescriptor<T, Err>,
+    error: Err | null
+  ) => void;
 };
