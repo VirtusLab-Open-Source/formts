@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.5](https://github.com/VirtusLab/formts/compare/v0.1.4...v0.1.5) (2020-11-20)
+
+
+### Features
+
+* **core:** hook api v2 ([#34](https://github.com/VirtusLab/formts/issues/34)) ([4431aed](https://github.com/VirtusLab/formts/commit/4431aedb8eecc9c1340692b29ed353c078dd7286))
+
 ### [0.1.4](https://github.com/VirtusLab/formts/compare/v0.1.3...v0.1.4) (2020-11-17)
 
 
