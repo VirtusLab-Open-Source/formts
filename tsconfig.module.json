@@ -1,10 +1,10 @@
 {
   "extends": "./tsconfig",
   "compilerOptions": {
-    "target": "ESNext",
-    "outDir": "dist/esnext",
+    "target": "ES5",
+    "outDir": "dist/module",
     "module": "esnext",
-    "jsx": "preserve"
+    "jsx": "react"
   },
   "include": ["src/index.ts"]
 }
