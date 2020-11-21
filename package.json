@@ -7,8 +7,9 @@
   "license": "MIT",
   "private": false,
   "main": "dist/main/index.js",
-  "typings": "dist/main/index.d.ts",
   "module": "dist/module/index.js",
+  "esnext": "dist/esnext/index.js",
+  "typings": "dist/main/index.d.ts",
   "engines": {
     "node": "12.18.x",
     "yarn": "1.22.x"
@@ -19,8 +20,9 @@
   "scripts": {
     "clean": "rm -rf ./dist",
     "clean:all": "yarn clean && rm -rf ./node_modules",
-    "build": "yarn build:commonjs && yarn build:esnext",
+    "build": "yarn build:commonjs && yarn build:module && yarn build:esnext",
     "build:commonjs": "tsc -p ./tsconfig.commonjs.json",
+    "build:module": "tsc -p ./tsconfig.module.json",
     "build:esnext": "tsc -p ./tsconfig.esnext.json",
     "lint": "eslint 'src/**/*.{ts,tsx}' --fix",
     "test": "jest",

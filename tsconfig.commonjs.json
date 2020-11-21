@@ -1,7 +1,7 @@
 {
   "extends": "./tsconfig",
   "compilerOptions": {
-    "target": "es2017",
+    "target": "ES5",
     "outDir": "dist/main",
     "module": "commonjs",
     "jsx": "react"
