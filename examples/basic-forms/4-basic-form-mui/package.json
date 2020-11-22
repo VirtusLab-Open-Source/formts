@@ -1,0 +1,13 @@
+{
+  "version": "1.0.0",
+  "name": "@formts-examples/basic-form-mui",
+  "description": "This example showcases integration with third-party component library",
+  "main": "src/example.tsx",
+  "dependencies": {
+    "@virtuslab/formts": "latest",
+    "@material-ui/core": "4.11.0",
+    "react": "17.0.1",
+    "react-dom": "17.0.1",
+    "react-scripts": "4.0.0"
+  }
+}

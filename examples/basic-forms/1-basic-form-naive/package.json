@@ -1,0 +1,12 @@
+{
+  "version": "1.0.0",
+  "name": "@formts-examples/basic-form-naive",
+  "description": "This is the simplest possible example of Formts usage",
+  "main": "src/example.tsx",
+  "dependencies": {
+    "@virtuslab/formts": "latest",
+    "react": "17.0.1",
+    "react-dom": "17.0.1",
+    "react-scripts": "4.0.0"
+  }
+}
