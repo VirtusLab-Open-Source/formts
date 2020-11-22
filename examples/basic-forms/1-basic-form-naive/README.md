@@ -11,4 +11,4 @@ See also: `basic-form-improved`
 
 ---
 
-[![Edit on CodeSandbox](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/github/VirtusLab/formts/tree/docs/codesandbox-examples/examples/basic-forms/1-basic-form-naive)
+[![Edit on CodeSandbox](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/github/VirtusLab/formts/tree/master/examples/basic-forms/1-basic-form-naive)
