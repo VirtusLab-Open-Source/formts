@@ -12,4 +12,4 @@ This example showcases very simple validation using `Formts` validation API
 
 ---
 
-[![Edit on CodeSandbox](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/github/VirtusLab/formts/tree/docs/codesandbox-examples/examples/basic-forms/3-basic-form-validation)
+[![Edit on CodeSandbox](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/github/VirtusLab/formts/tree/master/examples/basic-forms/3-basic-form-validation)

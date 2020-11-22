@@ -9,4 +9,4 @@ is just as easy to use custom components as native HTML inputs.
 
 ---
 
-[![Edit on CodeSandbox](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/github/VirtusLab/formts/tree/docs/codesandbox-examples/examples/basic-forms/4-basic-form-mui)
+[![Edit on CodeSandbox](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/github/VirtusLab/formts/tree/master/examples/basic-forms/4-basic-form-mui)
