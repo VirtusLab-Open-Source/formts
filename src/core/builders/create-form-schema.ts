@@ -1,27 +1,9 @@
 import { assertNever, defineProperties, keys } from "../../utils";
-import {
-  bool,
-  string,
-  number,
-  choice,
-  instanceOf,
-  array,
-  object,
-} from "../decoders";
+import * as Decoders from "../decoders";
 import { FieldDecoder, _FieldDecoderImpl } from "../types/field-decoder";
 import { _FieldDescriptorImpl } from "../types/field-descriptor";
 import { FormSchema } from "../types/form-schema";
 import { impl } from "../types/type-mapper-util";
-
-const Decoders = {
-  bool,
-  string,
-  number,
-  choice,
-  instanceOf,
-  array,
-  object,
-};
 
 type BuilderFn<V> = (fields: typeof Decoders) => DecodersMap<V>;
 
