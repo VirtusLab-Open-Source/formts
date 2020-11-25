@@ -9,6 +9,11 @@ export type _FieldDescriptorImpl<T> = {
   __decoder: _FieldDecoderImpl<T>;
 };
 
+export type _NTHHandler<T> = {
+  __rootPath: string;
+  (n: number): _FieldDecoderImpl<T>;
+};
+
 /**
  * Pointer to a form field.
  * Used to interact with Formts API via `useField` hook.

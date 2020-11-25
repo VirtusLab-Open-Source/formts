@@ -129,16 +129,9 @@ const validate: ValidateFn = <T, Err, Deps extends any[]>(
       : { field: x as ValidateField<T, Err>, rules: () => rules };
 
   const isNth = typeof config.field === "function";
-  let path = "";
-
-  if (isNth) {
-    const firstElementPath = impl(
-      (config.field as ArrayFieldDescriptor<T[], Err>["nth"])(0)
-    ).__path;
-    path = firstElementPath.slice(0, -3);
-  } else {
-    path = impl(config.field as FieldDescriptor<T, Err>).__path;
-  }
+  let path = isNth
+    ? impl(config.field as ArrayFieldDescriptor<T[], Err>["nth"]).__rootPath
+    : impl(config.field as FieldDescriptor<T, Err>).__path;
 
   return {
     type: isNth ? "each" : "field",
