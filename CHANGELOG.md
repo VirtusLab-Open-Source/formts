@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.9](https://github.com/VirtusLab/formts/compare/v0.1.8...v0.1.9) (2020-11-25)
+
+
+### Bug Fixes
+
+* **core:** jsdoc for decoders not working ([#39](https://github.com/VirtusLab/formts/issues/39)) ([0ad4753](https://github.com/VirtusLab/formts/commit/0ad47535ef6db4e050a3f39dfd9320069553608f))
+
 ### [0.1.8](https://github.com/VirtusLab/formts/compare/v0.1.7...v0.1.8) (2020-11-22)
 
 ### [0.1.7](https://github.com/VirtusLab/formts/compare/v0.1.6...v0.1.7) (2020-11-22)
