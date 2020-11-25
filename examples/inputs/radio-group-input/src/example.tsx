@@ -14,7 +14,7 @@ import ReactDOM from "react-dom";
 import "../index.css";
 
 const Schema = createFormSchema(fields => ({
-  color: fields.choice("red", "green", "blue"),
+  colors: fields.choice("", "red", "green", "blue"),
 }));
 
 const Example: React.FC = () => {
@@ -22,42 +22,39 @@ const Example: React.FC = () => {
 
   return (
     <FormProvider controller={controller}>
-      <ColorSelectInput />
+      <ColorsRadioGroup />
       <Debug />
     </FormProvider>
   );
 };
 
-const ColorSelectInput: React.FC = () => {
-  const field = useField(Schema.color);
+const ColorsRadioGroup: React.FC = () => {
+  const colors = useField(Schema.colors);
 
   const labels = {
     red: "Red",
     green: "Green",
     blue: "Blue",
   };
-  type Color = keyof typeof field.options;
 
   return (
-    <>
-      <label htmlFor={field.id}>Choose your favourite color:</label>
-      <select
-        id={field.id}
-        value={field.value}
-        onChange={e => field.setValue(e.target.value as Color)}
-        onBlur={field.handleBlur}
-      >
-        {/* 
-         we need custom-typed Object.keys in order for type of `option`
-         to be inferred properly to "red" | "green" | "blue" in this example 
-        */}
-        {Object.values(field.options).map(option => (
-          <option key={option} value={option}>
-            {labels[option]}
-          </option>
-        ))}
-      </select>
-    </>
+    <fieldset>
+      <legend>Choose your favourite color:</legend>
+
+      {Object.values(colors.options).map(option => (
+        <div key={colors.id}>
+          <input
+            id={option}
+            type="radio"
+            name={colors.id}
+            checked={colors.value === option}
+            onBlur={colors.handleBlur}
+            onChange={e => e.target.checked && colors.setValue(option)}
+          />
+          <label htmlFor={option}>{labels[option]}</label>
+        </div>
+      ))}
+    </fieldset>
   );
 };
 
@@ -65,12 +62,12 @@ const Debug: React.FC = () => {
   const form = useFormHandle(Schema);
   const values = useFormValues(Schema);
 
-  const color = useField(Schema.color);
+  const colors = useField(Schema.colors);
 
   const info = {
     values,
     form,
-    fields: { color },
+    fields: { colors },
   };
 
   return (
