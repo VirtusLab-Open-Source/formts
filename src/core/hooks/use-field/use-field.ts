@@ -100,7 +100,7 @@ const createFieldHandle = <T, Err>(
     get options() {
       const decoder = impl(descriptor).__decoder;
       return isChoiceDecoder(decoder)
-        ? toIdentityDict(decoder.options as string[])
+        ? toIdentityDict((decoder.options as string[]).filter(opt => opt != ""))
         : undefined;
     },
 

@@ -111,7 +111,7 @@ type ObjectFieldHandle<T, Err> = T extends Array<any>
 type ChoiceFieldHandle<T> = [T] extends [string]
   ? IsUnion<T> extends true
     ? {
-        /** Dictionary containing options specified in Schema using `choice` function */
+        /** Dictionary containing options specified in Schema using `choice` function (excluding `""`) */
         options: IdentityDict<Exclude<T, "">>;
       }
     : void
