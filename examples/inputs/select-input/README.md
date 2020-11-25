@@ -1,4 +1,4 @@
-# Checkbox group input example
+# Select input example
 
 This example showcases usage of select input
 
