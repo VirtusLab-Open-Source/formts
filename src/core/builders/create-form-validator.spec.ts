@@ -794,4 +794,57 @@ describe("createFormValidator", () => {
     expect(arrayItemValidator).toHaveBeenCalledTimes(2);
     expect(stringValidator).toHaveBeenCalledTimes(1);
   });
+
+  it("should work with simple signature", async () => {
+    const { validate } = createFormValidator(Schema, validate => [
+      validate(Schema.string, x => (x ? null : "REQUIRED")),
+    ]);
+
+    const getValue = () => "" as any;
+
+    const validation = await validate({ fields: [Schema.string], getValue });
+
+    expect(validation).toEqual([{ field: Schema.string, error: "REQUIRED" }]);
+  });
+
+  it("should work with simple signature with array.nth", async () => {
+    const { validate } = createFormValidator(Schema, validate => [
+      validate(
+        Schema.arrayObjectString.nth,
+        x => wait(x.str === "invalid" ? "INVALID_VALUE" : null),
+        x => (x.str === "" ? "REQUIRED" : null),
+        x => wait(x.str?.length < 3 ? "TOO_SHORT" : null)
+      ),
+    ]);
+
+    const getValue = (field: FieldDescriptor<any>): any => {
+      switch (impl(field).__path) {
+        case "arrayObjectString[0]":
+          return { str: "sm" };
+        case "arrayObjectString[1]":
+          return { str: "" };
+        case "arrayObjectString[2]":
+          return { str: "valid string" };
+        case "arrayObjectString[3]":
+          return { str: "invalid" };
+      }
+    };
+
+    const validation = await validate({
+      fields: [
+        Schema.arrayObjectString.nth(0),
+        Schema.arrayObjectString.nth(1),
+        Schema.arrayObjectString.nth(2),
+        Schema.arrayObjectString.nth(3),
+      ],
+      getValue,
+    });
+
+    expect(validation).toEqual([
+      { field: Schema.arrayObjectString.nth(0), error: "TOO_SHORT" },
+      { field: Schema.arrayObjectString.nth(1), error: "REQUIRED" },
+      { field: Schema.arrayObjectString.nth(2), error: null },
+      { field: Schema.arrayObjectString.nth(3), error: "INVALID_VALUE" },
+    ]);
+  });
 });

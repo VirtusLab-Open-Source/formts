@@ -124,7 +124,7 @@ const validate: ValidateFn = <T, Err, Deps extends any[]>(
   ...rules: Array<Validator<T, Err>>
 ): FieldValidator<T, Err, Deps> => {
   const config: ValidateConfig<T, Err, Deps> =
-    typeof x === "object"
+    (x as any)["field"] != null
       ? { ...(x as ValidateConfig<T, Err, Deps>) }
       : { field: x as ValidateField<T, Err>, rules: () => rules };
 
