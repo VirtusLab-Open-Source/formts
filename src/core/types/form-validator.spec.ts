@@ -59,6 +59,23 @@ describe("validateFn", () => {
     assert<IsExact<Actual, Expected>>(true);
   });
 
+  it("resolves properly for array nth", () => {
+    const arrayFieldValidator = validator({
+      field: fd4.nth,
+      dependencies: [fd1, fd2, fd3, fd5],
+      rules: (_string, _number, _choice, _obj) => [false],
+    });
+
+    type Actual = typeof arrayFieldValidator;
+    type Expected = FieldValidator<
+      Date,
+      Err,
+      [string, number, "a" | "b" | "c", { parent: { child: string[] } }]
+    >;
+
+    assert<IsExact<Actual, Expected>>(true);
+  });
+
   it("resolves properly for object array", () => {
     const objFieldValidator = validator({
       field: fd5,
@@ -84,6 +101,33 @@ describe("validateFn", () => {
 
     type Actual = typeof fieldValidator;
     type Expected = FieldValidator<string, Err, []>;
+
+    assert<IsExact<Actual, Expected>>(true);
+  });
+
+  it("resolves properly for simple signature", () => {
+    const stringFieldValidator = validator(fd1, () => null);
+
+    type Actual = typeof stringFieldValidator;
+    type Expected = FieldValidator<string, Err, []>;
+
+    assert<IsExact<Actual, Expected>>(true);
+  });
+
+  it("resolves properly for simple signature for array", () => {
+    const stringFieldValidator = validator(fd4, () => null);
+
+    type Actual = typeof stringFieldValidator;
+    type Expected = FieldValidator<Date[], Err, []>;
+
+    assert<IsExact<Actual, Expected>>(true);
+  });
+
+  it("resolves properly for simple signature for array.nth", () => {
+    const stringFieldValidator = validator(fd4.nth, () => null);
+
+    type Actual = typeof stringFieldValidator;
+    type Expected = FieldValidator<Date, Err, []>;
 
     assert<IsExact<Actual, Expected>>(true);
   });

@@ -63,7 +63,6 @@ export const createFormValidator = <Values extends object, Err>(
 
     return allValidators.filter(x => {
       const xPath = impl(x.field).__path;
-      // console.log("VALIDATOR PATH vs PATH", xPath, rootArrayPath)
       const isFieldMatch = x.type === "field" && xPath === path;
       const isEachMatch = x.type === "each" && xPath === rootArrayPath;
       const triggerMatches =
