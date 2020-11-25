@@ -62,7 +62,7 @@ export const createFormValidator = <Values extends object, Err>(
     const rootArrayPath = getRootArrayPath(path);
 
     return allValidators.filter(x => {
-      const xPath = impl(x.field).__path;
+      const xPath = x.path;
       const isFieldMatch = x.type === "field" && xPath === path;
       const isEachMatch = x.type === "each" && xPath === rootArrayPath;
       const triggerMatches =
@@ -142,7 +142,7 @@ const validate: ValidateFn = <T, Err, Deps extends any[]>(
 
   return {
     type: isNth ? "each" : "field",
-    field: { __path: path } as any,
+    path,
     triggers: config.triggers,
     validators: config.rules,
     dependencies: config.dependencies,
