@@ -52,14 +52,14 @@ export type FieldValidator<T, Err, Dependencies extends any[]> = {
 };
 
 export type ValidateFn = {
+  <T, Err, Dependencies extends any[]>(
+    config: ValidateConfig<T, Err, Dependencies>
+  ): FieldValidator<T, Err, Dependencies>;
+
   <T, Err>(
     field: ValidateField<T, Err>,
     ...rules: Array<Validator<T, Err>>
   ): FieldValidator<T, Err, []>;
-
-  <T, Err, Dependencies extends any[]>(
-    config: ValidateConfig<T, Err, Dependencies>
-  ): FieldValidator<T, Err, Dependencies>;
 };
 
 export type ValidateConfig<T, Err, Dependencies extends any[]> = {
