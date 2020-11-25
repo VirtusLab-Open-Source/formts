@@ -280,8 +280,8 @@ describe("createFormValidator", () => {
 
   it("validate.each should run for each element of list", async () => {
     const { validate } = createFormValidator(Schema, validate => [
-      validate.each({
-        field: Schema.arrayObjectString,
+      validate({
+        field: Schema.arrayObjectString.nth,
         rules: () => [
           x => wait(x.str === "invalid" ? "INVALID_VALUE" : null),
           x => (x.str === "" ? "REQUIRED" : null),
@@ -289,6 +289,7 @@ describe("createFormValidator", () => {
         ],
       }),
     ]);
+
     const getValue = (field: FieldDescriptor<any>): any => {
       switch (impl(field).__path) {
         case "arrayObjectString[0]":
@@ -322,12 +323,12 @@ describe("createFormValidator", () => {
 
   it("validate.each for multiple arrays should run for each element of corresponding list", async () => {
     const { validate } = createFormValidator(Schema, validate => [
-      validate.each({
-        field: Schema.arrayObjectString,
+      validate({
+        field: Schema.arrayObjectString.nth,
         rules: () => [x => wait(x.str?.length < 3 ? "TOO_SHORT" : null)],
       }),
-      validate.each({
-        field: Schema.arrayChoice,
+      validate({
+        field: Schema.arrayChoice.nth,
         rules: () => [x => wait(x === "c" ? "INVALID_VALUE" : null)],
       }),
     ]);
@@ -485,8 +486,8 @@ describe("createFormValidator", () => {
         field: Schema.string,
         rules: () => [x => (x.length < 3 ? "TOO_SHORT" : null)],
       }),
-      validate.each({
-        field: Schema.arrayString,
+      validate({
+        field: Schema.arrayString.nth,
         rules: () => [x => wait(x.length < 3 ? "TOO_SHORT" : null)],
       }),
       validate({
@@ -537,8 +538,8 @@ describe("createFormValidator", () => {
         field: Schema.string,
         rules: () => [pass],
       }),
-      validate.each({
-        field: Schema.arrayString,
+      validate({
+        field: Schema.arrayString.nth,
         rules: () => [pass],
       }),
       validate({
@@ -670,8 +671,8 @@ describe("createFormValidator", () => {
         field: Schema.arrayObjectString,
         rules: () => [x => (x.length < 3 ? "TOO_SHORT" : undefined)],
       }),
-      validate.each({
-        field: Schema.arrayObjectString,
+      validate({
+        field: Schema.arrayObjectString.nth,
         rules: () => [x => (x.str === "" ? "REQUIRED" : null)],
       }),
     ]);
@@ -742,8 +743,8 @@ describe("createFormValidator", () => {
         field: Schema.objectObjectArrayObjectString.obj.array,
         rules: () => [arrayValidator],
       }),
-      validate.each({
-        field: Schema.objectObjectArrayObjectString.obj.array,
+      validate({
+        field: Schema.objectObjectArrayObjectString.obj.array.nth,
         rules: () => [arrayItemValidator],
       }),
       validate({

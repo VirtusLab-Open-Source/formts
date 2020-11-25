@@ -52,22 +52,26 @@ export type FieldValidator<T, Err, Dependencies extends any[]> = {
 };
 
 export type ValidateFn = {
-  each: ValidateEachFn;
+  <T, Err>(
+    field: ValidateField<T, Err>,
+    ...rules: Array<Validator<T, Err>>
+  ): FieldValidator<T, Err, []>;
 
-  <T, Err, Dependencies extends any[]>(config: {
-    field: GenericFieldDescriptor<T, Err>;
-    triggers?: ValidationTrigger[];
-    dependencies?: readonly [...FieldDescTuple<Dependencies>];
-    rules: (...deps: [...Dependencies]) => Array<Falsy | Validator<T, Err>>;
-  }): FieldValidator<T, Err, Dependencies>;
+  <T, Err, Dependencies extends any[]>(
+    config: ValidateConfig<T, Err, Dependencies>
+  ): FieldValidator<T, Err, Dependencies>;
 };
 
-export type ValidateEachFn = <T, Err, Dependencies extends any[]>(config: {
-  field: ArrayFieldDescriptor<T[], Err>;
+export type ValidateConfig<T, Err, Dependencies extends any[]> = {
+  field: ValidateField<T, Err>;
   triggers?: ValidationTrigger[];
   dependencies?: readonly [...FieldDescTuple<Dependencies>];
   rules: (...deps: [...Dependencies]) => Array<Falsy | Validator<T, Err>>;
-}) => FieldValidator<T, Err, Dependencies>;
+};
+
+export type ValidateField<T, Err> =
+  | GenericFieldDescriptor<T, Err>
+  | ArrayFieldDescriptor<T[], Err>["nth"];
 
 type FieldDescTuple<ValuesTuple extends readonly any[]> = {
   [Index in keyof ValuesTuple]: GenericFieldDescriptor<ValuesTuple[Index]>;

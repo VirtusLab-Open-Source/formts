@@ -79,7 +79,7 @@ describe("validateFn", () => {
   it("resolves properly with no dependencies", () => {
     const fieldValidator = validator({
       field: fd1,
-      rules: () => [false],
+      rules: () => [null],
     });
 
     type Actual = typeof fieldValidator;
