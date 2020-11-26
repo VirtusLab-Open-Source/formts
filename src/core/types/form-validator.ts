@@ -1,4 +1,4 @@
-import { Falsy } from "../../utils";
+import { Falsy, NoInfer } from "../../utils";
 
 import {
   ArrayFieldDescriptor,
@@ -58,7 +58,7 @@ export type ValidateFn = {
 
   <T, Err>(
     field: ValidateField<T, Err>,
-    ...rules: Array<Validator<T, Err>>
+    ...rules: Array<Validator<T, NoInfer<Err>>>
   ): FieldValidator<T, Err, []>;
 };
 
@@ -66,7 +66,9 @@ export type ValidateConfig<T, Err, Dependencies extends any[]> = {
   field: ValidateField<T, Err>;
   triggers?: ValidationTrigger[];
   dependencies?: readonly [...FieldDescTuple<Dependencies>];
-  rules: (...deps: [...Dependencies]) => Array<Falsy | Validator<T, Err>>;
+  rules: (
+    ...deps: [...Dependencies]
+  ) => Array<Falsy | Validator<T, NoInfer<Err>>>;
 };
 
 export type ValidateField<T, Err> =

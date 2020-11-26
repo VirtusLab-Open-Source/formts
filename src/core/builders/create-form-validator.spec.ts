@@ -168,7 +168,7 @@ describe("createFormValidator", () => {
     const { validate } = createFormValidator(Schema, validate => [
       validate({
         field: Schema.choice,
-        rules: () => [x => (x === "A" ? "INVALID_CHOICE" : null)],
+        rules: () => [x => (x === "A" ? "INVALID_VALUE" : null)],
       }),
     ]);
     const getValue = () => "C" as any;
@@ -669,7 +669,7 @@ describe("createFormValidator", () => {
     const { validate } = createFormValidator(Schema, validate => [
       validate({
         field: Schema.arrayObjectString,
-        rules: () => [x => (x.length < 3 ? "TOO_SHORT" : undefined)],
+        rules: () => [x => (x.length < 3 ? "TOO_SHORT" : null)],
       }),
       validate({
         field: Schema.arrayObjectString.nth,

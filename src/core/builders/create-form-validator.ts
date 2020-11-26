@@ -62,9 +62,8 @@ export const createFormValidator = <Values extends object, Err>(
     const rootArrayPath = getRootArrayPath(path);
 
     return allValidators.filter(x => {
-      const xPath = x.path;
-      const isFieldMatch = x.type === "field" && xPath === path;
-      const isEachMatch = x.type === "each" && xPath === rootArrayPath;
+      const isFieldMatch = x.type === "field" && x.path === path;
+      const isEachMatch = x.type === "each" && x.path === rootArrayPath;
       const triggerMatches =
         trigger && x.triggers ? x.triggers.includes(trigger) : true;
 
@@ -129,7 +128,7 @@ const validate: ValidateFn = <T, Err, Deps extends any[]>(
       : { field: x as ValidateField<T, Err>, rules: () => rules };
 
   const isNth = typeof config.field === "function";
-  let path = isNth
+  const path = isNth
     ? impl(config.field as ArrayFieldDescriptor<T[], Err>["nth"]).__rootPath
     : impl(config.field as FieldDescriptor<T, Err>).__path;
 
