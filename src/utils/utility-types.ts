@@ -45,3 +45,5 @@ export type WidenType<T> = [T] extends [string]
   : [T] extends [boolean]
   ? boolean
   : T;
+
+export type NoInfer<A> = [A][A extends any ? 0 : never];

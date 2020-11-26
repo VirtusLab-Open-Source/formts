@@ -4,6 +4,7 @@ import {
   ArrayFieldDescriptor,
   ObjectFieldDescriptor,
   _FieldDescriptorImpl,
+  _NTHHandler,
 } from "./field-descriptor";
 import { FormController, _FormControllerImpl } from "./form-controller";
 
@@ -26,6 +27,10 @@ type GetImplFn = {
   <T>(it: FieldDecoder<T>): _FieldDecoderImpl<T>;
 
   <V extends object, Err>(it: FormController): _FormControllerImpl<V, Err>;
+
+  <T extends any>(it: ArrayFieldDescriptor<T[], unknown>["nth"]): _NTHHandler<
+    T
+  >;
 };
 
 /**
