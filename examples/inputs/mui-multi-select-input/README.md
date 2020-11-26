@@ -1,4 +1,4 @@
-# MUI multi-select input example
+# MaterialUI multi-select input example
 
 This example showcases usage of multiple select input from MaterialUI
 
