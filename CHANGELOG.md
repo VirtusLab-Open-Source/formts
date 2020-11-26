@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.10](https://github.com/VirtusLab/formts/compare/v0.1.9...v0.1.10) (2020-11-26)
+
+
+### Features
+
+* **core:** validators api v2 ([#40](https://github.com/VirtusLab/formts/issues/40)) ([5ee0694](https://github.com/VirtusLab/formts/commit/5ee0694a4de83e28d5177643904bf58e8cbbbf9b))
+
 ### [0.1.9](https://github.com/VirtusLab/formts/compare/v0.1.8...v0.1.9) (2020-11-25)
 
 
