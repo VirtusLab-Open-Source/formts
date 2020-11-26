@@ -1,4 +1,4 @@
-# Basic Form Validation Example
+# Basic form validation example
 
 This example showcases very simple validation using `Formts` validation API
 

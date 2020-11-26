@@ -1,4 +1,4 @@
-# Basic Form Improved Example
+# Basic form improved example
 
 This example showcases recommended approach to creating forms with `Formts`
 

@@ -1,4 +1,4 @@
-# Basic Form Material-UI Example
+# Basic form Material-UI example
 
 This example showcases integration with third-party component library.
 
