@@ -81,11 +81,20 @@ const createFieldDescriptor = (
       return rootDescriptor;
 
     case "array": {
-      const nth = (i: number) =>
+      const nthHandler = (i: number) =>
         createFieldDescriptor(
           decoder.inner as _FieldDecoderImpl<any>,
           `${path}[${i}]`
         );
+
+      const nth = defineProperties(nthHandler, {
+        __rootPath: {
+          value: path,
+          enumerable: false,
+          writable: false,
+          configurable: false,
+        },
+      });
 
       return Object.assign(rootDescriptor, { nth });
     }

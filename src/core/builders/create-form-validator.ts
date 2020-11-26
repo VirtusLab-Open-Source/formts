@@ -1,6 +1,7 @@
 import { isFalsy } from "../../utils";
 import { flatMap, uniqBy } from "../../utils/array";
 import {
+  ArrayFieldDescriptor,
   FieldDescriptor,
   getArrayDescriptorChildren,
   getObjectDescriptorChildren,
@@ -11,6 +12,8 @@ import { FormSchema } from "../types/form-schema";
 import {
   FieldValidator,
   FormValidator,
+  ValidateConfig,
+  ValidateField,
   ValidateFn,
   ValidationTrigger,
   Validator,
@@ -59,9 +62,8 @@ export const createFormValidator = <Values extends object, Err>(
     const rootArrayPath = getRootArrayPath(path);
 
     return allValidators.filter(x => {
-      const xPath = impl(x.field).__path;
-      const isFieldMatch = x.type === "field" && xPath === path;
-      const isEachMatch = x.type === "each" && xPath === rootArrayPath;
+      const isFieldMatch = x.type === "field" && x.path === path;
+      const isEachMatch = x.type === "each" && x.path === rootArrayPath;
       const triggerMatches =
         trigger && x.triggers ? x.triggers.includes(trigger) : true;
 
@@ -116,21 +118,28 @@ export const createFormValidator = <Values extends object, Err>(
   return formValidator;
 };
 
-const validate: ValidateFn = config => ({
-  type: "field",
-  field: config.field,
-  triggers: config.triggers,
-  validators: config.rules,
-  dependencies: config.dependencies,
-});
+const validate: ValidateFn = <T, Err, Deps extends any[]>(
+  x: ValidateConfig<T, Err, Deps> | ValidateField<T, Err>,
+  ...rules: Array<Validator<T, Err>>
+): FieldValidator<T, Err, Deps> => {
+  const config: ValidateConfig<T, Err, Deps> =
+    (x as any)["field"] != null
+      ? { ...(x as ValidateConfig<T, Err, Deps>) }
+      : { field: x as ValidateField<T, Err>, rules: () => rules };
 
-validate.each = config => ({
-  type: "each",
-  field: config.field as any,
-  triggers: config.triggers,
-  validators: config.rules,
-  dependencies: config.dependencies,
-});
+  const isNth = typeof config.field === "function";
+  const path = isNth
+    ? impl(config.field as ArrayFieldDescriptor<T[], Err>["nth"]).__rootPath
+    : impl(config.field as FieldDescriptor<T, Err>).__path;
+
+  return {
+    type: isNth ? "each" : "field",
+    path,
+    triggers: config.triggers,
+    validators: config.rules,
+    dependencies: config.dependencies,
+  };
+};
 
 const runValidationForField = <Value, Err>(
   validator: FieldValidator<Value, Err, unknown[]>,

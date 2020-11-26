@@ -168,7 +168,7 @@ describe("createFormValidator", () => {
     const { validate } = createFormValidator(Schema, validate => [
       validate({
         field: Schema.choice,
-        rules: () => [x => (x === "A" ? "INVALID_CHOICE" : null)],
+        rules: () => [x => (x === "A" ? "INVALID_VALUE" : null)],
       }),
     ]);
     const getValue = () => "C" as any;
@@ -280,8 +280,8 @@ describe("createFormValidator", () => {
 
   it("validate.each should run for each element of list", async () => {
     const { validate } = createFormValidator(Schema, validate => [
-      validate.each({
-        field: Schema.arrayObjectString,
+      validate({
+        field: Schema.arrayObjectString.nth,
         rules: () => [
           x => wait(x.str === "invalid" ? "INVALID_VALUE" : null),
           x => (x.str === "" ? "REQUIRED" : null),
@@ -289,6 +289,7 @@ describe("createFormValidator", () => {
         ],
       }),
     ]);
+
     const getValue = (field: FieldDescriptor<any>): any => {
       switch (impl(field).__path) {
         case "arrayObjectString[0]":
@@ -322,12 +323,12 @@ describe("createFormValidator", () => {
 
   it("validate.each for multiple arrays should run for each element of corresponding list", async () => {
     const { validate } = createFormValidator(Schema, validate => [
-      validate.each({
-        field: Schema.arrayObjectString,
+      validate({
+        field: Schema.arrayObjectString.nth,
         rules: () => [x => wait(x.str?.length < 3 ? "TOO_SHORT" : null)],
       }),
-      validate.each({
-        field: Schema.arrayChoice,
+      validate({
+        field: Schema.arrayChoice.nth,
         rules: () => [x => wait(x === "c" ? "INVALID_VALUE" : null)],
       }),
     ]);
@@ -485,8 +486,8 @@ describe("createFormValidator", () => {
         field: Schema.string,
         rules: () => [x => (x.length < 3 ? "TOO_SHORT" : null)],
       }),
-      validate.each({
-        field: Schema.arrayString,
+      validate({
+        field: Schema.arrayString.nth,
         rules: () => [x => wait(x.length < 3 ? "TOO_SHORT" : null)],
       }),
       validate({
@@ -537,8 +538,8 @@ describe("createFormValidator", () => {
         field: Schema.string,
         rules: () => [pass],
       }),
-      validate.each({
-        field: Schema.arrayString,
+      validate({
+        field: Schema.arrayString.nth,
         rules: () => [pass],
       }),
       validate({
@@ -668,10 +669,10 @@ describe("createFormValidator", () => {
     const { validate } = createFormValidator(Schema, validate => [
       validate({
         field: Schema.arrayObjectString,
-        rules: () => [x => (x.length < 3 ? "TOO_SHORT" : undefined)],
+        rules: () => [x => (x.length < 3 ? "TOO_SHORT" : null)],
       }),
-      validate.each({
-        field: Schema.arrayObjectString,
+      validate({
+        field: Schema.arrayObjectString.nth,
         rules: () => [x => (x.str === "" ? "REQUIRED" : null)],
       }),
     ]);
@@ -742,8 +743,8 @@ describe("createFormValidator", () => {
         field: Schema.objectObjectArrayObjectString.obj.array,
         rules: () => [arrayValidator],
       }),
-      validate.each({
-        field: Schema.objectObjectArrayObjectString.obj.array,
+      validate({
+        field: Schema.objectObjectArrayObjectString.obj.array.nth,
         rules: () => [arrayItemValidator],
       }),
       validate({
@@ -792,5 +793,58 @@ describe("createFormValidator", () => {
     expect(arrayValidator).toHaveBeenCalledTimes(1);
     expect(arrayItemValidator).toHaveBeenCalledTimes(2);
     expect(stringValidator).toHaveBeenCalledTimes(1);
+  });
+
+  it("should work with simple signature", async () => {
+    const { validate } = createFormValidator(Schema, validate => [
+      validate(Schema.string, x => (x ? null : "REQUIRED")),
+    ]);
+
+    const getValue = () => "" as any;
+
+    const validation = await validate({ fields: [Schema.string], getValue });
+
+    expect(validation).toEqual([{ field: Schema.string, error: "REQUIRED" }]);
+  });
+
+  it("should work with simple signature with array.nth", async () => {
+    const { validate } = createFormValidator(Schema, validate => [
+      validate(
+        Schema.arrayObjectString.nth,
+        x => wait(x.str === "invalid" ? "INVALID_VALUE" : null),
+        x => (x.str === "" ? "REQUIRED" : null),
+        x => wait(x.str?.length < 3 ? "TOO_SHORT" : null)
+      ),
+    ]);
+
+    const getValue = (field: FieldDescriptor<any>): any => {
+      switch (impl(field).__path) {
+        case "arrayObjectString[0]":
+          return { str: "sm" };
+        case "arrayObjectString[1]":
+          return { str: "" };
+        case "arrayObjectString[2]":
+          return { str: "valid string" };
+        case "arrayObjectString[3]":
+          return { str: "invalid" };
+      }
+    };
+
+    const validation = await validate({
+      fields: [
+        Schema.arrayObjectString.nth(0),
+        Schema.arrayObjectString.nth(1),
+        Schema.arrayObjectString.nth(2),
+        Schema.arrayObjectString.nth(3),
+      ],
+      getValue,
+    });
+
+    expect(validation).toEqual([
+      { field: Schema.arrayObjectString.nth(0), error: "TOO_SHORT" },
+      { field: Schema.arrayObjectString.nth(1), error: "REQUIRED" },
+      { field: Schema.arrayObjectString.nth(2), error: null },
+      { field: Schema.arrayObjectString.nth(3), error: "INVALID_VALUE" },
+    ]);
   });
 });
