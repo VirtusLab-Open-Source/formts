@@ -1,7 +1,7 @@
 {
   "version": "0.1.11",
   "name": "@virtuslab/formts",
-  "description": "Typescript-focused, schema-based React form library",
+  "description": "TType-safe, declarative and performant React form & validation library",
   "repository": "git@github.com:VirtusLab/formts.git",
   "author": "Mikołaj Klaman <mklaman@virtuslab.com>",
   "license": "MIT",
@@ -16,6 +16,12 @@
   },
   "files": [
     "dist"
+  ],
+  "keywords": [
+    "react",
+    "typescript",
+    "forms",
+    "validation"
   ],
   "scripts": {
     "clean": "rm -rf ./dist",
