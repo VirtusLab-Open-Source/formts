@@ -3,6 +3,10 @@
   "name": "@formts-examples/mui-date-picker-input",
   "description": "This example showcases usage of date picker input from MaterialUI",
   "main": "src/example.tsx",
+  "devDependencies": {
+    "@types/react": "17.0.0",
+    "@types/react-dom": "17.0.0"
+  },
   "dependencies": {
     "@virtuslab/formts": "latest",
     "@material-ui/core": "4.11.1",
