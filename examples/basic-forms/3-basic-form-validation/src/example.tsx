@@ -24,21 +24,17 @@ const Schema = createFormSchema(
 );
 
 const validator = createFormValidator(Schema, validate => [
-  validate({
-    field: Schema.name,
-    rules: () => [
-      // you can mix built-in validators with custom functions
-      validators.withError(validators.required(), "Required"),
-      val => (val.length > 10 ? "Name must be max 10 characters long" : null),
-    ],
-  }),
-  validate({
-    field: Schema.age,
-    rules: () => [
-      validators.withError(validators.required(), "Required"),
-      validators.withError(validators.minValue(18), "Age must be at least 18"),
-    ],
-  }),
+  validate(
+    Schema.name,
+    // you can mix built-in validators with custom functions
+    validators.withError(validators.required(), "Required"),
+    val => (val.length > 10 ? "Name must be max 10 characters long" : null)
+  ),
+  validate(
+    Schema.age,
+    validators.withError(validators.required(), "Required"),
+    validators.withError(validators.minValue(18), "Age must be at least 18")
+  ),
 ]);
 
 const Example: React.FC = () => {
