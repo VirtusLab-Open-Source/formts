@@ -1,8 +1,7 @@
-class Tagged<T> {
+export class Nominal<Tag> {
   // @ts-ignore
-  private __tag!: T;
+  private __tag!: Tag;
 }
-export type Nominal<Tag, T> = Tagged<Tag> & T;
 
 export type UnionToIntersection<U> = (
   U extends any ? (k: U) => void : never

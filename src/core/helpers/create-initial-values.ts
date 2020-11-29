@@ -9,7 +9,7 @@ export const createInitialValues = <Values extends object>(
 ): Values => {
   const initialStateFromDecoders = entries(schema).reduce(
     (shape, [key, descriptor]) => {
-      shape[key] = impl(descriptor).__decoder.init();
+      shape[key] = impl(descriptor).__decoder.init() as Values[keyof Values];
       return shape;
     },
     {} as Values
