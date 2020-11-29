@@ -4,7 +4,9 @@ import { createInitialValues } from "./create-initial-values";
 
 describe("createInitialValues", () => {
   it("should be empty for empty schema", () => {
-    expect(createInitialValues({})).toEqual({});
+    const schema = createFormSchema(() => ({}));
+
+    expect(createInitialValues(schema)).toEqual({});
   });
 
   it("for one-element schema", () => {

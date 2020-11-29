@@ -1,7 +1,7 @@
 import { IsExact, assert } from "conditional-type-checks";
 
 import { FieldDescriptor } from "./field-descriptor";
-import { FormSchema } from "./form-schema";
+import { FormSchema, ExtractFormValues } from "./form-schema";
 
 type SomeValues = {
   string: string;
@@ -154,6 +154,24 @@ describe("FormSchema type", () => {
     type Actual = Schema["instance"];
 
     type Expected = FieldDescriptor<Date | null, SomeErr>;
+
+    assert<IsExact<Actual, Expected>>(true);
+  });
+});
+
+describe("ExtractFormValues type", () => {
+  it("extracts type of form values out of FormSchema type", () => {
+    type Schema = FormSchema<SomeValues, SomeErr>;
+
+    type Actual = ExtractFormValues<Schema>;
+    type Expected = SomeValues;
+
+    assert<IsExact<Actual, Expected>>(true);
+  });
+
+  it("resolves to never for invalid input", () => {
+    type Actual = ExtractFormValues<{}>;
+    type Expected = never;
 
     assert<IsExact<Actual, Expected>>(true);
   });
