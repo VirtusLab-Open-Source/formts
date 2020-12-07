@@ -50,10 +50,12 @@ import { impl, opaque } from "../types/type-mapper-util";
  */
 export const createFormValidator = <Values extends object, Err>(
   _schema: FormSchema<Values, Err>,
-  builder: (validate: ValidateFn) => Array<FieldValidator<any, Err, any[]>>
+  builder: (
+    validate: ValidateFn
+  ) => Array<FieldValidator<any, Err, any | any[]>>
 ): FormValidator<Values, Err> => {
   const allValidators = builder(validate);
-  const dependenciesDict = buildDependenciesDict(allValidators)
+  const dependenciesDict = buildDependenciesDict(allValidators);
 
   const getValidatorsForField = (
     descriptor: FieldDescriptor<unknown, Err>,
@@ -83,8 +85,13 @@ export const createFormValidator = <Values extends object, Err>(
       const allFields = flatMap(fields, x =>
         getChildrenDescriptors(x, getValue)
       );
-      const dependents = flatMap(fields, x => getDependents(x, dependenciesDict))
-      const uniqueFields = uniqBy([...allFields, ...dependents], x => impl(x).__path);
+      const dependents = flatMap(fields, x =>
+        getDependents(x, dependenciesDict)
+      );
+      const uniqueFields = uniqBy(
+        [...allFields, ...dependents],
+        x => impl(x).__path
+      );
 
       const fieldsToValidate = uniqueFields
         .map(field => ({
@@ -207,53 +214,34 @@ const getRootArrayPath = (path: string): string | undefined => {
   }
 };
 
-type DependenciesDict = { [path: string]: FieldDescriptor<any>[] }
+type DependenciesDict = { [path: string]: FieldDescriptor<any>[] };
 
-const buildDependenciesDict = (validators: FieldValidator<any, any, any>[]): DependenciesDict => {
-  let dict: DependenciesDict = {}
+const buildDependenciesDict = (
+  validators: FieldValidator<any, any, any>[]
+): DependenciesDict => {
+  let dict: DependenciesDict = {};
 
   for (const validator of validators) {
-    const fieldDesc = opaque({ __path: validator.path, __decoder: null as any }) // FIXME
+    const fieldDesc = opaque({
+      __path: validator.path,
+      __decoder: null as any,
+    }); // FIXME
 
     for (const dependency of validator.dependencies ?? []) {
-      const path = impl(dependency).__path
+      const path = impl(dependency).__path;
 
       if (!dict[path]) {
-        dict[path] = [fieldDesc]
+        dict[path] = [fieldDesc];
       } else {
-        dict[path].push(fieldDesc)
+        dict[path].push(fieldDesc);
       }
     }
   }
 
-  return dict
-}
+  return dict;
+};
 
-const getDependents = (desc: FieldDescriptor<any>, dependenciesDict: DependenciesDict) =>
-  dependenciesDict[impl(desc).__path] ?? []
-
-
-
-// import { createFormSchema } from "./create-form-schema";
-
-// const schema = createFormSchema(fields => ({
-//   a: fields.string(),
-//   b: fields.bool(),
-//   c: fields.array(fields.choice("a", "b")),
-// }), err => err<"err">())
-
-// createFormValidator(schema, validate => [
-//   validate({
-//     field: schema.a,
-//     rules: (x, b) => [],
-//     dependencies: [schema.b, schema.c]
-//   }]
-// )
-
-// declare const validator: ValidateFn
-
-// const a = validator({
-//   field: schema.a,
-//   rules: (x, b) => [],
-//   dependencies: [schema.b, schema.c]
-// })
+const getDependents = (
+  desc: FieldDescriptor<any>,
+  dependenciesDict: DependenciesDict
+) => dependenciesDict[impl(desc).__path] ?? [];
