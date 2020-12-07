@@ -18,7 +18,7 @@ import {
   ValidationTrigger,
   Validator,
 } from "../types/form-validator";
-import { impl } from "../types/type-mapper-util";
+import { impl, opaque } from "../types/type-mapper-util";
 
 /**
  * Create form validator based on provided set of validation rules.
@@ -53,6 +53,7 @@ export const createFormValidator = <Values extends object, Err>(
   builder: (validate: ValidateFn) => Array<FieldValidator<any, Err, any[]>>
 ): FormValidator<Values, Err> => {
   const allValidators = builder(validate);
+  const dependenciesDict = buildDependenciesDict(allValidators)
 
   const getValidatorsForField = (
     descriptor: FieldDescriptor<unknown, Err>,
@@ -82,7 +83,8 @@ export const createFormValidator = <Values extends object, Err>(
       const allFields = flatMap(fields, x =>
         getChildrenDescriptors(x, getValue)
       );
-      const uniqueFields = uniqBy(allFields, x => impl(x).__path);
+      const dependents = flatMap(fields, x => getDependents(x, dependenciesDict))
+      const uniqueFields = uniqBy([...allFields, ...dependents], x => impl(x).__path);
 
       const fieldsToValidate = uniqueFields
         .map(field => ({
@@ -204,3 +206,54 @@ const getRootArrayPath = (path: string): string | undefined => {
     return path.slice(0, indexStart);
   }
 };
+
+type DependenciesDict = { [path: string]: FieldDescriptor<any>[] }
+
+const buildDependenciesDict = (validators: FieldValidator<any, any, any>[]): DependenciesDict => {
+  let dict: DependenciesDict = {}
+
+  for (const validator of validators) {
+    const fieldDesc = opaque({ __path: validator.path, __decoder: null as any }) // FIXME
+
+    for (const dependency of validator.dependencies ?? []) {
+      const path = impl(dependency).__path
+
+      if (!dict[path]) {
+        dict[path] = [fieldDesc]
+      } else {
+        dict[path].push(fieldDesc)
+      }
+    }
+  }
+
+  return dict
+}
+
+const getDependents = (desc: FieldDescriptor<any>, dependenciesDict: DependenciesDict) =>
+  dependenciesDict[impl(desc).__path] ?? []
+
+
+
+// import { createFormSchema } from "./create-form-schema";
+
+// const schema = createFormSchema(fields => ({
+//   a: fields.string(),
+//   b: fields.bool(),
+//   c: fields.array(fields.choice("a", "b")),
+// }), err => err<"err">())
+
+// createFormValidator(schema, validate => [
+//   validate({
+//     field: schema.a,
+//     rules: (x, b) => [],
+//     dependencies: [schema.b, schema.c]
+//   }]
+// )
+
+// declare const validator: ValidateFn
+
+// const a = validator({
+//   field: schema.a,
+//   rules: (x, b) => [],
+//   dependencies: [schema.b, schema.c]
+// })
