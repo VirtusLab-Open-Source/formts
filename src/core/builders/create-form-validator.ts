@@ -1,4 +1,4 @@
-import { isFalsy } from "../../utils";
+import { defineProperties, isFalsy } from "../../utils";
 import { flatMap, uniqBy } from "../../utils/array";
 import {
   ArrayFieldDescriptor,
@@ -52,7 +52,7 @@ export const createFormValidator = <Values extends object, Err>(
   _schema: FormSchema<Values, Err>,
   builder: (
     validate: ValidateFn
-  ) => Array<FieldValidator<any, Err, any | any[]>>
+  ) => Array<FieldValidator<any, Err, any | unknown>>
 ): FormValidator<Values, Err> => {
   const allValidators = builder(validate);
   const dependenciesDict = buildDependenciesDict(allValidators);
@@ -222,10 +222,19 @@ const buildDependenciesDict = (
   let dict: DependenciesDict = {};
 
   for (const validator of validators) {
-    const fieldDesc = opaque({
-      __path: validator.path,
-      __decoder: null as any,
-    }); // FIXME
+    const fieldDesc = opaque(
+      defineProperties(
+        {},
+        {
+          __path: {
+            value: validator.path,
+            enumerable: false,
+            writable: false,
+            configurable: false,
+          },
+        }
+      ) as any
+    );
 
     for (const dependency of validator.dependencies ?? []) {
       const path = impl(dependency).__path;

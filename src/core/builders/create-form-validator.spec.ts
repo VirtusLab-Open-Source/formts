@@ -847,4 +847,94 @@ describe("createFormValidator", () => {
       { field: Schema.arrayObjectString.nth(3), error: "INVALID_VALUE" },
     ]);
   });
+
+  it("dependency change should trigger validation run", async () => {
+    const required = (x: any) => (x ? null : "REQUIRED");
+
+    const { validate } = createFormValidator(Schema, validate => [
+      validate({
+        field: Schema.string,
+        rules: _number => [required],
+        dependencies: [Schema.number],
+      }),
+      validate({
+        field: Schema.number,
+        rules: () => [required],
+      }),
+    ]);
+
+    const getValue = () => "" as any;
+
+    const validation = await validate({ fields: [Schema.number], getValue });
+
+    expect(validation).toEqual([
+      { field: Schema.number, error: "REQUIRED" },
+      { field: Schema.string, error: "REQUIRED" },
+    ]);
+  });
+
+  it("dependency change should trigger validation run for with array.nth", async () => {
+    const { validate } = createFormValidator(Schema, validate => [
+      validate({
+        field: Schema.arrayObjectString.nth,
+        rules: _ => [x => (x.str === "" ? "REQUIRED" : null)],
+        dependencies: [Schema.choice],
+      }),
+      validate(Schema.choice, x => x === "A" ? "INVALID_VALUE" : null)
+    ]);
+
+    const getValue = (field: FieldDescriptor<any>): any => {
+      switch (impl(field).__path) {
+        case "arrayObjectString[0]":
+          return { str: "sm" };
+        case "arrayObjectString[1]":
+          return { str: "" };
+        case "arrayObjectString[2]":
+          return { str: "valid string" };
+        case "arrayObjectString[3]":
+          return { str: "" };
+        case "choice":
+          return "A";
+      }
+    };
+
+    const validation = await validate({
+      fields: [Schema.choice],
+      getValue,
+    });
+
+    expect(validation).toEqual([
+      { field: Schema.choice, error: "INVALID_VALUE" },
+      { field: Schema.arrayObjectString.nth(0), error: null },
+      { field: Schema.arrayObjectString.nth(1), error: "REQUIRED" },
+      { field: Schema.arrayObjectString.nth(2), error: null },
+      { field: Schema.arrayObjectString.nth(3), error: "REQUIRED" },
+    ]);
+  });
+
+  it("dependency change should not duplicate validation", async () => {
+    const required = (x: any) => (x ? null : "REQUIRED");
+
+    const { validate } = createFormValidator(Schema, validate => [
+      validate({
+        field: Schema.string,
+        rules: _number => [required],
+        dependencies: [Schema.number],
+      }),
+      validate({
+        field: Schema.number,
+        rules: () => [required],
+      }),
+    ]);
+
+    const getValue = () => "" as any;
+
+    const validation = await validate({ fields: [Schema.number, Schema.string], getValue });
+
+    expect(validation).toEqual([
+      { field: Schema.number, error: "REQUIRED" },
+      { field: Schema.string, error: "REQUIRED" },
+    ]);
+  });
+
 });
