@@ -938,4 +938,31 @@ describe("createFormValidator", () => {
       { field: Schema.string, error: "REQUIRED" },
     ]);
   });
+
+  it("dependency change should trigger validation run even if root field triggers don't match", async () => {
+    const required = (x: any) => (x ? null : "REQUIRED");
+
+    const { validate } = createFormValidator(Schema, validate => [
+      validate({
+        field: Schema.string,
+        rules: _number => [required],
+        dependencies: [Schema.number],
+      }),
+      validate({
+        field: Schema.number,
+        rules: () => [required],
+        triggers: ["blur"],
+      }),
+    ]);
+
+    const getValue = () => "" as any;
+
+    const validation = await validate({
+      fields: [Schema.number],
+      getValue,
+      trigger: "change",
+    });
+
+    expect(validation).toEqual([{ field: Schema.string, error: "REQUIRED" }]);
+  });
 });
