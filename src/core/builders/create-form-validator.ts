@@ -1,4 +1,4 @@
-import { defineProperties, isFalsy } from "../../utils";
+import { isFalsy } from "../../utils";
 import { flatMap, uniqBy } from "../../utils/array";
 import {
   ArrayFieldDescriptor,
@@ -18,7 +18,7 @@ import {
   ValidationTrigger,
   Validator,
 } from "../types/form-validator";
-import { impl, opaque } from "../types/type-mapper-util";
+import { impl } from "../types/type-mapper-util";
 
 /**
  * Create form validator based on provided set of validation rules.
@@ -86,7 +86,7 @@ export const createFormValidator = <Values extends object, Err>(
         getChildrenDescriptors(x, getValue)
       );
       const dependents = flatMap(fields, x =>
-        getDependents(x, dependenciesDict)
+        getDependents(x, dependenciesDict, getValue)
       );
       const uniqueFields = uniqBy(
         [...allFields, ...dependents],
@@ -144,6 +144,7 @@ const validate: ValidateFn = <T, Err, Deps extends any[]>(
   return {
     type: isNth ? "each" : "field",
     path,
+    field: config.field,
     triggers: config.triggers,
     validators: config.rules,
     dependencies: config.dependencies,
@@ -214,7 +215,12 @@ const getRootArrayPath = (path: string): string | undefined => {
   }
 };
 
-type DependenciesDict = { [path: string]: FieldDescriptor<any>[] };
+type DependenciesDict = {
+  [path: string]: (
+    | FieldDescriptor<any>
+    | ArrayFieldDescriptor<any[], any>["nth"]
+  )[];
+};
 
 const buildDependenciesDict = (
   validators: FieldValidator<any, any, any>[]
@@ -222,27 +228,13 @@ const buildDependenciesDict = (
   let dict: DependenciesDict = {};
 
   for (const validator of validators) {
-    const fieldDesc = opaque(
-      defineProperties(
-        {},
-        {
-          __path: {
-            value: validator.path,
-            enumerable: false,
-            writable: false,
-            configurable: false,
-          },
-        }
-      ) as any
-    );
-
     for (const dependency of validator.dependencies ?? []) {
       const path = impl(dependency).__path;
 
       if (!dict[path]) {
-        dict[path] = [fieldDesc];
+        dict[path] = [validator.field];
       } else {
-        dict[path].push(fieldDesc);
+        dict[path].push(validator.field);
       }
     }
   }
@@ -252,5 +244,18 @@ const buildDependenciesDict = (
 
 const getDependents = (
   desc: FieldDescriptor<any>,
-  dependenciesDict: DependenciesDict
-) => dependenciesDict[impl(desc).__path] ?? [];
+  dependenciesDict: DependenciesDict,
+  getValue: <P>(field: FieldDescriptor<P, any>) => P
+): FieldDescriptor<any>[] => {
+  return flatMap(dependenciesDict[impl(desc).__path] ?? [], x => {
+    if (typeof x === "function") {
+      const rootPath = impl(x as ArrayFieldDescriptor<any[], unknown>["nth"])
+        .__rootPath;
+      return (getValue({ __path: rootPath } as any) as any[]).map((_, i) =>
+        x(i)
+      );
+    } else {
+      return [x];
+    }
+  });
+};

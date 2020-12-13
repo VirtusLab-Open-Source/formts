@@ -880,19 +880,19 @@ describe("createFormValidator", () => {
         rules: _ => [x => (x.str === "" ? "REQUIRED" : null)],
         dependencies: [Schema.choice],
       }),
-      validate(Schema.choice, x => x === "A" ? "INVALID_VALUE" : null)
+      validate(Schema.choice, x => (x === "A" ? "INVALID_VALUE" : null)),
     ]);
 
     const getValue = (field: FieldDescriptor<any>): any => {
       switch (impl(field).__path) {
+        case "arrayObjectString":
+          return [{ str: "sm" }, { str: "" }, { str: "valid string" }];
         case "arrayObjectString[0]":
           return { str: "sm" };
         case "arrayObjectString[1]":
           return { str: "" };
         case "arrayObjectString[2]":
           return { str: "valid string" };
-        case "arrayObjectString[3]":
-          return { str: "" };
         case "choice":
           return "A";
       }
@@ -908,7 +908,6 @@ describe("createFormValidator", () => {
       { field: Schema.arrayObjectString.nth(0), error: null },
       { field: Schema.arrayObjectString.nth(1), error: "REQUIRED" },
       { field: Schema.arrayObjectString.nth(2), error: null },
-      { field: Schema.arrayObjectString.nth(3), error: "REQUIRED" },
     ]);
   });
 
@@ -929,12 +928,14 @@ describe("createFormValidator", () => {
 
     const getValue = () => "" as any;
 
-    const validation = await validate({ fields: [Schema.number, Schema.string], getValue });
+    const validation = await validate({
+      fields: [Schema.number, Schema.string],
+      getValue,
+    });
 
     expect(validation).toEqual([
       { field: Schema.number, error: "REQUIRED" },
       { field: Schema.string, error: "REQUIRED" },
     ]);
   });
-
 });

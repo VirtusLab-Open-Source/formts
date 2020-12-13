@@ -46,6 +46,7 @@ export type FormValidator<Values extends object, Err> = {
 export type FieldValidator<T, Err, Dependencies extends any[]> = {
   type: "field" | "each";
   path: string;
+  field: ValidateField<T, Err>;
   triggers?: Array<ValidationTrigger>;
   validators: (...deps: [...Dependencies]) => Array<Falsy | Validator<T, Err>>;
   dependencies?: readonly [...FieldDescTuple<Dependencies>];
