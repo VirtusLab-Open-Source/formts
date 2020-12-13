@@ -44,8 +44,6 @@ export type FormValidator<Values extends object, Err> = {
 };
 
 export type FieldValidator<T, Err, Dependencies extends any[]> = {
-  type: "field" | "each";
-  path: string;
   field: ValidateField<T, Err>;
   triggers?: Array<ValidationTrigger>;
   validators: (...deps: [...Dependencies]) => Array<Falsy | Validator<T, Err>>;
@@ -79,3 +77,7 @@ export type ValidateField<T, Err> =
 type FieldDescTuple<ValuesTuple extends readonly any[]> = {
   [Index in keyof ValuesTuple]: GenericFieldDescriptor<ValuesTuple[Index]>;
 };
+
+export const isNth = <T, Err>(
+  x: ValidateField<T, Err>
+): x is ArrayFieldDescriptor<T[], Err>["nth"] => typeof x === "function";

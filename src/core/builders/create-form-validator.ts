@@ -1,7 +1,6 @@
 import { isFalsy } from "../../utils";
 import { flatMap, uniqBy } from "../../utils/array";
 import {
-  ArrayFieldDescriptor,
   FieldDescriptor,
   getArrayDescriptorChildren,
   getObjectDescriptorChildren,
@@ -12,6 +11,7 @@ import { FormSchema } from "../types/form-schema";
 import {
   FieldValidator,
   FormValidator,
+  isNth,
   ValidateConfig,
   ValidateField,
   ValidateFn,
@@ -61,16 +61,10 @@ export const createFormValidator = <Values extends object, Err>(
     descriptor: FieldDescriptor<unknown, Err>,
     trigger?: ValidationTrigger
   ): FieldValidator<any, Err, any[]>[] => {
-    const path = impl(descriptor).__path;
-    const rootArrayPath = getRootArrayPath(path);
-
     return allValidators.filter(x => {
-      const isFieldMatch = x.type === "field" && x.path === path;
-      const isEachMatch = x.type === "each" && x.path === rootArrayPath;
       const triggerMatches =
         trigger && x.triggers ? x.triggers.includes(trigger) : true;
-
-      return triggerMatches && (isFieldMatch || isEachMatch);
+      return triggerMatches && validatorMatchesField(x, descriptor);
     });
   };
 
@@ -136,14 +130,7 @@ const validate: ValidateFn = <T, Err, Deps extends any[]>(
       ? { ...(x as ValidateConfig<T, Err, Deps>) }
       : { field: x as ValidateField<T, Err>, rules: () => rules };
 
-  const isNth = typeof config.field === "function";
-  const path = isNth
-    ? impl(config.field as ArrayFieldDescriptor<T[], Err>["nth"]).__rootPath
-    : impl(config.field as FieldDescriptor<T, Err>).__path;
-
   return {
-    type: isNth ? "each" : "field",
-    path,
     field: config.field,
     triggers: config.triggers,
     validators: config.rules,
@@ -204,22 +191,8 @@ const getChildrenDescriptors = (
   }
 };
 
-// TODO rethink
-const getRootArrayPath = (path: string): string | undefined => {
-  const isArrayElement = path.lastIndexOf("]") === path.length - 1;
-  if (!isArrayElement) {
-    return undefined;
-  } else {
-    const indexStart = path.lastIndexOf("[");
-    return path.slice(0, indexStart);
-  }
-};
-
 type DependenciesDict = {
-  [path: string]: (
-    | FieldDescriptor<any>
-    | ArrayFieldDescriptor<any[], any>["nth"]
-  )[];
+  [path: string]: ValidateField<unknown, unknown>[];
 };
 
 const buildDependenciesDict = (
@@ -248,9 +221,8 @@ const getDependents = (
   getValue: <P>(field: FieldDescriptor<P, any>) => P
 ): FieldDescriptor<any>[] => {
   return flatMap(dependenciesDict[impl(desc).__path] ?? [], x => {
-    if (typeof x === "function") {
-      const rootPath = impl(x as ArrayFieldDescriptor<any[], unknown>["nth"])
-        .__rootPath;
+    if (isNth(x)) {
+      const rootPath = impl(x).__rootPath;
       return (getValue({ __path: rootPath } as any) as any[]).map((_, i) =>
         x(i)
       );
@@ -258,4 +230,28 @@ const getDependents = (
       return [x];
     }
   });
+};
+
+const validatorMatchesField = (
+  validator: FieldValidator<any, any, any[]>,
+  field: FieldDescriptor<any>
+): boolean => {
+  if (isNth(validator.field)) {
+    const validatorRootPath = impl(validator.field).__rootPath;
+    const fieldRootPath = getRootArrayPath(impl(field).__path);
+    return validatorRootPath === fieldRootPath;
+  } else {
+    return impl(validator.field).__path === impl(field).__path;
+  }
+};
+
+// TODO rethink
+const getRootArrayPath = (path: string): string | undefined => {
+  const isArrayElement = path.lastIndexOf("]") === path.length - 1;
+  if (!isArrayElement) {
+    return undefined;
+  } else {
+    const indexStart = path.lastIndexOf("[");
+    return path.slice(0, indexStart);
+  }
 };
