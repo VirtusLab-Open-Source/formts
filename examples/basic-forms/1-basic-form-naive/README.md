@@ -1,4 +1,4 @@
-# Basic Form Naive Example
+# Basic form naive example
 
 This is the simplest possible example of `Formts` usage
 

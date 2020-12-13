@@ -13,7 +13,7 @@ import { useFormController, useFormValues } from ".";
 const Schema = createFormSchema(
   fields => ({
     theString: fields.string(),
-    theChoice: fields.choice("A", "B", "C"),
+    theChoice: fields.choice("", "A", "B", "C"),
     theNum: fields.number(),
     theBool: fields.bool(),
     theInstance: fields.instanceOf(Date),
@@ -64,7 +64,7 @@ describe("formts hooks API", () => {
 
       expect(formValuesHook.current).toEqual({
         theString: "",
-        theChoice: "A",
+        theChoice: "",
         theNum: "",
         theBool: false,
         theInstance: null,
@@ -148,7 +148,7 @@ describe("formts hooks API", () => {
 
       expect(formValuesHook.current).toEqual({
         theString: "",
-        theChoice: "A",
+        theChoice: "",
         theNum: "",
         theBool: false,
         theInstance: null,
@@ -207,7 +207,7 @@ describe("formts hooks API", () => {
     const values = formValuesHook.current;
     expect(values).toEqual({
       theString: "",
-      theChoice: "A",
+      theChoice: "",
       theNum: "",
       theBool: false,
       theInstance: null,
@@ -343,7 +343,7 @@ describe("formts hooks API", () => {
       expect(formHandleHook.current.isTouched).toBe(false);
       expect(formValuesHook.current).toEqual({
         theString: "",
-        theChoice: "A",
+        theChoice: "",
         theNum: "",
         theBool: false,
         theInstance: null,
@@ -371,7 +371,7 @@ describe("formts hooks API", () => {
       expect(formHandleHook.current.isTouched).toBe(true);
       expect(formValuesHook.current).toEqual({
         theString: "",
-        theChoice: "A",
+        theChoice: "",
         theNum: 42,
         theBool: false,
         theInstance: null,
@@ -402,7 +402,7 @@ describe("formts hooks API", () => {
       expect(formHandleHook.current.isTouched).toBe(true);
       expect(formValuesHook.current).toEqual({
         theString: "",
-        theChoice: "A",
+        theChoice: "",
         theNum: 42,
         theBool: false,
         theInstance: null,
@@ -430,7 +430,7 @@ describe("formts hooks API", () => {
       expect(formHandleHook.current.isTouched).toBe(true);
       expect(formValuesHook.current).toEqual({
         theString: "",
-        theChoice: "A",
+        theChoice: "",
         theNum: 42,
         theBool: false,
         theInstance: null,
@@ -676,7 +676,7 @@ describe("formts hooks API", () => {
       expect(formHandleHook.current.isTouched).toBe(true);
       expect(formValuesHook.current).toEqual({
         theString: "",
-        theChoice: "A",
+        theChoice: "",
         theNum: 666,
         theBool: false,
         theInstance: null,
@@ -696,7 +696,7 @@ describe("formts hooks API", () => {
       expect(formHandleHook.current.isTouched).toBe(false);
       expect(formValuesHook.current).toEqual({
         theString: "",
-        theChoice: "A",
+        theChoice: "",
         theNum: 42,
         theBool: false,
         theInstance: null,
@@ -1009,7 +1009,7 @@ describe("formts hooks API", () => {
       expect(onSuccess).toHaveBeenCalledTimes(1);
       expect(onSuccess).toHaveBeenCalledWith({
         theString: "",
-        theChoice: "A",
+        theChoice: "",
         theNum: "",
         theBool: false,
         theInstance: null,
