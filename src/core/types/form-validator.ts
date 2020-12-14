@@ -33,9 +33,14 @@ export type ValidationResult<Err> = Array<{
 export type ValidateIn<Err> = {
   fields: Array<FieldDescriptor<unknown, Err>>;
   trigger?: ValidationTrigger;
-  getValue: <P>(field: FieldDescriptor<P, Err>) => P;
+  getValue: GetValue;
   onFieldValidationStart?: (field: FieldDescriptor<unknown, Err>) => void;
   onFieldValidationEnd?: (field: FieldDescriptor<unknown, Err>) => void;
+};
+
+export type GetValue = {
+  <P>(field: FieldDescriptor<P, unknown>): P;
+  <P>(path: string): P;
 };
 
 // @ts-ignore

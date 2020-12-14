@@ -290,8 +290,9 @@ describe("createFormValidator", () => {
       }),
     ]);
 
-    const getValue = (field: FieldDescriptor<any>): any => {
-      switch (impl(field).__path) {
+    const getValue = (field: FieldDescriptor<any> | string): any => {
+      const path = typeof field === "string" ? field : impl(field).__path;
+      switch (path) {
         case "arrayObjectString[0]":
           return { str: "sm" };
         case "arrayObjectString[1]":
@@ -332,8 +333,9 @@ describe("createFormValidator", () => {
         rules: () => [x => wait(x === "c" ? "INVALID_VALUE" : null)],
       }),
     ]);
-    const getValue = (field: FieldDescriptor<any>): any => {
-      switch (impl(field).__path) {
+    const getValue = (field: FieldDescriptor<any> | string): any => {
+      const path = typeof field === "string" ? field : impl(field).__path;
+      switch (path) {
         case "arrayObjectString[0]":
           return { str: "ok-string" };
         case "arrayObjectString[1]":
@@ -377,8 +379,9 @@ describe("createFormValidator", () => {
         triggers: ["change", "submit"],
       }),
     ]);
-    const getValue = (field: FieldDescriptor<any>): any => {
-      switch (impl(field).__path) {
+    const getValue = (field: FieldDescriptor<any> | string): any => {
+      const path = typeof field === "string" ? field : impl(field).__path;
+      switch (path) {
         case "string":
           return "";
         case "choice":
@@ -438,8 +441,9 @@ describe("createFormValidator", () => {
       }),
     ]);
 
-    const getValue = (field: FieldDescriptor<any>): any => {
-      switch (impl(field).__path) {
+    const getValue = (field: FieldDescriptor<any> | string): any => {
+      const path = typeof field === "string" ? field : impl(field).__path;
+      switch (path) {
         case "string":
           return "ab";
         case "number":
@@ -495,8 +499,9 @@ describe("createFormValidator", () => {
         rules: () => [x => wait(x === "invalid" ? "INVALID_VALUE" : null)],
       }),
     ]);
-    const getValue = (field: FieldDescriptor<any>): any => {
-      switch (impl(field).__path) {
+    const getValue = (field: FieldDescriptor<any> | string): any => {
+      const path = typeof field === "string" ? field : impl(field).__path;
+      switch (path) {
         case "arrayString[0]":
           return "invalid";
         case "arrayString[1]":
@@ -677,8 +682,9 @@ describe("createFormValidator", () => {
       }),
     ]);
 
-    const getValue = (field: FieldDescriptor<any>): any => {
-      switch (impl(field).__path) {
+    const getValue = (field: FieldDescriptor<any> | string): any => {
+      const path = typeof field === "string" ? field : impl(field).__path;
+      switch (path) {
         case "arrayObjectString":
           return [{ str: "ok-string" }, { str: "" }];
         case "arrayObjectString[0]":
@@ -712,8 +718,9 @@ describe("createFormValidator", () => {
       }),
     ]);
 
-    const getValue = (field: FieldDescriptor<any>): any => {
-      switch (impl(field).__path) {
+    const getValue = (field: FieldDescriptor<any> | string): any => {
+      const path = typeof field === "string" ? field : impl(field).__path;
+      switch (path) {
         case "object":
           return { str: "", num: 10 };
         case "object.str":
@@ -753,8 +760,9 @@ describe("createFormValidator", () => {
       }),
     ]);
 
-    const getValue = (field: FieldDescriptor<any>): any => {
-      switch (impl(field).__path) {
+    const getValue = (field: FieldDescriptor<any> | string): any => {
+      const path = typeof field === "string" ? field : impl(field).__path;
+      switch (path) {
         case "objectObjectArrayObjectString.obj.array":
           return [{ str: "" }, { str: "no-ok" }];
         case "objectObjectArrayObjectString.obj.array[0]":
@@ -817,8 +825,9 @@ describe("createFormValidator", () => {
       ),
     ]);
 
-    const getValue = (field: FieldDescriptor<any>): any => {
-      switch (impl(field).__path) {
+    const getValue = (field: FieldDescriptor<any> | string): any => {
+      const path = typeof field === "string" ? field : impl(field).__path;
+      switch (path) {
         case "arrayObjectString[0]":
           return { str: "sm" };
         case "arrayObjectString[1]":
@@ -883,8 +892,9 @@ describe("createFormValidator", () => {
       validate(Schema.choice, x => (x === "A" ? "INVALID_VALUE" : null)),
     ]);
 
-    const getValue = (field: FieldDescriptor<any>): any => {
-      switch (impl(field).__path) {
+    const getValue = (field: FieldDescriptor<any> | string): any => {
+      const path = typeof field === "string" ? field : impl(field).__path;
+      switch (path) {
         case "arrayObjectString":
           return [{ str: "sm" }, { str: "" }, { str: "valid string" }];
         case "arrayObjectString[0]":

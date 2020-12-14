@@ -11,6 +11,7 @@ import { FormSchema } from "../types/form-schema";
 import {
   FieldValidator,
   FormValidator,
+  GetValue,
   isNth,
   ValidateConfig,
   ValidateField,
@@ -218,14 +219,12 @@ const buildDependenciesDict = (
 const getDependents = (
   desc: FieldDescriptor<any>,
   dependenciesDict: DependenciesDict,
-  getValue: <P>(field: FieldDescriptor<P, any>) => P
+  getValue: GetValue
 ): FieldDescriptor<any>[] => {
   return flatMap(dependenciesDict[impl(desc).__path] ?? [], x => {
     if (isNth(x)) {
       const rootPath = impl(x).__rootPath;
-      return (getValue({ __path: rootPath } as any) as any[]).map((_, i) =>
-        x(i)
-      );
+      return getValue<any[]>(rootPath).map((_, i) => x(i));
     } else {
       return [x];
     }
