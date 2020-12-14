@@ -9,6 +9,7 @@ import {
 } from "../types/field-descriptor";
 import { FormSchema } from "../types/form-schema";
 import {
+  FieldDescTuple,
   FieldValidator,
   FormValidator,
   GetValue,
@@ -101,7 +102,7 @@ export const createFormValidator = <Values extends object, Err>(
 
           onFieldValidationStart?.(field);
           return firstNonNullPromise(validators, v =>
-            runValidationForField(v, value)
+            runValidationForField(v, value, getValue)
           )
             .catch(err => {
               if (err === true) {
@@ -139,12 +140,17 @@ const validate: ValidateFn = <T, Err, Deps extends any[]>(
   };
 };
 
-const runValidationForField = <Value, Err>(
-  validator: FieldValidator<Value, Err, unknown[]>,
-  value: Value
+const runValidationForField = <Value, Err, Dependencies extends any[]>(
+  validator: FieldValidator<Value, Err, Dependencies>,
+  value: Value,
+  getValue: GetValue
 ): Promise<Err | null> => {
+  const dependenciesValues = !!validator.dependencies
+    ? getDependenciesValues(validator.dependencies, getValue)
+    : (([] as unknown) as Dependencies);
+
   const rules = validator
-    .validators([] as any)
+    .validators(...dependenciesValues)
     .filter(x => !isFalsy(x)) as Validator<Value, Err>[];
 
   return firstNonNullPromise(rules, rule => {
@@ -229,6 +235,13 @@ const getDependents = (
       return [x];
     }
   });
+};
+
+const getDependenciesValues = <Values extends readonly any[]>(
+  deps: readonly [...FieldDescTuple<Values>],
+  getValue: GetValue
+): Values => {
+  return deps.map(x => getValue(x)) as any;
 };
 
 const validatorMatchesField = (

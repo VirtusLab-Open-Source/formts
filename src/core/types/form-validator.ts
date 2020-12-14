@@ -79,7 +79,7 @@ export type ValidateField<T, Err> =
   | GenericFieldDescriptor<T, Err>
   | ArrayFieldDescriptor<T[], Err>["nth"];
 
-type FieldDescTuple<ValuesTuple extends readonly any[]> = {
+export type FieldDescTuple<ValuesTuple extends readonly any[]> = {
   [Index in keyof ValuesTuple]: GenericFieldDescriptor<ValuesTuple[Index]>;
 };
 

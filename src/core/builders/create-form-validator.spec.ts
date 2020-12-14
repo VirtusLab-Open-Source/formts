@@ -981,4 +981,56 @@ describe("createFormValidator", () => {
 
     expect(validation).toEqual([{ field: Schema.string, error: "REQUIRED" }]);
   });
+
+  it("dependencies values are passed to rules constructor", async () => {
+    const { validate } = createFormValidator(Schema, validate => [
+      validate({
+        field: Schema.string,
+        rules: (...dependencies) => [
+          () =>
+            dependencies[0] === 2 &&
+            dependencies[1] === "B" &&
+            dependencies[2].length === 0
+              ? null
+              : "INVALID_VALUE",
+        ],
+        dependencies: [Schema.number, Schema.choice, Schema.arrayChoice],
+      }),
+    ]);
+
+    const getValue = (field: FieldDescriptor<any> | string): any => {
+      const path = typeof field === "string" ? field : impl(field).__path;
+      switch (path) {
+        case "string":
+          return "string";
+        case "number":
+          return 2;
+        case "choice":
+          return "B";
+        case "arrayChoice":
+          return [];
+      }
+    };
+
+    const validation = await validate({ fields: [Schema.string], getValue });
+
+    expect(validation).toEqual([{ field: Schema.string, error: null }]);
+  });
+
+  it("is no dependencies are provided empty list should be passed to rules constructor", async () => {
+    const { validate } = createFormValidator(Schema, validate => [
+      validate({
+        field: Schema.string,
+        rules: (...dependencies) => [
+          () => (dependencies.length === 0 ? null : "INVALID_VALUE"),
+        ],
+      }),
+    ]);
+
+    const getValue = (_field: FieldDescriptor<any> | string): any => "" as any;
+
+    const validation = await validate({ fields: [Schema.string], getValue });
+
+    expect(validation).toEqual([{ field: Schema.string, error: null }]);
+  });
 });
