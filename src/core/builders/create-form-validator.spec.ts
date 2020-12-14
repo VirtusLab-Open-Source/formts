@@ -959,6 +959,12 @@ describe("createFormValidator", () => {
         dependencies: [Schema.number],
       }),
       validate({
+        field: Schema.choice,
+        rules: _number => [required],
+        dependencies: [Schema.number],
+        triggers: ["blur"],
+      }),
+      validate({
         field: Schema.number,
         rules: () => [required],
         triggers: ["blur"],
