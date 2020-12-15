@@ -983,17 +983,19 @@ describe("createFormValidator", () => {
   });
 
   it("dependencies values are passed to rules constructor", async () => {
+    const rules = jest.fn((...dependencies) => [
+      () =>
+        dependencies[0] === 2 &&
+        dependencies[1] === "B" &&
+        dependencies[2].length === 0
+          ? null
+          : "INVALID_VALUE",
+    ]) as any;
+
     const { validate } = createFormValidator(Schema, validate => [
       validate({
         field: Schema.string,
-        rules: (...dependencies) => [
-          () =>
-            dependencies[0] === 2 &&
-            dependencies[1] === "B" &&
-            dependencies[2].length === 0
-              ? null
-              : "INVALID_VALUE",
-        ],
+        rules,
         dependencies: [Schema.number, Schema.choice, Schema.arrayChoice],
       }),
     ]);
@@ -1015,6 +1017,7 @@ describe("createFormValidator", () => {
     const validation = await validate({ fields: [Schema.string], getValue });
 
     expect(validation).toEqual([{ field: Schema.string, error: null }]);
+    expect(rules).toHaveBeenCalledWith(2, "B", []);
   });
 
   it("is no dependencies are provided empty list should be passed to rules constructor", async () => {
