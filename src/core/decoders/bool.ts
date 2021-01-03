@@ -23,7 +23,7 @@ export const bool = (): FieldDecoder<boolean> => {
         case "boolean":
           return { ok: true, value };
         default:
-          return { ok: false, value };
+          return { ok: false };
       }
     },
   };

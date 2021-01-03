@@ -27,7 +27,7 @@ describe("string decoder", () => {
     const decoder = impl(string());
 
     [true, false].forEach(value =>
-      expect(decoder.decode(value)).toEqual({ ok: false, value })
+      expect(decoder.decode(value)).toEqual({ ok: false })
     );
   });
 
@@ -35,7 +35,7 @@ describe("string decoder", () => {
     const decoder = impl(string());
 
     [-100, 0, 666.666, NaN, +Infinity, -Infinity].forEach(value =>
-      expect(decoder.decode(value)).toEqual({ ok: false, value })
+      expect(decoder.decode(value)).toEqual({ ok: false })
     );
   });
 
@@ -43,7 +43,7 @@ describe("string decoder", () => {
     const decoder = impl(string());
 
     [{}, { foo: "bar" }, new Error("error"), []].forEach(value =>
-      expect(decoder.decode(value)).toEqual({ ok: false, value })
+      expect(decoder.decode(value)).toEqual({ ok: false })
     );
   });
 
@@ -51,7 +51,7 @@ describe("string decoder", () => {
     const decoder = impl(string());
 
     [null, undefined].forEach(value =>
-      expect(decoder.decode(value)).toEqual({ ok: false, value })
+      expect(decoder.decode(value)).toEqual({ ok: false })
     );
   });
 });

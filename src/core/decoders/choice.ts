@@ -44,12 +44,10 @@ export const choice = <Opts extends string>(
       switch (typeof value) {
         case "string": {
           const option = optionsDictionary[value];
-          return option != null
-            ? { ok: true, value: option }
-            : { ok: false, value };
+          return option != null ? { ok: true, value: option } : { ok: false };
         }
         default:
-          return { ok: false, value };
+          return { ok: false };
       }
     },
   };

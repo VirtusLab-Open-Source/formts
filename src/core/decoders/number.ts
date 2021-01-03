@@ -22,16 +22,14 @@ export const number = (): FieldDecoder<number | ""> => {
     decode: value => {
       switch (typeof value) {
         case "number":
-          return Number.isFinite(value)
-            ? { ok: true, value }
-            : { ok: false, value };
+          return Number.isFinite(value) ? { ok: true, value } : { ok: false };
 
         case "string": {
-          return value === "" ? { ok: true, value } : { ok: false, value };
+          return value === "" ? { ok: true, value } : { ok: false };
         }
 
         default:
-          return { ok: false, value };
+          return { ok: false };
       }
     },
   };

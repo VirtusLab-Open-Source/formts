@@ -1,7 +1,7 @@
 import { Constructor } from "../../utils";
 import {
   FieldDecoder,
-  _FieldDecoderBaseImpl,
+  _InstanceFieldDecoderImpl,
   _FieldDecoderImpl,
 } from "../types/field-decoder";
 import { opaque } from "../types/type-mapper-util";
@@ -19,26 +19,29 @@ import { opaque } from "../types/type-mapper-util";
  * ```
  */
 export const instanceOf = <T>(
-  constructor: Constructor<T>
+  instanceConstructor: Constructor<T>
 ): FieldDecoder<T | null> => {
-  switch (constructor as Constructor<any>) {
+  switch (instanceConstructor as Constructor<any>) {
     case Object:
     case Array:
     case String:
     case Number:
     case Boolean:
       throw new Error(
-        `instanceOf field: illegal constructor used: ${constructor.name}`
+        `instanceOf field: illegal constructor used: ${instanceConstructor.name}`
       );
   }
 
-  const decoder: _FieldDecoderBaseImpl<T | null> = {
+  const decoder: _InstanceFieldDecoderImpl<T | null> = {
     fieldType: "class",
+    instanceConstructor,
 
     init: () => null,
 
     decode: value =>
-      value instanceof constructor ? { ok: true, value } : { ok: false, value },
+      value === null || value instanceof instanceConstructor
+        ? { ok: true, value }
+        : { ok: false },
   };
 
   return opaque(decoder as _FieldDecoderImpl<T | null>);

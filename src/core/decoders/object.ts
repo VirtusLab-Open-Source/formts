@@ -47,7 +47,7 @@ export const object = <O extends object>(
 
     decode: value => {
       if (typeof value !== "object" || value == null) {
-        return { ok: false, value };
+        return { ok: false };
       }
 
       const decodedObject = {} as O;
@@ -56,7 +56,7 @@ export const object = <O extends object>(
           (value as O)[key as keyof O]
         );
         if (!result.ok) {
-          return { ok: false, value };
+          return { ok: false };
         } else {
           decodedObject[key as keyof O] = result.value;
         }

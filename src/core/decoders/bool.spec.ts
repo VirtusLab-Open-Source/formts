@@ -37,16 +37,14 @@ describe("bool decoder", () => {
       "Yes",
       "No",
       "foo",
-    ].forEach(value =>
-      expect(decoder.decode(value)).toEqual({ ok: false, value })
-    );
+    ].forEach(value => expect(decoder.decode(value)).toEqual({ ok: false }));
   });
 
   it("should NOT decode numbers", () => {
     const decoder = impl(bool());
 
     [0, 666, NaN, +Infinity, -Infinity].forEach(value =>
-      expect(decoder.decode(value)).toEqual({ ok: false, value })
+      expect(decoder.decode(value)).toEqual({ ok: false })
     );
   });
 
@@ -54,7 +52,7 @@ describe("bool decoder", () => {
     const decoder = impl(bool());
 
     [{}, { foo: "bar" }, new Error("error"), []].forEach(value =>
-      expect(decoder.decode(value)).toEqual({ ok: false, value })
+      expect(decoder.decode(value)).toEqual({ ok: false })
     );
   });
 
@@ -62,7 +60,7 @@ describe("bool decoder", () => {
     const decoder = impl(bool());
 
     [null, undefined].forEach(value =>
-      expect(decoder.decode(value)).toEqual({ ok: false, value })
+      expect(decoder.decode(value)).toEqual({ ok: false })
     );
   });
 });

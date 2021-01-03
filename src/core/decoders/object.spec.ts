@@ -97,7 +97,7 @@ describe("object decoder", () => {
         instance: new Date(),
       };
 
-      expect(decoder.decode(value)).toEqual({ ok: false, value });
+      expect(decoder.decode(value)).toEqual({ ok: false });
     });
 
     it("should NOT decode empty object", () => {
@@ -113,7 +113,7 @@ describe("object decoder", () => {
 
       const value = {};
 
-      expect(decoder.decode(value)).toEqual({ ok: false, value });
+      expect(decoder.decode(value)).toEqual({ ok: false });
     });
 
     it("should NOT decode nulls", () => {
@@ -129,7 +129,7 @@ describe("object decoder", () => {
 
       const value = null;
 
-      expect(decoder.decode(value)).toEqual({ ok: false, value });
+      expect(decoder.decode(value)).toEqual({ ok: false });
     });
   });
 
@@ -163,7 +163,7 @@ describe("object decoder", () => {
         obj: { arr: [false, true] },
       };
 
-      expect(decoder.decode(value)).toEqual({ ok: false, value });
+      expect(decoder.decode(value)).toEqual({ ok: false });
     });
   });
 });

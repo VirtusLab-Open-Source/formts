@@ -32,7 +32,7 @@ export const array = <E>(
           };
         }
       }
-      return { ok: false, value };
+      return { ok: false };
     },
   };
 

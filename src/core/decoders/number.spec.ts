@@ -33,7 +33,7 @@ describe("number decoder", () => {
     const decoder = impl(number());
 
     [NaN, +Infinity, -Infinity].forEach(value =>
-      expect(decoder.decode(value)).toEqual({ ok: false, value })
+      expect(decoder.decode(value)).toEqual({ ok: false })
     );
   });
 
@@ -41,7 +41,7 @@ describe("number decoder", () => {
     const decoder = impl(number());
 
     [" ", "foo", " BAR ", "🔥"].forEach(value =>
-      expect(decoder.decode(value)).toEqual({ ok: false, value })
+      expect(decoder.decode(value)).toEqual({ ok: false })
     );
   });
 
@@ -49,7 +49,7 @@ describe("number decoder", () => {
     const decoder = impl(number());
 
     [true, false].forEach(value =>
-      expect(decoder.decode(value)).toEqual({ ok: false, value })
+      expect(decoder.decode(value)).toEqual({ ok: false })
     );
   });
 
@@ -57,7 +57,7 @@ describe("number decoder", () => {
     const decoder = impl(number());
 
     [{}, { foo: "bar" }, new Error("error"), []].forEach(value =>
-      expect(decoder.decode(value)).toEqual({ ok: false, value })
+      expect(decoder.decode(value)).toEqual({ ok: false })
     );
   });
 
@@ -65,7 +65,7 @@ describe("number decoder", () => {
     const decoder = impl(number());
 
     [null, undefined].forEach(value =>
-      expect(decoder.decode(value)).toEqual({ ok: false, value })
+      expect(decoder.decode(value)).toEqual({ ok: false })
     );
   });
 });

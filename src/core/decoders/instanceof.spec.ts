@@ -9,6 +9,12 @@ describe("instanceOf decoder", () => {
     expect(decoder.fieldType).toBe("class");
   });
 
+  it("should provide it's field instance constructor", () => {
+    const decoder = impl(instanceOf(Set));
+
+    expect(decoder.instanceConstructor).toBe(Set);
+  });
+
   it("should provide initial field value", () => {
     const decoder = impl(instanceOf(Date));
 
@@ -29,18 +35,25 @@ describe("instanceOf decoder", () => {
       expect(decoder.decode(value)).toEqual({ ok: true, value });
     });
 
+    it("should decode null", () => {
+      const decoder = impl(instanceOf(Date));
+      const value = null;
+
+      expect(decoder.decode(value)).toEqual({ ok: true, value });
+    });
+
+    it("should NOT decode undefined", () => {
+      const decoder = impl(instanceOf(Date));
+      const value = undefined;
+
+      expect(decoder.decode(value)).toEqual({ ok: false });
+    });
+
     it("should NOT decode strings", () => {
       const decoder = impl(instanceOf(Date));
       const value = Date();
 
-      expect(decoder.decode(value)).toEqual({ ok: false, value });
-    });
-
-    it("should NOT decode null", () => {
-      const decoder = impl(instanceOf(Date));
-      const value = null;
-
-      expect(decoder.decode(value)).toEqual({ ok: false, value });
+      expect(decoder.decode(value)).toEqual({ ok: false });
     });
   });
 
@@ -56,18 +69,25 @@ describe("instanceOf decoder", () => {
       expect(decoder.decode(value)).toEqual({ ok: true, value });
     });
 
+    it("should decode null", () => {
+      const decoder = impl(instanceOf(MyClass));
+      const value = null;
+
+      expect(decoder.decode(value)).toEqual({ ok: true, value: null });
+    });
+
+    it("should NOT decode undefined", () => {
+      const decoder = impl(instanceOf(MyClass));
+      const value = undefined;
+
+      expect(decoder.decode(value)).toEqual({ ok: false });
+    });
+
     it("should NOT decode class-like objects", () => {
       const decoder = impl(instanceOf(MyClass));
       const value: MyClass = { classy: false };
 
-      expect(decoder.decode(value)).toEqual({ ok: false, value });
-    });
-
-    it("should NOT decode null", () => {
-      const decoder = impl(instanceOf(MyClass));
-      const value = null;
-
-      expect(decoder.decode(value)).toEqual({ ok: false, value });
+      expect(decoder.decode(value)).toEqual({ ok: false });
     });
   });
 });

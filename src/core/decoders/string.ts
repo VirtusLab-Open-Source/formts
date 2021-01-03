@@ -23,7 +23,7 @@ export const string = (): FieldDecoder<string> => {
         case "string":
           return { ok: true, value };
         default:
-          return { ok: false, value };
+          return { ok: false };
       }
     },
   };

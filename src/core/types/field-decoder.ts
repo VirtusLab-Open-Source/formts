@@ -1,4 +1,4 @@
-import { ArrayElement, IsStringUnion, Nominal } from "../../utils";
+import { ArrayElement, Constructor, IsStringUnion, Nominal } from "../../utils";
 
 // prettier-ignore
 export type _FieldDecoderImpl<T> = [T] extends [Array<any>]
@@ -7,7 +7,9 @@ export type _FieldDecoderImpl<T> = [T] extends [Array<any>]
     ? _ObjectFieldDecoderImpl<T>
     : IsStringUnion<T> extends true
       ? _ChoiceFieldDecoderImpl<T>
-      : _FieldDecoderBaseImpl<T>;
+      : [T] extends [object | null]
+        ? _InstanceFieldDecoderImpl<T>
+        : _FieldDecoderBaseImpl<T>;
 
 export type _FieldDecoderBaseImpl<T> = {
   fieldType: FieldType;
@@ -21,6 +23,10 @@ export type _ArrayFieldDecoderImpl<T> = _FieldDecoderBaseImpl<T> & {
 
 export type _ObjectFieldDecoderImpl<T> = _FieldDecoderBaseImpl<T> & {
   inner: { [K in keyof T]: _FieldDecoderImpl<T[K]> };
+};
+
+export type _InstanceFieldDecoderImpl<T> = _FieldDecoderBaseImpl<T> & {
+  instanceConstructor: Constructor<T>;
 };
 
 export type _ChoiceFieldDecoderImpl<T> = _FieldDecoderBaseImpl<T> & {
@@ -62,4 +68,4 @@ export type FieldType =
 
 export type DecoderResult<T> =
   | { ok: true; value: T }
-  | { ok: false; value: unknown };
+  | { ok: false; value?: undefined };
