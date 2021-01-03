@@ -42,7 +42,7 @@ const ColorsRadioGroup: React.FC = () => {
       <legend>Choose your favourite color:</legend>
 
       {Object.values(colors.options).map(option => (
-        <div key={colors.id}>
+        <div key={option}>
           <input
             id={option}
             type="radio"

@@ -44,7 +44,8 @@ const DatePickerInput: React.FC = () => {
         variant="inline"
         label="Choose your favourite date"
         value={dateField.value}
-        onChange={date => dateField.setValue(date as Date)}
+        onChange={dateField.setValue}
+        onBlur={dateField.handleBlur}
         fullWidth
         autoOk
       />

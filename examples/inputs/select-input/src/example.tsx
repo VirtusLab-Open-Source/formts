@@ -47,10 +47,6 @@ const ColorSelectInput: React.FC = () => {
         onChange={e => field.setValue(e.target.value as Color)}
         onBlur={field.handleBlur}
       >
-        {/* 
-         we need custom-typed Object.keys in order for type of `option`
-         to be inferred properly to "red" | "green" | "blue" in this example 
-        */}
         {Object.values(field.options).map(option => (
           <option key={option} value={option}>
             {labels[option]}
