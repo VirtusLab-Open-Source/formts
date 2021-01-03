@@ -17,7 +17,7 @@ import ReactDOM from "react-dom";
 import "../index.css";
 
 const Schema = createFormSchema(fields => ({
-  date: fields.instanceOf(Date),
+  date: fields.date(),
 }));
 
 const Example: React.FC = () => {

@@ -320,24 +320,6 @@ describe("validators", () => {
     );
   });
 
-  describe("validDate", () => {
-    [
-      { value: new Date(), ok: true },
-      { value: new Date("2016-05-24T23:00:00"), ok: true },
-      { value: new Date("2016-13-24T23:00:00"), ok: false },
-      { value: new Date("huh?"), ok: false },
-      { value: null, ok: false },
-    ].forEach(({ value, ok }) =>
-      it(`validDate()(${value?.toDateString() ?? "null"}) -> ${
-        ok ? "OK" : "ERROR"
-      }`, () => {
-        const validator = validators.validDate();
-
-        expect(validator(value)).toEqual(ok ? null : { code: "validDate" });
-      })
-    );
-  });
-
   describe("minDate", () => {
     const min = new Date("2016-05-24T23:00:00");
 

@@ -46,7 +46,7 @@ describe("createFormValidator", () => {
       string: fields.string(),
       number: fields.number(),
       choice: fields.choice("A", "B", "C"),
-      instance: fields.instanceOf(Date),
+      date: fields.date(),
       arrayString: fields.array(fields.string()),
       arrayChoice: fields.array(fields.choice("a", "b", "c")),
       arrayArrayString: fields.array(fields.array(fields.string())),
@@ -178,18 +178,18 @@ describe("createFormValidator", () => {
     expect(validation).toEqual([{ field: Schema.choice, error: null }]);
   });
 
-  it("should return ERR for failing single-rule on instance field ", async () => {
+  it("should return ERR for failing single-rule on date field ", async () => {
     const { validate } = createFormValidator(Schema, validate => [
       validate({
-        field: Schema.instance,
+        field: Schema.date,
         rules: () => [x => (x === null ? "REQUIRED" : null)],
       }),
     ]);
     const getValue = () => null as any;
 
-    const validation = await validate({ fields: [Schema.instance], getValue });
+    const validation = await validate({ fields: [Schema.date], getValue });
 
-    expect(validation).toEqual([{ field: Schema.instance, error: "REQUIRED" }]);
+    expect(validation).toEqual([{ field: Schema.date, error: "REQUIRED" }]);
   });
 
   it("should return ERR for failing multiple-rule on string array field ", async () => {

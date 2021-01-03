@@ -123,13 +123,6 @@ export const exactLength = (
 
 // dates
 
-/** checks if date value is valid */
-export const validDate = (): Validator.Sync<
-  Date | null,
-  BaseErrors.ValidDate
-> => date =>
-  date == null || Number.isNaN(date.valueOf()) ? { code: "validDate" } : null;
-
 /** compares date value against provided minimum */
 export const minDate = (
   min: Date

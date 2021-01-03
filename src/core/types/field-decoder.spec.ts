@@ -1,7 +1,5 @@
 import { assert, IsExact } from "conditional-type-checks";
 
-import { Constructor } from "../../utils";
-
 import { DecoderResult, _FieldDecoderImpl, FieldType } from "./field-decoder";
 
 describe("_FieldDecoderImpl type", () => {
@@ -45,6 +43,17 @@ describe("_FieldDecoderImpl type", () => {
       options: Array<"A" | "B" | "C">;
       init: () => "A" | "B" | "C";
       decode: (val: unknown) => DecoderResult<"A" | "B" | "C">;
+    };
+
+    assert<IsExact<Actual, Expected>>(true);
+  });
+
+  it("handles date fields", () => {
+    type Actual = _FieldDecoderImpl<Date | null>;
+    type Expected = {
+      fieldType: FieldType;
+      init: () => Date | null;
+      decode: (val: unknown) => DecoderResult<Date | null>;
     };
 
     assert<IsExact<Actual, Expected>>(true);
@@ -95,18 +104,6 @@ describe("_FieldDecoderImpl type", () => {
         arr: boolean[];
         nested: { str: string };
       }>;
-    };
-
-    assert<IsExact<Actual, Expected>>(true);
-  });
-
-  it("handles instance fields", () => {
-    type Actual = _FieldDecoderImpl<Date | null>;
-    type Expected = {
-      fieldType: FieldType;
-      instanceConstructor: Constructor<Date | null>;
-      init: () => Date | null;
-      decode: (val: unknown) => DecoderResult<Date | null>;
     };
 
     assert<IsExact<Actual, Expected>>(true);

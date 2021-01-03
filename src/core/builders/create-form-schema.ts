@@ -76,7 +76,7 @@ const createFieldDescriptor = (
     case "bool":
     case "number":
     case "string":
-    case "class":
+    case "date":
     case "choice":
       return rootDescriptor;
 

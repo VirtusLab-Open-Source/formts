@@ -12,7 +12,7 @@ describe("createFormSchema", () => {
       choice: fields.choice("A", "B", "C"),
       num: fields.number(),
       bool: fields.bool(),
-      instance: fields.instanceOf(Date),
+      date: fields.date(),
       arrayString: fields.array(fields.string()),
       arrayChoice: fields.array(fields.choice("a", "b", "c")),
       arrayArrayString: fields.array(fields.array(fields.string())),
@@ -35,7 +35,7 @@ describe("createFormSchema", () => {
         choice: "A" | "B" | "C";
         num: number | "";
         bool: boolean;
-        instance: Date | null;
+        date: Date | null;
         arrayString: string[];
         arrayChoice: Array<"a" | "b" | "c">;
         arrayArrayString: string[][];
@@ -59,7 +59,7 @@ describe("createFormSchema", () => {
         choice: fields.choice("A", "B", "C"),
         num: fields.number(),
         bool: fields.bool(),
-        instance: fields.instanceOf(Date),
+        date: fields.date(),
         arrayString: fields.array(fields.string()),
         arrayChoice: fields.array(fields.choice("a", "b", "c")),
         arrayArrayString: fields.array(fields.array(fields.string())),
@@ -86,7 +86,7 @@ describe("createFormSchema", () => {
         choice: "A" | "B" | "C";
         num: number | "";
         bool: boolean;
-        instance: Date | null;
+        date: Date | null;
         arrayString: string[];
         arrayChoice: Array<"a" | "b" | "c">;
         arrayArrayString: string[][];
@@ -115,7 +115,7 @@ describe("createFormSchema", () => {
       choice: fields.choice("A", "B", "C"),
       num: fields.number(),
       bool: fields.bool(),
-      instance: fields.instanceOf(Date),
+      date: fields.date(),
       arrayString: fields.array(fields.string()),
       arrayChoice: fields.array(fields.choice("a", "b", "c")),
       arrayArrayString: fields.array(fields.array(fields.string())),
@@ -136,7 +136,7 @@ describe("createFormSchema", () => {
       "choice",
       "num",
       "bool",
-      "instance",
+      "date",
       "arrayString",
       "arrayChoice",
       "arrayArrayString",
@@ -153,7 +153,7 @@ describe("createFormSchema", () => {
       choice: fields.choice("A", "B", "C"),
       num: fields.number(),
       bool: fields.bool(),
-      instance: fields.instanceOf(Date),
+      date: fields.date(),
       arrayString: fields.array(fields.string()),
       arrayChoice: fields.array(fields.choice("a", "b", "c")),
       arrayArrayString: fields.array(fields.array(fields.string())),
@@ -174,7 +174,7 @@ describe("createFormSchema", () => {
       choice: expect.objectContaining({ __path: "choice" }),
       num: expect.objectContaining({ __path: "num" }),
       bool: expect.objectContaining({ __path: "bool" }),
-      instance: expect.objectContaining({ __path: "instance" }),
+      date: expect.objectContaining({ __path: "date" }),
       arrayString: expect.objectContaining({
         __path: "arrayString",
         nth: expect.any(Function),
@@ -280,22 +280,18 @@ describe("createFormSchema", () => {
     expect(descriptor.__decoder.decode("true").ok).toBe(false);
   });
 
-  it("creates field descriptor for instanceOf field", () => {
-    class MyClass {
-      constructor(public foo: string) {}
-    }
-
+  it("creates field descriptor for date field", () => {
     const Schema = createFormSchema(fields => ({
-      theClass: fields.instanceOf(MyClass),
+      theDate: fields.date(),
     }));
 
-    const descriptor = impl(Schema.theClass);
+    const descriptor = impl(Schema.theDate);
 
-    expect(descriptor.__path).toBe("theClass");
-    expect(descriptor.__decoder.fieldType).toBe("class");
+    expect(descriptor.__path).toBe("theDate");
+    expect(descriptor.__decoder.fieldType).toBe("date");
     expect(descriptor.__decoder.init()).toBe(null);
-    expect(descriptor.__decoder.decode(new MyClass("42")).ok).toBe(true);
-    expect(descriptor.__decoder.decode({ foo: "42" }).ok).toBe(false);
+    expect(descriptor.__decoder.decode(new Date()).ok).toBe(true);
+    expect(descriptor.__decoder.decode(new Date("foo")).ok).toBe(false);
   });
 
   it("creates field descriptor for array field", () => {
