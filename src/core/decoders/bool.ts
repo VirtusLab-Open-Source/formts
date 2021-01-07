@@ -22,6 +22,18 @@ export const bool = (): FieldDecoder<boolean> => {
       switch (typeof value) {
         case "boolean":
           return { ok: true, value };
+
+        case "string": {
+          switch (value.toLowerCase().trim()) {
+            case "true":
+              return { ok: true, value: true };
+            case "false":
+              return { ok: true, value: false };
+            default:
+              return { ok: false };
+          }
+        }
+
         default:
           return { ok: false };
       }

@@ -1,3 +1,4 @@
+import { isValidDate } from "../../utils";
 import { FieldDecoder, _FieldDecoderImpl } from "../types/field-decoder";
 import { opaque } from "../types/type-mapper-util";
 
@@ -25,8 +26,20 @@ export const number = (): FieldDecoder<number | ""> => {
           return Number.isFinite(value) ? { ok: true, value } : { ok: false };
 
         case "string": {
-          return value === "" ? { ok: true, value } : { ok: false };
+          if (value.trim() === "") {
+            return { ok: true, value: "" };
+          }
+
+          const numValue = Number(value);
+          return Number.isNaN(numValue)
+            ? { ok: false }
+            : { ok: true, value: numValue };
         }
+
+        case "object":
+          return isValidDate(value)
+            ? { ok: true, value: value.valueOf() }
+            : { ok: false };
 
         default:
           return { ok: false };

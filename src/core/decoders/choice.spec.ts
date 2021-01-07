@@ -51,24 +51,17 @@ describe("number decoder", () => {
     ].forEach(value => expect(decoder.decode(value)).toEqual({ ok: false }));
   });
 
-  it("should NOT decode number values", () => {
-    const decoder = impl(choice("A", "B", "C"));
+  it("should decode matching number values", () => {
+    const decoder = impl(choice("0", "1"));
 
-    [NaN, +Infinity, -Infinity].forEach(value =>
-      expect(decoder.decode(value)).toEqual({ ok: false })
-    );
-  });
-
-  it("should NOT decode string values", () => {
-    const decoder = impl(choice("A", "B", "C"));
-
-    [" ", "foo", " BAR ", "🔥"].forEach(value =>
-      expect(decoder.decode(value)).toEqual({ ok: false })
-    );
+    expect(decoder.decode(0)).toEqual({ ok: true, value: "0" });
+    expect(decoder.decode(1)).toEqual({ ok: true, value: "1" });
+    expect(decoder.decode(2)).toEqual({ ok: false });
+    expect(decoder.decode(NaN)).toEqual({ ok: false });
   });
 
   it("should NOT decode boolean values", () => {
-    const decoder = impl(choice("A", "B", "C"));
+    const decoder = impl(choice("true", "false", "foo"));
 
     [true, false].forEach(value =>
       expect(decoder.decode(value)).toEqual({ ok: false })

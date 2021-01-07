@@ -1,3 +1,4 @@
+import { isValidDate } from "../../utils";
 import {
   FieldDecoder,
   _FieldDecoderBaseImpl,
@@ -23,12 +24,26 @@ export const date = (): FieldDecoder<Date | null> => {
 
     init: () => null,
 
-    decode: value =>
-      value === null || isDate(value) ? { ok: true, value } : { ok: false },
+    decode: value => {
+      switch (typeof value) {
+        case "object":
+          return value === null || isValidDate(value)
+            ? { ok: true, value }
+            : { ok: false };
+
+        case "string":
+        case "number": {
+          const valueAsDate = new Date(value);
+          return isValidDate(valueAsDate)
+            ? { ok: true, value: valueAsDate }
+            : { ok: false };
+        }
+
+        default:
+          return { ok: false };
+      }
+    },
   };
 
   return opaque(decoder as _FieldDecoderImpl<Date | null>);
 };
-
-const isDate = (val: unknown): val is Date =>
-  val instanceof Date && !Number.isNaN(val.valueOf());

@@ -227,7 +227,7 @@ describe("createFormSchema", () => {
     expect(descriptor.__decoder.fieldType).toBe("string");
     expect(descriptor.__decoder.init()).toBe("");
     expect(descriptor.__decoder.decode("foo").ok).toBe(true);
-    expect(descriptor.__decoder.decode(42).ok).toBe(false);
+    expect(descriptor.__decoder.decode({}).ok).toBe(false);
   });
 
   it("creates field descriptor for choice field", () => {
@@ -263,7 +263,7 @@ describe("createFormSchema", () => {
     expect(descriptor.__decoder.fieldType).toBe("number");
     expect(descriptor.__decoder.init()).toBe("");
     expect(descriptor.__decoder.decode(666).ok).toBe(true);
-    expect(descriptor.__decoder.decode("42").ok).toBe(false);
+    expect(descriptor.__decoder.decode("foo").ok).toBe(false);
   });
 
   it("creates field descriptor for bool field", () => {
@@ -277,7 +277,7 @@ describe("createFormSchema", () => {
     expect(descriptor.__decoder.fieldType).toBe("bool");
     expect(descriptor.__decoder.init()).toBe(false);
     expect(descriptor.__decoder.decode(true).ok).toBe(true);
-    expect(descriptor.__decoder.decode("true").ok).toBe(false);
+    expect(descriptor.__decoder.decode("foo").ok).toBe(false);
   });
 
   it("creates field descriptor for date field", () => {

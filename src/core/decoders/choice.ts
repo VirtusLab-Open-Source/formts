@@ -46,6 +46,14 @@ export const choice = <Opts extends string>(
           const option = optionsDictionary[value];
           return option != null ? { ok: true, value: option } : { ok: false };
         }
+        case "number": {
+          if (Number.isFinite(value)) {
+            const option = optionsDictionary[value.toString()];
+            return option != null ? { ok: true, value: option } : { ok: false };
+          } else {
+            return { ok: false };
+          }
+        }
         default:
           return { ok: false };
       }

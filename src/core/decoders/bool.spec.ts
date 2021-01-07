@@ -22,22 +22,26 @@ describe("bool decoder", () => {
     expect(decoder.decode(false)).toEqual({ ok: true, value: false });
   });
 
-  it("should NOT decode string values", () => {
+  it("should decode matching string values", () => {
     const decoder = impl(bool());
 
-    [
-      "",
-      " ",
-      "1",
-      "0",
-      "true",
-      "false",
-      "TRUE",
-      "FALSE",
-      "Yes",
-      "No",
-      "foo",
-    ].forEach(value => expect(decoder.decode(value)).toEqual({ ok: false }));
+    expect(decoder.decode("true")).toEqual({ ok: true, value: true });
+    expect(decoder.decode("True")).toEqual({ ok: true, value: true });
+    expect(decoder.decode("TRUE")).toEqual({ ok: true, value: true });
+    expect(decoder.decode("true ")).toEqual({ ok: true, value: true });
+
+    expect(decoder.decode("false")).toEqual({ ok: true, value: false });
+    expect(decoder.decode("False")).toEqual({ ok: true, value: false });
+    expect(decoder.decode("FALSE")).toEqual({ ok: true, value: false });
+    expect(decoder.decode("false ")).toEqual({ ok: true, value: false });
+
+    expect(decoder.decode("")).toEqual({ ok: false });
+    expect(decoder.decode("1")).toEqual({ ok: false });
+    expect(decoder.decode("0")).toEqual({ ok: false });
+
+    expect(decoder.decode("truee")).toEqual({ ok: false });
+    expect(decoder.decode("yes")).toEqual({ ok: false });
+    expect(decoder.decode("no")).toEqual({ ok: false });
   });
 
   it("should NOT decode numbers", () => {

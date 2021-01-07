@@ -1,3 +1,4 @@
+import { isValidDate } from "../../utils";
 import { FieldDecoder, _FieldDecoderImpl } from "../types/field-decoder";
 import { opaque } from "../types/type-mapper-util";
 
@@ -22,6 +23,20 @@ export const string = (): FieldDecoder<string> => {
       switch (typeof value) {
         case "string":
           return { ok: true, value };
+
+        case "number":
+          return Number.isFinite(value)
+            ? { ok: true, value: value.toString() }
+            : { ok: false };
+
+        case "boolean":
+          return { ok: true, value: String(value) };
+
+        case "object":
+          return isValidDate(value)
+            ? { ok: true, value: value.toISOString() }
+            : { ok: false };
+
         default:
           return { ok: false };
       }

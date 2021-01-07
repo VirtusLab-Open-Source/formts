@@ -18,7 +18,9 @@ describe("number decoder", () => {
   it("should decode empty string value", () => {
     const decoder = impl(number());
 
-    expect(decoder.decode("")).toEqual({ ok: true, value: "" });
+    ["", "  ", "    "].forEach(value =>
+      expect(decoder.decode(value)).toEqual({ ok: true, value: "" })
+    );
   });
 
   it("should decode finite number values", () => {
@@ -37,10 +39,18 @@ describe("number decoder", () => {
     );
   });
 
-  it("should NOT decode string values", () => {
+  it("should decode string values parsable into numbers", () => {
     const decoder = impl(number());
 
-    [" ", "foo", " BAR ", "🔥"].forEach(value =>
+    ["0", "-42", "0.5", "10000", "10e-2"].forEach(value =>
+      expect(decoder.decode(value)).toEqual({ ok: true, value: Number(value) })
+    );
+  });
+
+  it("should NOT decode malformed string values", () => {
+    const decoder = impl(number());
+
+    ["foo", "🔥", "0,5", "123foo", "10 000"].forEach(value =>
       expect(decoder.decode(value)).toEqual({ ok: false })
     );
   });
@@ -59,6 +69,20 @@ describe("number decoder", () => {
     [{}, { foo: "bar" }, new Error("error"), []].forEach(value =>
       expect(decoder.decode(value)).toEqual({ ok: false })
     );
+  });
+
+  it("should decode valid Date instances", () => {
+    const decoder = impl(number());
+    const date = new Date();
+
+    expect(decoder.decode(date)).toEqual({ ok: true, value: date.valueOf() });
+  });
+
+  it("should NOT decode invalid Date instances", () => {
+    const decoder = impl(number());
+    const date = new Date("foobar");
+
+    expect(decoder.decode(date)).toEqual({ ok: false });
   });
 
   it("should NOT decode nullable values", () => {
