@@ -23,7 +23,7 @@ export const array = <E>(
     init: () => [],
 
     decode: value => {
-      if (Array.isArray(value)) {
+      if (value && Array.isArray(value)) {
         const decodeResults = value.map(impl(innerDecoder).decode);
         if (decodeResults.every(result => result.ok)) {
           return {
