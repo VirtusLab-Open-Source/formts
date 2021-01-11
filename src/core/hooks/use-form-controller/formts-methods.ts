@@ -32,8 +32,10 @@ export const createFormtsMethods = <Values extends object, Err>({
   state,
   dispatch,
 }: Input<Values, Err>): InternalFormtsMethods<Values, Err> => {
-  const getField = <T>(field: FieldDescriptor<T, Err>): T =>
-    get(state.values, impl(field).__path) as any;
+  const getField = <T>(field: FieldDescriptor<T, Err> | string): T => {
+    const path = typeof field === "string" ? field : impl(field).__path;
+    return get(state.values, path) as any;
+  };
 
   const getFieldError = (field: FieldDescriptor<any, Err>): Err | null => {
     const error = state.errors[impl(field).__path];
@@ -118,9 +120,10 @@ export const createFormtsMethods = <Values extends object, Err>({
 
       // TODO: getField is problematic when relaying on useReducer, should be solved when Atom based state is implemented
       const modifiedGetField = <T>(
-        fieldToValidate: FieldDescriptor<T, Err>
+        fieldToValidate: FieldDescriptor<T, Err> | string
       ): T => {
-        if (impl(field).__path === impl(fieldToValidate).__path) {
+        const path = typeof field === "string" ? field : impl(field).__path;
+        if (impl(field).__path === path) {
           return decodeResult.value as any;
         }
         return getField(fieldToValidate);

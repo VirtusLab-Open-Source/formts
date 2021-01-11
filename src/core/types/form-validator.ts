@@ -33,9 +33,14 @@ export type ValidationResult<Err> = Array<{
 export type ValidateIn<Err> = {
   fields: Array<FieldDescriptor<unknown, Err>>;
   trigger?: ValidationTrigger;
-  getValue: <P>(field: FieldDescriptor<P, Err>) => P;
+  getValue: GetValue;
   onFieldValidationStart?: (field: FieldDescriptor<unknown, Err>) => void;
   onFieldValidationEnd?: (field: FieldDescriptor<unknown, Err>) => void;
+};
+
+export type GetValue = {
+  <P>(field: FieldDescriptor<P, unknown>): P;
+  <P>(path: string): P;
 };
 
 // @ts-ignore
@@ -44,8 +49,7 @@ export type FormValidator<Values extends object, Err> = {
 };
 
 export type FieldValidator<T, Err, Dependencies extends any[]> = {
-  type: "field" | "each";
-  path: string;
+  field: ValidateField<T, Err>;
   triggers?: Array<ValidationTrigger>;
   validators: (...deps: [...Dependencies]) => Array<Falsy | Validator<T, Err>>;
   dependencies?: readonly [...FieldDescTuple<Dependencies>];
@@ -75,6 +79,10 @@ export type ValidateField<T, Err> =
   | GenericFieldDescriptor<T, Err>
   | ArrayFieldDescriptor<T[], Err>["nth"];
 
-type FieldDescTuple<ValuesTuple extends readonly any[]> = {
+export type FieldDescTuple<ValuesTuple extends readonly any[]> = {
   [Index in keyof ValuesTuple]: GenericFieldDescriptor<ValuesTuple[Index]>;
 };
+
+export const isNth = <T, Err>(
+  x: ValidateField<T, Err>
+): x is ArrayFieldDescriptor<T[], Err>["nth"] => typeof x === "function";

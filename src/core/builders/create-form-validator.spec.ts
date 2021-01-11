@@ -290,8 +290,9 @@ describe("createFormValidator", () => {
       }),
     ]);
 
-    const getValue = (field: FieldDescriptor<any>): any => {
-      switch (impl(field).__path) {
+    const getValue = (field: FieldDescriptor<any> | string): any => {
+      const path = typeof field === "string" ? field : impl(field).__path;
+      switch (path) {
         case "arrayObjectString[0]":
           return { str: "sm" };
         case "arrayObjectString[1]":
@@ -332,8 +333,9 @@ describe("createFormValidator", () => {
         rules: () => [x => wait(x === "c" ? "INVALID_VALUE" : null)],
       }),
     ]);
-    const getValue = (field: FieldDescriptor<any>): any => {
-      switch (impl(field).__path) {
+    const getValue = (field: FieldDescriptor<any> | string): any => {
+      const path = typeof field === "string" ? field : impl(field).__path;
+      switch (path) {
         case "arrayObjectString[0]":
           return { str: "ok-string" };
         case "arrayObjectString[1]":
@@ -377,8 +379,9 @@ describe("createFormValidator", () => {
         triggers: ["change", "submit"],
       }),
     ]);
-    const getValue = (field: FieldDescriptor<any>): any => {
-      switch (impl(field).__path) {
+    const getValue = (field: FieldDescriptor<any> | string): any => {
+      const path = typeof field === "string" ? field : impl(field).__path;
+      switch (path) {
         case "string":
           return "";
         case "choice":
@@ -438,8 +441,9 @@ describe("createFormValidator", () => {
       }),
     ]);
 
-    const getValue = (field: FieldDescriptor<any>): any => {
-      switch (impl(field).__path) {
+    const getValue = (field: FieldDescriptor<any> | string): any => {
+      const path = typeof field === "string" ? field : impl(field).__path;
+      switch (path) {
         case "string":
           return "ab";
         case "number":
@@ -495,8 +499,9 @@ describe("createFormValidator", () => {
         rules: () => [x => wait(x === "invalid" ? "INVALID_VALUE" : null)],
       }),
     ]);
-    const getValue = (field: FieldDescriptor<any>): any => {
-      switch (impl(field).__path) {
+    const getValue = (field: FieldDescriptor<any> | string): any => {
+      const path = typeof field === "string" ? field : impl(field).__path;
+      switch (path) {
         case "arrayString[0]":
           return "invalid";
         case "arrayString[1]":
@@ -677,8 +682,9 @@ describe("createFormValidator", () => {
       }),
     ]);
 
-    const getValue = (field: FieldDescriptor<any>): any => {
-      switch (impl(field).__path) {
+    const getValue = (field: FieldDescriptor<any> | string): any => {
+      const path = typeof field === "string" ? field : impl(field).__path;
+      switch (path) {
         case "arrayObjectString":
           return [{ str: "ok-string" }, { str: "" }];
         case "arrayObjectString[0]":
@@ -712,8 +718,9 @@ describe("createFormValidator", () => {
       }),
     ]);
 
-    const getValue = (field: FieldDescriptor<any>): any => {
-      switch (impl(field).__path) {
+    const getValue = (field: FieldDescriptor<any> | string): any => {
+      const path = typeof field === "string" ? field : impl(field).__path;
+      switch (path) {
         case "object":
           return { str: "", num: 10 };
         case "object.str":
@@ -753,8 +760,9 @@ describe("createFormValidator", () => {
       }),
     ]);
 
-    const getValue = (field: FieldDescriptor<any>): any => {
-      switch (impl(field).__path) {
+    const getValue = (field: FieldDescriptor<any> | string): any => {
+      const path = typeof field === "string" ? field : impl(field).__path;
+      switch (path) {
         case "objectObjectArrayObjectString.obj.array":
           return [{ str: "" }, { str: "no-ok" }];
         case "objectObjectArrayObjectString.obj.array[0]":
@@ -817,8 +825,9 @@ describe("createFormValidator", () => {
       ),
     ]);
 
-    const getValue = (field: FieldDescriptor<any>): any => {
-      switch (impl(field).__path) {
+    const getValue = (field: FieldDescriptor<any> | string): any => {
+      const path = typeof field === "string" ? field : impl(field).__path;
+      switch (path) {
         case "arrayObjectString[0]":
           return { str: "sm" };
         case "arrayObjectString[1]":
@@ -846,5 +855,185 @@ describe("createFormValidator", () => {
       { field: Schema.arrayObjectString.nth(2), error: null },
       { field: Schema.arrayObjectString.nth(3), error: "INVALID_VALUE" },
     ]);
+  });
+
+  it("dependency change should trigger validation run", async () => {
+    const required = (x: any) => (x ? null : "REQUIRED");
+
+    const { validate } = createFormValidator(Schema, validate => [
+      validate({
+        field: Schema.string,
+        rules: _number => [required],
+        dependencies: [Schema.number],
+      }),
+      validate({
+        field: Schema.number,
+        rules: () => [required],
+      }),
+    ]);
+
+    const getValue = () => "" as any;
+
+    const validation = await validate({ fields: [Schema.number], getValue });
+
+    expect(validation).toEqual([
+      { field: Schema.number, error: "REQUIRED" },
+      { field: Schema.string, error: "REQUIRED" },
+    ]);
+  });
+
+  it("dependency change should trigger validation run for with array.nth", async () => {
+    const { validate } = createFormValidator(Schema, validate => [
+      validate({
+        field: Schema.arrayObjectString.nth,
+        rules: _ => [x => (x.str === "" ? "REQUIRED" : null)],
+        dependencies: [Schema.choice],
+      }),
+      validate(Schema.choice, x => (x === "A" ? "INVALID_VALUE" : null)),
+    ]);
+
+    const getValue = (field: FieldDescriptor<any> | string): any => {
+      const path = typeof field === "string" ? field : impl(field).__path;
+      switch (path) {
+        case "arrayObjectString":
+          return [{ str: "sm" }, { str: "" }, { str: "valid string" }];
+        case "arrayObjectString[0]":
+          return { str: "sm" };
+        case "arrayObjectString[1]":
+          return { str: "" };
+        case "arrayObjectString[2]":
+          return { str: "valid string" };
+        case "choice":
+          return "A";
+      }
+    };
+
+    const validation = await validate({
+      fields: [Schema.choice],
+      getValue,
+    });
+
+    expect(validation).toEqual([
+      { field: Schema.choice, error: "INVALID_VALUE" },
+      { field: Schema.arrayObjectString.nth(0), error: null },
+      { field: Schema.arrayObjectString.nth(1), error: "REQUIRED" },
+      { field: Schema.arrayObjectString.nth(2), error: null },
+    ]);
+  });
+
+  it("dependency change should not duplicate validation", async () => {
+    const required = (x: any) => (x ? null : "REQUIRED");
+
+    const { validate } = createFormValidator(Schema, validate => [
+      validate({
+        field: Schema.string,
+        rules: _number => [required],
+        dependencies: [Schema.number],
+      }),
+      validate({
+        field: Schema.number,
+        rules: () => [required],
+      }),
+    ]);
+
+    const getValue = () => "" as any;
+
+    const validation = await validate({
+      fields: [Schema.number, Schema.string],
+      getValue,
+    });
+
+    expect(validation).toEqual([
+      { field: Schema.number, error: "REQUIRED" },
+      { field: Schema.string, error: "REQUIRED" },
+    ]);
+  });
+
+  it("dependency change should trigger validation run even if root field triggers don't match", async () => {
+    const required = (x: any) => (x ? null : "REQUIRED");
+
+    const { validate } = createFormValidator(Schema, validate => [
+      validate({
+        field: Schema.string,
+        rules: _number => [required],
+        dependencies: [Schema.number],
+      }),
+      validate({
+        field: Schema.choice,
+        rules: _number => [required],
+        dependencies: [Schema.number],
+        triggers: ["blur"],
+      }),
+      validate({
+        field: Schema.number,
+        rules: () => [required],
+        triggers: ["blur"],
+      }),
+    ]);
+
+    const getValue = () => "" as any;
+
+    const validation = await validate({
+      fields: [Schema.number],
+      getValue,
+      trigger: "change",
+    });
+
+    expect(validation).toEqual([{ field: Schema.string, error: "REQUIRED" }]);
+  });
+
+  it("dependencies values are passed to rules constructor", async () => {
+    const rules = jest.fn((...dependencies) => [
+      () =>
+        dependencies[0] === 2 &&
+        dependencies[1] === "B" &&
+        dependencies[2].length === 0
+          ? null
+          : "INVALID_VALUE",
+    ]) as any;
+
+    const { validate } = createFormValidator(Schema, validate => [
+      validate({
+        field: Schema.string,
+        rules,
+        dependencies: [Schema.number, Schema.choice, Schema.arrayChoice],
+      }),
+    ]);
+
+    const getValue = (field: FieldDescriptor<any> | string): any => {
+      const path = typeof field === "string" ? field : impl(field).__path;
+      switch (path) {
+        case "string":
+          return "string";
+        case "number":
+          return 2;
+        case "choice":
+          return "B";
+        case "arrayChoice":
+          return [];
+      }
+    };
+
+    const validation = await validate({ fields: [Schema.string], getValue });
+
+    expect(validation).toEqual([{ field: Schema.string, error: null }]);
+    expect(rules).toHaveBeenCalledWith(2, "B", []);
+  });
+
+  it("is no dependencies are provided empty list should be passed to rules constructor", async () => {
+    const { validate } = createFormValidator(Schema, validate => [
+      validate({
+        field: Schema.string,
+        rules: (...dependencies) => [
+          () => (dependencies.length === 0 ? null : "INVALID_VALUE"),
+        ],
+      }),
+    ]);
+
+    const getValue = (_field: FieldDescriptor<any> | string): any => "" as any;
+
+    const validation = await validate({ fields: [Schema.string], getValue });
+
+    expect(validation).toEqual([{ field: Schema.string, error: null }]);
   });
 });
