@@ -61,7 +61,7 @@ const NameField: React.FC = () => {
       <input
         id={field.id}
         value={field.value}
-        onChange={e => field.setValue(e.target.value)}
+        onChange={field.handleChange}
         onBlur={field.handleBlur}
         autoComplete="off"
       />
@@ -80,9 +80,7 @@ const AgeField: React.FC = () => {
         type="number"
         id={field.id}
         value={field.value}
-        onChange={e =>
-          field.setValue(e.target.value === "" ? "" : +e.target.value)
-        }
+        onChange={field.handleChange}
         onBlur={field.handleBlur}
         autoComplete="off"
       />

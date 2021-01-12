@@ -44,7 +44,7 @@ const ColorSelectInput: React.FC = () => {
       <select
         id={field.id}
         value={field.value}
-        onChange={e => field.setValue(e.target.value as Color)}
+        onChange={field.handleChange}
         onBlur={field.handleBlur}
       >
         {Object.values(field.options).map(option => (
