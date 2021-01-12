@@ -1,3 +1,5 @@
+import { ChangeEvent } from "react";
+
 import { FieldDescriptor } from "./field-descriptor";
 import { FieldError } from "./form-handle";
 import { ValidationResult, ValidationTrigger } from "./form-validator";
@@ -20,6 +22,10 @@ export type InternalFormtsMethods<Values extends object, Err> = {
   ) => Promise<void>;
   validateForm: () => Promise<ValidationResult<Err>>;
   setFieldValue: <T>(field: FieldDescriptor<T, Err>, value: T) => Promise<void>;
+  setFieldValueFromEvent: <T>(
+    field: FieldDescriptor<T, Err>,
+    event: ChangeEvent<unknown>
+  ) => Promise<void>;
   touchField: <T>(field: FieldDescriptor<T, Err>) => void;
   setFieldErrors: (...fields: ValidationResult<Err>) => void;
   resetForm: () => void;

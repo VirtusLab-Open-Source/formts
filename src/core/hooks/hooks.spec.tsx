@@ -450,6 +450,32 @@ describe("formts hooks API", () => {
     }
   });
 
+  it("allows for setting field values based on change events", () => {
+    const { result: controllerHook } = renderHook(() =>
+      useFormController({ Schema })
+    );
+
+    const {
+      result: numberFieldHook,
+      rerender: rerenderNumberFieldHook,
+    } = renderHook(() => useField(Schema.theNum, controllerHook.current));
+
+    {
+      expect(numberFieldHook.current.value).toEqual("");
+      expect(numberFieldHook.current.isTouched).toBe(false);
+    }
+
+    act(() => {
+      numberFieldHook.current.handleChange({ target: { value: "42" } } as any);
+      rerenderNumberFieldHook();
+    });
+
+    {
+      expect(numberFieldHook.current.value).toEqual(42);
+      expect(numberFieldHook.current.isTouched).toBe(true);
+    }
+  });
+
   it("allows for adding and removing array field items", () => {
     const { result: controllerHook } = renderHook(() =>
       useFormController({ Schema })

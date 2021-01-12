@@ -1,13 +1,7 @@
 import React from "react";
 
 import { get, logger, values } from "../../../utils";
-import {
-  createInitialValues,
-  makeValidationHandlers,
-  resolveIsValid,
-  resolveIsValidating,
-  resolveTouched,
-} from "../../helpers";
+import * as Helpers from "../../helpers";
 import { FieldDescriptor } from "../../types/field-descriptor";
 import {
   ValidationResult,
@@ -43,13 +37,13 @@ export const createFormtsMethods = <Values extends object, Err>({
   };
 
   const isFieldTouched = <T>(field: FieldDescriptor<T, Err>) =>
-    resolveTouched(get(state.touched as object, impl(field).__path));
+    Helpers.resolveTouched(get(state.touched as object, impl(field).__path));
 
   const isFieldValid = <T>(field: FieldDescriptor<T, Err>) =>
-    resolveIsValid(state.errors, field);
+    Helpers.resolveIsValid(state.errors, field);
 
   const isFieldValidating = <T>(field: FieldDescriptor<T, Err>) =>
-    resolveIsValidating(state.validating, field);
+    Helpers.resolveIsValidating(state.validating, field);
 
   const validateField = <T>(
     field: FieldDescriptor<T, Err>,
@@ -61,7 +55,7 @@ export const createFormtsMethods = <Values extends object, Err>({
     const {
       onFieldValidationStart,
       onFieldValidationEnd,
-    } = makeValidationHandlers(dispatch);
+    } = Helpers.makeValidationHandlers(dispatch);
 
     return options.validator
       .validate({
@@ -84,7 +78,7 @@ export const createFormtsMethods = <Values extends object, Err>({
     const {
       onFieldValidationStart,
       onFieldValidationEnd,
-    } = makeValidationHandlers(dispatch);
+    } = Helpers.makeValidationHandlers(dispatch);
 
     return options.validator
       .validate({
@@ -103,16 +97,46 @@ export const createFormtsMethods = <Values extends object, Err>({
     field: FieldDescriptor<T, Err>,
     value: T
   ): Promise<void> => {
-    const decodeResult = impl(field).__decoder.decode(value);
+    const { __decoder, __path } = impl(field);
+    const decodeResult = __decoder.decode(value);
+
     if (!decodeResult.ok) {
       logger.warn(
-        `Field ${impl(field).__path} received illegal value: ${JSON.stringify(
-          value
-        )}`
+        `Can not set field value for: '${__path}' [${__decoder.fieldType}] - illegal value type.`,
+        value
       );
       return Promise.resolve();
     }
 
+    return _setDecodedFieldValue(field, decodeResult.value);
+  };
+
+  const setFieldValueFromEvent = <T>(
+    field: FieldDescriptor<T, Err>,
+    event: React.ChangeEvent<unknown>
+  ) => {
+    const { __decoder, __path } = impl(field);
+    const decodeResult = Helpers.decodeChangeEvent({
+      event,
+      fieldDecoder: __decoder,
+      getValue: () => getField(field),
+    });
+
+    if (!decodeResult.ok) {
+      logger.warn(
+        `Can not set field value for: '${__path}' [${__decoder.fieldType}] - failed to extract valid value from event.target.`,
+        event?.target
+      );
+      return Promise.resolve();
+    }
+
+    return _setDecodedFieldValue(field, decodeResult.value);
+  };
+
+  const _setDecodedFieldValue = <T>(
+    field: FieldDescriptor<T, Err>,
+    value: T
+  ): Promise<void> => {
     const validateAfterChange = () => {
       if (!options.validator) {
         return Promise.resolve();
@@ -122,9 +146,12 @@ export const createFormtsMethods = <Values extends object, Err>({
       const modifiedGetField = <T>(
         fieldToValidate: FieldDescriptor<T, Err> | string
       ): T => {
-        const path = typeof field === "string" ? field : impl(field).__path;
+        const path =
+          typeof fieldToValidate === "string"
+            ? fieldToValidate
+            : impl(fieldToValidate).__path;
         if (impl(field).__path === path) {
-          return decodeResult.value as any;
+          return value as any;
         }
         return getField(fieldToValidate);
       };
@@ -132,7 +159,7 @@ export const createFormtsMethods = <Values extends object, Err>({
       const {
         onFieldValidationStart,
         onFieldValidationEnd,
-      } = makeValidationHandlers(dispatch);
+      } = Helpers.makeValidationHandlers(dispatch);
 
       return options.validator
         .validate({
@@ -149,7 +176,7 @@ export const createFormtsMethods = <Values extends object, Err>({
 
     dispatch({
       type: "setValue",
-      payload: { path: impl(field).__path, value: decodeResult.value },
+      payload: { path: impl(field).__path, value },
     });
     return validateAfterChange();
   };
@@ -175,7 +202,10 @@ export const createFormtsMethods = <Values extends object, Err>({
     dispatch({
       type: "reset",
       payload: {
-        values: createInitialValues(options.Schema, options.initialValues),
+        values: Helpers.createInitialValues(
+          options.Schema,
+          options.initialValues
+        ),
       },
     });
   };
@@ -218,6 +248,7 @@ export const createFormtsMethods = <Values extends object, Err>({
     validateField,
     validateForm,
     setFieldValue,
+    setFieldValueFromEvent,
     touchField,
     setFieldErrors,
     resetForm,

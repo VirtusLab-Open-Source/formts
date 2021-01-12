@@ -95,17 +95,17 @@ export const decodeChangeEvent = <T>({
   }
 };
 
-const parseEventTarget = ({
-  target,
-}: ChangeEvent<any>): SimplifiedEventTarget | null =>
-  target
+const parseEventTarget = (
+  event?: ChangeEvent<any>
+): SimplifiedEventTarget | null =>
+  event?.target
     ? {
-        type: target.type ?? "",
-        value: target.value,
-        checked: target.checked,
-        valueAsNumber: target.valueAsNumber,
-        options: target.options
-          ? parseSelectOptions(target.options)
+        type: event.target.type ?? "",
+        value: event.target.value,
+        checked: event.target.checked,
+        valueAsNumber: event.target.valueAsNumber,
+        options: event.target.options
+          ? parseSelectOptions(event.target.options)
           : undefined,
       }
     : null;
