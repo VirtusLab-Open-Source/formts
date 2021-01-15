@@ -14,13 +14,15 @@ describe("Lens", () => {
     });
 
     it("allows for immutably setting properties of an object", () => {
-      const obj = { foo: "A", bar: "B" };
+      const obj = { foo: 1, bar: "baz" };
       const atFoo = Lens.infer<typeof obj>()(Lens.prop("foo"));
 
-      const obj2 = atFoo.update(obj, "C");
+      const obj2 = atFoo.update(obj, it => it + 1);
+      const obj3 = atFoo.update(obj2, it => it + 10);
 
-      expect(obj).toEqual({ foo: "A", bar: "B" });
-      expect(obj2).toEqual({ foo: "C", bar: "B" });
+      expect(obj).toEqual({ foo: 1, bar: "baz" });
+      expect(obj2).toEqual({ foo: 2, bar: "baz" });
+      expect(obj3).toEqual({ foo: 12, bar: "baz" });
 
       assert<IsExact<ReturnType<typeof atFoo.update>, typeof obj>>(true);
     });
@@ -45,8 +47,8 @@ describe("Lens", () => {
       const at1 = Lens.infer<typeof arr>()(Lens.index(1));
       const at5 = Lens.infer<typeof arr>()(Lens.index(5));
 
-      const arr2 = at1.update(arr, "B");
-      const arr3 = at5.update(arr2, "D");
+      const arr2 = at1.update(arr, () => "B");
+      const arr3 = at5.update(arr2, () => "D");
 
       expect(arr).toEqual(["a", "b", "c"]);
       expect(arr2).toEqual(["a", "B", "c"]);
@@ -56,15 +58,15 @@ describe("Lens", () => {
     });
   });
 
-  describe("chain", () => {
+  describe("compose", () => {
     it("allows for immutably setting and accessing nested object properties", () => {
       const obj = { foo: { bar: 42 }, baz: "C" };
 
       const atFooBar = Lens.infer<typeof obj>()(
-        Lens.chain(Lens.prop("foo"), Lens.prop("bar"))
+        Lens.compose(Lens.prop("foo"), Lens.prop("bar"))
       );
 
-      const obj2 = atFooBar.update(obj, 666);
+      const obj2 = atFooBar.update(obj, () => 666);
 
       expect(obj).toEqual({ foo: { bar: 42 }, baz: "C" });
       expect(atFooBar.get(obj)).toBe(42);
@@ -80,10 +82,10 @@ describe("Lens", () => {
       const obj = { foo: { bar: [1, 2, 3] } };
 
       const atFooBar1 = Lens.infer<typeof obj>()(
-        Lens.chain(Lens.prop("foo"), Lens.prop("bar"), Lens.index(1))
+        Lens.compose(Lens.prop("foo"), Lens.prop("bar"), Lens.index(1))
       );
 
-      const obj2 = atFooBar1.update(obj, 666);
+      const obj2 = atFooBar1.update(obj, () => 666);
 
       expect(obj).toEqual({ foo: { bar: [1, 2, 3] } });
       expect(atFooBar1.get(obj)).toBe(2);
@@ -100,7 +102,7 @@ describe("Lens", () => {
     it("allows for immutably setting and accessing very deeply nested object properties", () => {
       const obj = { foo: { bar: { baz: [{ answer: 42 }] } }, other: { a: 1 } };
       const answerLens = Lens.infer<typeof obj>()(
-        Lens.chain(
+        Lens.compose(
           Lens.prop("foo"),
           Lens.prop("bar"),
           Lens.prop("baz"),
@@ -109,7 +111,7 @@ describe("Lens", () => {
         )
       );
 
-      const obj2 = answerLens.update(obj, 666);
+      const obj2 = answerLens.update(obj, it => (it ? it * 2 : it));
 
       expect(obj).toEqual({
         foo: { bar: { baz: [{ answer: 42 }] } },
@@ -118,10 +120,10 @@ describe("Lens", () => {
       expect(answerLens.get(obj)).toBe(42);
 
       expect(obj2).toEqual({
-        foo: { bar: { baz: [{ answer: 666 }] } },
+        foo: { bar: { baz: [{ answer: 84 }] } },
         other: { a: 1 },
       });
-      expect(answerLens.get(obj2)).toBe(666);
+      expect(answerLens.get(obj2)).toBe(84);
 
       assert<IsExact<ReturnType<typeof answerLens.get>, number | undefined>>(
         true
@@ -136,10 +138,10 @@ describe("Lens", () => {
       const obj: O = { foo: undefined };
 
       const foobarLens = Lens.infer<O>()(
-        Lens.chain(Lens.prop("foo"), Lens.prop("bar"))
+        Lens.compose(Lens.prop("foo"), Lens.prop("bar"))
       );
       const answerLens = Lens.infer<O>()(
-        Lens.chain(
+        Lens.compose(
           foobarLens,
           Lens.prop("baz"),
           Lens.index(0),
@@ -147,8 +149,8 @@ describe("Lens", () => {
         )
       );
 
-      const obj2a = foobarLens.update(obj, { baz: [] });
-      const obj2b = answerLens.update(obj, 666);
+      const obj2a = foobarLens.update(obj, () => ({ baz: [] }));
+      const obj2b = answerLens.update(obj, () => 666);
 
       expect(obj).toEqual({ foo: undefined });
       expect(foobarLens.get(obj)).toBe(undefined);
@@ -179,9 +181,9 @@ describe("Lens", () => {
     it("works for just one element", () => {
       const obj = { foo: "A", bar: "B" };
 
-      const atFoo = Lens.infer<typeof obj>()(Lens.chain(Lens.prop("foo")));
+      const atFoo = Lens.infer<typeof obj>()(Lens.compose(Lens.prop("foo")));
 
-      const obj2 = atFoo.update(obj, "C");
+      const obj2 = atFoo.update(obj, () => "C");
 
       expect(atFoo.get(obj)).toBe("A");
       expect(atFoo.get(obj2)).toBe("C");
@@ -190,25 +192,19 @@ describe("Lens", () => {
     });
   });
 
-  describe("of", () => {
+  describe("builder", () => {
     it("allows for immutably setting and accessing very deeply nested optional object properties", () => {
       type O = {
         foo?: { bar: { baz: Array<{ answer: number }> } };
       };
       const obj: O = { foo: undefined };
 
-      const foobarLens = Lens.builder<O>().prop("foo").prop("bar").make();
-      const answerLens = Lens.builder<O>()
-        .prop("foo")
-        .prop("bar")
-        .prop("baz")
-        .index(0)
-        .prop("answer")
-        .make();
+      const foobarLens = Lens.builder<O>().prop("foo").prop("bar");
+      const answerLens = foobarLens.prop("baz").index(0).prop("answer");
 
-      const obj2a = foobarLens.update(obj, { baz: [] });
-      const obj2ajajaj = foobarLens.update(obj, undefined); // FIXME
-      const obj2b = answerLens.update(obj, 666);
+      const obj2a = foobarLens.update(obj, () => ({ baz: [] }));
+      // const obj2ajajaj = foobarLens.update(obj, undefined); // FIXME
+      const obj2b = answerLens.update(obj, () => 666);
 
       expect(obj).toEqual({ foo: undefined });
       expect(foobarLens.get(obj)).toBe(undefined);

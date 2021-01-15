@@ -15,28 +15,36 @@ type Prop<O, K extends KeyOf<O>> = O extends object ? O[K] : undefined;
  */
 export type Lens<S, T> = {
   get: (state: S) => T;
-  update: (state: S, val: T) => S;
+  update: (state: S, setter: (current: T) => T) => S;
 };
 
 export namespace Lens {
   /** selects object property */
-  export const prop = <O, P extends KeyOf<O>>(
-    prop: P
-  ): Lens<O, Prop<O, P>> => ({
-    get: state => state?.[prop] as Prop<O, P>,
-    update: (state, val) => ({ ...state, [prop]: val }),
-  });
+  export const prop = <O, P extends KeyOf<O>>(prop: P): Lens<O, Prop<O, P>> => {
+    type Ret = Lens<O, Prop<O, P>>;
+    const get: Ret["get"] = state => state?.[prop] as Prop<O, P>;
+    const update: Ret["update"] = (state, setter) => ({
+      ...state,
+      [prop]: setter(get(state)),
+    });
+
+    return { get, update };
+  };
 
   /** selects array item at specified index */
   export const index = <Arr extends any[] | Void>(
     i: number
-  ): Lens<Arr, ArrayElement<Arr> | undefined> => ({
-    get: state => state?.[i],
-    update: (state, el) => Object.assign([], state, { [i]: el }),
-  });
+  ): Lens<Arr, ArrayElement<Arr> | undefined> => {
+    type Ret = Lens<Arr, ArrayElement<Arr> | undefined>;
+    const get: Ret["get"] = state => state?.[i];
+    const update: Ret["update"] = (state, setter) =>
+      Object.assign([], state, { [i]: setter(get(state)) });
+
+    return { get, update };
+  };
 
   // prettier-ignore
-  export type Chain = {
+  export type Compose = {
     <A, B>(l1: Lens<A, B>): Lens<A, B>;
     <A, B, C>(l1: Lens<A, B>, l2: Lens<B, C>): Lens<A, C>;
     <A, B, C, D>(l1: Lens<A, B>, l2: Lens<B, C>, l3: Lens<C, D>): Lens<A, D>;
@@ -46,35 +54,20 @@ export namespace Lens {
     <A, B, C, D, E, F, G, H>(l1: Lens<A, B>, l2: Lens<B, C>, l3: Lens<C, D>, l4: Lens<D, E>, l5: Lens<E, F>, l6: Lens<F, G>, l7: Lens<G, H>): Lens<A, H>;
   };
 
+  const compose2 = <A, B, C>(l1: Lens<A, B>, l2: Lens<B, C>): Lens<A, C> => {
+    const get: Lens<A, C>["get"] = state => l2.get(l1.get(state));
+
+    const update: Lens<A, C>["update"] = (state, setter) =>
+      l1.update(state, b => l2.update(b, c => setter(c)));
+
+    return { get, update };
+  };
+
   /** combines multiple lenses into single lense operating on nested structure */
-  export const chain: Chain = (...lenses: Array<Lens<any, any>>) => ({
-    get: (state: any) => lenses.reduce((acc, lens) => lens.get(acc), state),
-
-    update: (state: any, val: any) => {
-      const pop = <T>(arr: T[]): [T[], T | undefined] => {
-        const _arr = [...arr];
-        const last = _arr.pop();
-        return [_arr, last];
-      };
-
-      const setRecursive = <A, B>(
-        lens: Lens<A, B> | undefined,
-        rest: Array<Lens<any, any>>,
-        val: B
-      ): B => {
-        if (!lens) {
-          return val;
-        }
-        const _state = rest.reduce((acc, lens) => lens.get(acc), state);
-        const _val = lens.update(_state, val);
-        const [_rest, _lens] = pop(rest);
-        return setRecursive(_lens, _rest, _val);
-      };
-
-      const [rest, lens] = pop(lenses);
-      return setRecursive(lens, rest, val);
-    },
-  });
+  export const compose: Compose = (...lenses: Array<Lens<any, any>>) => {
+    const [first, ...rest] = lenses;
+    return rest.reduce(compose2, first);
+  };
 
   /** helper identity function providing type parameter S for given lens */
   export const infer = <S>() => <T>(lens: Lens<S, T>) => lens;
@@ -82,39 +75,35 @@ export namespace Lens {
   type Builder<S> = [NonNullable<S>] extends [Primitive]
     ? never
     : [NonNullable<S>] extends [any[]]
-    ? { index: (i: number) => Builder2<S, ArrayElement<S> | undefined> }
-    : { prop: <P extends KeyOf<S>>(prop: P) => Builder2<S, Prop<S, P>> };
+    ? { index: (i: number) => BuildableLens<S, ArrayElement<S> | undefined> }
+    : { prop: <P extends KeyOf<S>>(prop: P) => BuildableLens<S, Prop<S, P>> };
 
-  type Builder2<S, Q> = [NonNullable<Q>] extends [Primitive]
-    ? { make: () => Lens<S, Q> }
+  type BuildableLens<S, Q> = [NonNullable<Q>] extends [Primitive]
+    ? Lens<S, Q>
     : [NonNullable<Q>] extends [any[]]
-    ? {
-        index: (i: number) => Builder2<S, ArrayElement<Q> | undefined>;
-        make: () => Lens<S, Q>;
+    ? Lens<S, Q> & {
+        index: (i: number) => BuildableLens<S, ArrayElement<Q> | undefined>;
       }
-    : {
-        prop: <P extends KeyOf<Q>>(prop: P) => Builder2<S, Prop<Q, P>>;
-        make: () => Lens<S, Q>;
+    : Lens<S, Q> & {
+        prop: <P extends KeyOf<Q>>(prop: P) => BuildableLens<S, Prop<Q, P>>;
       };
 
   /**
    * create lens for given type
    */
   export const builder = <S>(): Builder<S> => {
-    const lenses: Array<Lens<any, any>> = [];
+    const builder = (lens?: Lens<any, any>) => ({
+      prop: (prop: any) =>
+        builder(
+          lens ? Lens.compose(lens, Lens.prop(prop)) : Lens.prop(prop as any)
+        ),
 
-    const builder = {
-      prop: <P extends string | number | symbol>(prop: P) => {
-        lenses.push(Lens.prop(prop));
-        return builder;
-      },
-      index: (i: number) => {
-        lenses.push(Lens.index(i));
-        return builder;
-      },
-      make: () => Lens.chain(...(lenses as [Lens<S, any>])),
-    };
+      index: (i: number) =>
+        builder(lens ? Lens.compose(lens, Lens.index(i)) : Lens.index(i)),
 
-    return (builder as any) as Builder<S>;
+      ...lens,
+    });
+
+    return (builder() as any) as Builder<S>;
   };
 }
