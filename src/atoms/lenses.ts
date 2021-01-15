@@ -1,4 +1,4 @@
-import { ArrayElement, Primitive } from "../utils";
+import { ArrayElement } from "../utils";
 
 type Void = undefined | null;
 
@@ -11,7 +11,7 @@ type KeyOf<O> = O extends object
 type Prop<O, K extends KeyOf<O>> = O extends object ? O[K] : undefined;
 
 /**
- * used for immutable and composable data updates
+ * Toy implementation of lenses, for something more advanced see https://github.com/gcanti/monocle-ts
  */
 export type Lens<S, T> = {
   get: (state: S) => T;
@@ -70,40 +70,5 @@ export namespace Lens {
   };
 
   /** helper identity function providing type parameter S for given lens */
-  export const infer = <S>() => <T>(lens: Lens<S, T>) => lens;
-
-  type Builder<S> = [NonNullable<S>] extends [Primitive]
-    ? never
-    : [NonNullable<S>] extends [any[]]
-    ? { index: (i: number) => BuildableLens<S, ArrayElement<S> | undefined> }
-    : { prop: <P extends KeyOf<S>>(prop: P) => BuildableLens<S, Prop<S, P>> };
-
-  type BuildableLens<S, Q> = [NonNullable<Q>] extends [Primitive]
-    ? Lens<S, Q>
-    : [NonNullable<Q>] extends [any[]]
-    ? Lens<S, Q> & {
-        index: (i: number) => BuildableLens<S, ArrayElement<Q> | undefined>;
-      }
-    : Lens<S, Q> & {
-        prop: <P extends KeyOf<Q>>(prop: P) => BuildableLens<S, Prop<Q, P>>;
-      };
-
-  /**
-   * create lens for given type
-   */
-  export const builder = <S>(): Builder<S> => {
-    const builder = (lens?: Lens<any, any>) => ({
-      prop: (prop: any) =>
-        builder(
-          lens ? Lens.compose(lens, Lens.prop(prop)) : Lens.prop(prop as any)
-        ),
-
-      index: (i: number) =>
-        builder(lens ? Lens.compose(lens, Lens.index(i)) : Lens.index(i)),
-
-      ...lens,
-    });
-
-    return (builder() as any) as Builder<S>;
-  };
+  export const forType = <S>() => <T>(lens: Lens<S, T>) => lens;
 }
