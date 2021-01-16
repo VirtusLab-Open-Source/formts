@@ -1,4 +1,4 @@
-import { ArrayElement } from "../utils";
+import { ArrayElement } from "./utility-types";
 
 type Void = undefined | null;
 
@@ -12,6 +12,7 @@ type Prop<O, K extends KeyOf<O>> = O extends object ? O[K] : undefined;
 
 /**
  * Toy implementation of lenses, for something more advanced see https://github.com/gcanti/monocle-ts
+ * Note: Partial lenses are somewhat supported but can produce partial results typed as non-partial :(
  */
 export type Lens<S, T> = {
   get: (state: S) => T;
@@ -19,6 +20,12 @@ export type Lens<S, T> = {
 };
 
 export namespace Lens {
+  /** identity lens, useful as starting point in compose function */
+  export const identity = <T>(): Lens<T, T> => ({
+    get: it => it,
+    update: (it, setter) => setter(it),
+  });
+
   /** selects object property */
   export const prop = <O, P extends KeyOf<O>>(prop: P): Lens<O, Prop<O, P>> => {
     type Ret = Lens<O, Prop<O, P>>;
@@ -63,12 +70,9 @@ export namespace Lens {
     return { get, update };
   };
 
-  /** combines multiple lenses into single lense operating on nested structure */
+  /** combines multiple lenses into single lens operating on nested structure */
   export const compose: Compose = (...lenses: Array<Lens<any, any>>) => {
     const [first, ...rest] = lenses;
     return rest.reduce(compose2, first);
   };
-
-  /** helper identity function providing type parameter S for given lens */
-  export const forType = <S>() => <T>(lens: Lens<S, T>) => lens;
 }

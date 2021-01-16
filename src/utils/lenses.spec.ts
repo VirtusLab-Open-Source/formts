@@ -3,10 +3,30 @@ import { IsExact, assert } from "conditional-type-checks";
 import { Lens } from "./lenses";
 
 describe("Lens", () => {
+  describe("identity", () => {
+    it("get fn returns passed object", () => {
+      const obj = { foo: "A", bar: "B" };
+      const idLens = Lens.identity<typeof obj>();
+
+      expect(idLens.get(obj)).toBe(obj);
+    });
+
+    it("update fn calls setter with provided object", () => {
+      const obj = { foo: "A", bar: "B" };
+      const idLens = Lens.identity<typeof obj>();
+      const setter = jest.fn().mockImplementation(it => it);
+
+      expect(idLens.update(obj, setter)).toBe(obj);
+      expect(setter).toBeCalledWith(obj);
+    });
+  });
+
   describe("prop", () => {
     it("allows for accessing properties of an object", () => {
       const obj = { foo: "A", bar: "B" };
-      const atFoo = Lens.forType<typeof obj>()(Lens.prop("foo"));
+      type O = typeof obj;
+
+      const atFoo = Lens.prop<O, "foo">("foo");
 
       expect(atFoo.get(obj)).toBe("A");
 
@@ -15,7 +35,9 @@ describe("Lens", () => {
 
     it("allows for immutably setting properties of an object", () => {
       const obj = { foo: 1, bar: "baz" };
-      const atFoo = Lens.forType<typeof obj>()(Lens.prop("foo"));
+      type O = typeof obj;
+
+      const atFoo = Lens.prop<O, "foo">("foo");
 
       const obj2 = atFoo.update(obj, it => it + 1);
       const obj3 = atFoo.update(obj2, it => it + 10);
@@ -31,8 +53,10 @@ describe("Lens", () => {
   describe("index", () => {
     it("allows for accessing elements of an array", () => {
       const arr = ["a", "b", "c"];
-      const at1 = Lens.forType<typeof arr>()(Lens.index(1));
-      const at5 = Lens.forType<typeof arr>()(Lens.index(5));
+      type A = typeof arr;
+
+      const at1 = Lens.index<A>(1);
+      const at5 = Lens.index<A>(5);
 
       expect(at1.get(arr)).toBe("b");
       expect(at5.get(arr)).toBe(undefined);
@@ -44,8 +68,10 @@ describe("Lens", () => {
 
     it("allows for immutably setting elements of an array", () => {
       const arr = ["a", "b", "c"];
-      const at1 = Lens.forType<typeof arr>()(Lens.index(1));
-      const at5 = Lens.forType<typeof arr>()(Lens.index(5));
+      type A = typeof arr;
+
+      const at1 = Lens.index<A>(1);
+      const at5 = Lens.index<A>(5);
 
       const arr2 = at1.update(arr, () => "B");
       const arr3 = at5.update(arr2, () => "D");
@@ -62,8 +88,10 @@ describe("Lens", () => {
     it("allows for immutably setting and accessing nested object properties", () => {
       const obj = { foo: { bar: 42 }, baz: "C" };
 
-      const atFooBar = Lens.forType<typeof obj>()(
-        Lens.compose(Lens.prop("foo"), Lens.prop("bar"))
+      const atFooBar = Lens.compose(
+        Lens.identity<typeof obj>(),
+        Lens.prop("foo"),
+        Lens.prop("bar")
       );
 
       const obj2 = atFooBar.update(obj, () => 666);
@@ -81,8 +109,11 @@ describe("Lens", () => {
     it("allows for immutably setting and accessing deeply nested object properties", () => {
       const obj = { foo: { bar: [1, 2, 3] } };
 
-      const atFooBar1 = Lens.forType<typeof obj>()(
-        Lens.compose(Lens.prop("foo"), Lens.prop("bar"), Lens.index(1))
+      const atFooBar1 = Lens.compose(
+        Lens.identity<typeof obj>(),
+        Lens.prop("foo"),
+        Lens.prop("bar"),
+        Lens.index(1)
       );
 
       const obj2 = atFooBar1.update(obj, () => 666);
@@ -101,14 +132,13 @@ describe("Lens", () => {
 
     it("allows for immutably setting and accessing very deeply nested object properties", () => {
       const obj = { foo: { bar: { baz: [{ answer: 42 }] } }, other: { a: 1 } };
-      const answerLens = Lens.forType<typeof obj>()(
-        Lens.compose(
-          Lens.prop("foo"),
-          Lens.prop("bar"),
-          Lens.prop("baz"),
-          Lens.index(0),
-          Lens.prop("answer")
-        )
+      const answerLens = Lens.compose(
+        Lens.identity<typeof obj>(),
+        Lens.prop("foo"),
+        Lens.prop("bar"),
+        Lens.prop("baz"),
+        Lens.index(0),
+        Lens.prop("answer")
       );
 
       const obj2 = answerLens.update(obj, it => (it ? it * 2 : it));
@@ -137,9 +167,12 @@ describe("Lens", () => {
       };
       const obj: O = { foo: undefined };
 
-      const foobarLens = Lens.forType<O>()(
-        Lens.compose(Lens.prop("foo"), Lens.prop("bar"))
+      const foobarLens = Lens.compose(
+        Lens.identity<typeof obj>(),
+        Lens.prop("foo"),
+        Lens.prop("bar")
       );
+
       const answerLens = Lens.compose(
         foobarLens,
         Lens.prop("baz"),
@@ -179,7 +212,7 @@ describe("Lens", () => {
     it("works for just one element", () => {
       const obj = { foo: "A", bar: "B" };
 
-      const atFoo = Lens.forType<typeof obj>()(Lens.compose(Lens.prop("foo")));
+      const atFoo = Lens.compose(Lens.prop<typeof obj, "foo">("foo"));
 
       const obj2 = atFoo.update(obj, () => "C");
 
