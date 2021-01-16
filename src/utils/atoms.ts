@@ -89,7 +89,7 @@ export namespace Atom {
    */
   export const fuse = <T extends unknown[], Q>(
     combinator: (...values: readonly [...T]) => Q,
-    ...atoms: { [P in keyof T]: Atom<T[P]> | Atom.Readonly<Q> }
+    ...atoms: { [P in keyof T]: Atom<T[P]> | Atom.Readonly<T[P]> }
   ): Atom.Readonly<Q> => {
     const subscribers: SubscriberFunc<Q>[] = [];
     let val = combinator(...(atoms.map(a => a.val) as T));
