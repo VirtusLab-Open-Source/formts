@@ -4,8 +4,8 @@ import { opaque } from "../types/type-mapper-util";
 
 /**
  * Define field of type `number | ""` (empty string is needed to represent state of empty number inputs)
- * Does not accept infinite numbers: `Infinity`, `-Infinity`, `NaN`.
  * Default initial value will be `""`.
+ * Accepts finite numbers, strings representing finite numbers and valid Date instances
  *
  * @example
  * ```

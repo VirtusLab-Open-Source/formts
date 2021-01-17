@@ -10,6 +10,7 @@ import { opaque } from "../types/type-mapper-util";
  * Define field holding an instance of JS Date or `null`
  * Will check that value is a valid date at runtime.
  * Default initial value will be `null`
+ * Accepts valid Date instances and strings or numbers that create valid Date when passed into Date constructor.
  *
  * @example
  * ```

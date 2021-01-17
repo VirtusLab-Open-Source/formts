@@ -5,6 +5,7 @@ import { opaque } from "../types/type-mapper-util";
 /**
  * Define field of type `string`.
  * Default initial value will be `""`.
+ * Accepts strings, numbers, booleans and valid Date instances (which are serialized using toISOString method).
  *
  * @example
  * ```

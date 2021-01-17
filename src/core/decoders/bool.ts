@@ -4,6 +4,7 @@ import { opaque } from "../types/type-mapper-util";
 /**
  * Define field of type `boolean`.
  * Default initial value will be `false`.
+ * Accepts boolean values and string "true" | "false".
  *
  * @example
  * ```

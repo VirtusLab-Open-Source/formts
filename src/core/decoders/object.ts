@@ -14,7 +14,7 @@ type ObjectFieldDecoderWithGuards<
 
 /**
  * Define nested object field with shape defined by `innerDecoders` param.
- * Will check if value is an object and if it contains all specified properties of the right types at runtime.
+ * Accepts any objects containing all specified properties which are valid in respect to rules imposed by their respective decoders.
  *
  * **Does not accept empty objects and objects with reserved 'root' property**
  *

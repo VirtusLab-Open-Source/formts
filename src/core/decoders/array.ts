@@ -3,8 +3,8 @@ import { impl, opaque } from "../types/type-mapper-util";
 
 /**
  * Define array field with elements of type defined by provided `innerDecoder`.
- * Will check if value is array and if each element matches expected type at runtime.
  * Default initial value will be `[]`
+ * Accepts empty arrays and arrays containing elements which are valid in respect to rules imposed by `innerDecoder`.
  *
  * @example
  * ```

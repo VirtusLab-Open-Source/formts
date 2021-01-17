@@ -7,8 +7,8 @@ import { opaque } from "../types/type-mapper-util";
 
 /**
  * Define field of given string literal union type.
- * Will check values against provided whitelist.
  * Default initial value will be first option received.
+ * Accepts string and number values which are present on provided options list.
  *
  * **requires at least one option to be provided**
  *
