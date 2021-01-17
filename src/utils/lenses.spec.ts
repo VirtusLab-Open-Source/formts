@@ -163,9 +163,9 @@ describe("Lens", () => {
 
     it("allows for immutably setting and accessing very deeply nested optional object properties", () => {
       type O = {
-        foo?: { bar: { baz: Array<{ answer: number }> } };
+        foo?: { bar: { baz: Array<{ question: string; answer: number }> } };
       };
-      const obj: O = { foo: undefined };
+      const obj: O = {};
 
       const foobarLens = Lens.compose(
         Lens.identity<typeof obj>(),
@@ -180,17 +180,20 @@ describe("Lens", () => {
         Lens.prop("answer")
       );
 
-      const obj2a = foobarLens.update(obj, () => ({ baz: [] }));
-      const obj2b = answerLens.update(obj, () => 666);
-
-      expect(obj).toEqual({ foo: undefined });
+      expect(obj).toEqual({});
       expect(foobarLens.get(obj)).toBe(undefined);
       expect(answerLens.get(obj)).toBe(undefined);
+
+      const obj2a = foobarLens.update(obj, () => ({ baz: [] }));
 
       expect(obj2a).toEqual({ foo: { bar: { baz: [] } } });
       expect(foobarLens.get(obj2a)).toEqual({ baz: [] });
       expect(answerLens.get(obj2a)).toBe(undefined);
 
+      const obj2b = answerLens.update(obj, () => 666);
+
+      // note: question prop is missing despite being typed as required.
+      // Better partial lens support would type everything under foo as DeepPartial
       expect(obj2b).toEqual({ foo: { bar: { baz: [{ answer: 666 }] } } });
       expect(foobarLens.get(obj2b)).toEqual({ baz: [{ answer: 666 }] });
       expect(answerLens.get(obj2b)).toBe(666);
@@ -198,7 +201,7 @@ describe("Lens", () => {
       assert<
         IsExact<
           ReturnType<typeof foobarLens.get>,
-          { baz: Array<{ answer: number }> } | undefined
+          { baz: Array<{ question: string; answer: number }> } | undefined
         >
       >(true);
       assert<IsExact<ReturnType<typeof foobarLens.update>, typeof obj>>(true);
