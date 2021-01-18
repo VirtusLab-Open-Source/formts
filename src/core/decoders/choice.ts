@@ -7,8 +7,8 @@ import { opaque } from "../types/type-mapper-util";
 
 /**
  * Define field of given string literal union type.
- * Will check values against provided whitelist.
  * Default initial value will be first option received.
+ * Accepts string and number values which are present on provided options list.
  *
  * **requires at least one option to be provided**
  *
@@ -44,12 +44,18 @@ export const choice = <Opts extends string>(
       switch (typeof value) {
         case "string": {
           const option = optionsDictionary[value];
-          return option != null
-            ? { ok: true, value: option }
-            : { ok: false, value };
+          return option != null ? { ok: true, value: option } : { ok: false };
+        }
+        case "number": {
+          if (Number.isFinite(value)) {
+            const option = optionsDictionary[value.toString()];
+            return option != null ? { ok: true, value: option } : { ok: false };
+          } else {
+            return { ok: false };
+          }
         }
         default:
-          return { ok: false, value };
+          return { ok: false };
       }
     },
   };

@@ -16,7 +16,7 @@ const Schema = createFormSchema(
     theChoice: fields.choice("", "A", "B", "C"),
     theNum: fields.number(),
     theBool: fields.bool(),
-    theInstance: fields.instanceOf(Date),
+    theDate: fields.date(),
     theArray: fields.array(fields.string()),
     theObject: fields.object({
       foo: fields.string(),
@@ -67,7 +67,7 @@ describe("formts hooks API", () => {
         theChoice: "",
         theNum: "",
         theBool: false,
-        theInstance: null,
+        theDate: null,
         theArray: [],
         theObject: { foo: "" },
         theObjectArray: { arr: [] },
@@ -151,7 +151,7 @@ describe("formts hooks API", () => {
         theChoice: "",
         theNum: "",
         theBool: false,
-        theInstance: null,
+        theDate: null,
         theArray: [],
         theObject: { foo: "" },
         theObjectArray: { arr: [] },
@@ -210,7 +210,7 @@ describe("formts hooks API", () => {
       theChoice: "",
       theNum: "",
       theBool: false,
-      theInstance: null,
+      theDate: null,
       theArray: [],
       theObject: { foo: "" },
       theObjectArray: { arr: [] },
@@ -240,7 +240,7 @@ describe("formts hooks API", () => {
       theChoice: "C",
       theNum: 42,
       theBool: false,
-      theInstance: null,
+      theDate: null,
       theArray: ["here", "comes", "the", "sun"],
       theObject: { foo: "bar" },
       theObjectArray: { arr: [] },
@@ -346,7 +346,7 @@ describe("formts hooks API", () => {
         theChoice: "",
         theNum: "",
         theBool: false,
-        theInstance: null,
+        theDate: null,
         theArray: [],
         theObject: { foo: "" },
         theObjectArray: { arr: [] },
@@ -374,7 +374,7 @@ describe("formts hooks API", () => {
         theChoice: "",
         theNum: 42,
         theBool: false,
-        theInstance: null,
+        theDate: null,
         theArray: [],
         theObject: { foo: "" },
         theObjectArray: { arr: [] },
@@ -405,7 +405,7 @@ describe("formts hooks API", () => {
         theChoice: "",
         theNum: 42,
         theBool: false,
-        theInstance: null,
+        theDate: null,
         theArray: ["gumisie", "teletubisie"],
         theObject: { foo: "" },
         theObjectArray: { arr: [] },
@@ -433,7 +433,7 @@ describe("formts hooks API", () => {
         theChoice: "",
         theNum: 42,
         theBool: false,
-        theInstance: null,
+        theDate: null,
         theArray: ["gumisie", "teletubisie"],
         theObject: { foo: "42" },
         theObjectArray: { arr: [] },
@@ -447,6 +447,32 @@ describe("formts hooks API", () => {
 
       expect(objectFieldHook.current.isTouched).toBe(true);
       expect(objectFieldHook.current.value).toEqual({ foo: "42" });
+    }
+  });
+
+  it("allows for setting field values based on change events", () => {
+    const { result: controllerHook } = renderHook(() =>
+      useFormController({ Schema })
+    );
+
+    const {
+      result: numberFieldHook,
+      rerender: rerenderNumberFieldHook,
+    } = renderHook(() => useField(Schema.theNum, controllerHook.current));
+
+    {
+      expect(numberFieldHook.current.value).toEqual("");
+      expect(numberFieldHook.current.isTouched).toBe(false);
+    }
+
+    act(() => {
+      numberFieldHook.current.handleChange({ target: { value: "42" } } as any);
+      rerenderNumberFieldHook();
+    });
+
+    {
+      expect(numberFieldHook.current.value).toEqual(42);
+      expect(numberFieldHook.current.isTouched).toBe(true);
     }
   });
 
@@ -679,7 +705,7 @@ describe("formts hooks API", () => {
         theChoice: "",
         theNum: 666,
         theBool: false,
-        theInstance: null,
+        theDate: null,
         theArray: [],
         theObject: { foo: "bar" },
         theObjectArray: { arr: [] },
@@ -699,7 +725,7 @@ describe("formts hooks API", () => {
         theChoice: "",
         theNum: 42,
         theBool: false,
-        theInstance: null,
+        theDate: null,
         theArray: [],
         theObject: { foo: "" },
         theObjectArray: { arr: [] },
@@ -992,7 +1018,7 @@ describe("formts hooks API", () => {
         { path: "theChoice", error: "ERROR" },
         { path: "theNum", error: "ERROR" },
         { path: "theBool", error: "ERROR" },
-        { path: "theInstance", error: "ERROR" },
+        { path: "theDate", error: "ERROR" },
         { path: "theArray", error: "ERROR" },
         { path: "theObject", error: "ERROR" },
         { path: "theObjectArray", error: "ERROR" },
@@ -1012,7 +1038,7 @@ describe("formts hooks API", () => {
         theChoice: "",
         theNum: "",
         theBool: false,
-        theInstance: null,
+        theDate: null,
         theArray: [],
         theObject: { foo: "" },
         theObjectArray: { arr: [] },

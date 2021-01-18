@@ -33,7 +33,7 @@ const Example: React.FC = () => {
         <input
           id={name.id}
           value={name.value}
-          onChange={e => name.setValue(e.target.value)}
+          onChange={name.handleChange}
           onBlur={name.handleBlur}
           autoComplete="off"
         />
@@ -45,9 +45,7 @@ const Example: React.FC = () => {
           type="number"
           id={age.id}
           value={age.value}
-          onChange={e =>
-            age.setValue(e.target.value === "" ? "" : +e.target.value)
-          }
+          onChange={age.handleChange}
           onBlur={age.handleBlur}
           autoComplete="off"
         />

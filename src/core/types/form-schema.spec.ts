@@ -15,7 +15,7 @@ type SomeValues = {
   objObj: { nested: { num: number | "" } };
   objObjArray: { nested: { arrayString: string[] } };
   arrayObj: Array<{ string: string }>;
-  instance: Date | null;
+  date: Date | null;
 };
 
 type SomeErr = "err1" | "err2";
@@ -37,7 +37,7 @@ describe("FormSchema type", () => {
       | "objObj"
       | "objObjArray"
       | "arrayObj"
-      | "instance";
+      | "date";
 
     assert<IsExact<Actual, Expected>>(true);
   });
@@ -150,8 +150,8 @@ describe("FormSchema type", () => {
     assert<IsExact<Actual, Expected>>(true);
   });
 
-  it("handles class fields", () => {
-    type Actual = Schema["instance"];
+  it("handles date fields", () => {
+    type Actual = Schema["date"];
 
     type Expected = FieldDescriptor<Date | null, SomeErr>;
 

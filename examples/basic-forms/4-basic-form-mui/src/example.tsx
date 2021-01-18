@@ -63,7 +63,7 @@ const NameField: React.FC = () => {
         label="Name:"
         id={field.id}
         value={field.value}
-        onChange={e => field.setValue(e.target.value)}
+        onChange={field.handleChange}
         onBlur={field.handleBlur}
         error={field.error != null}
         helperText={field.error}
@@ -83,9 +83,7 @@ const AgeField: React.FC = () => {
         label="Age:"
         id={field.id}
         value={field.value}
-        onChange={e =>
-          field.setValue(e.target.value === "" ? "" : +e.target.value)
-        }
+        onChange={field.handleChange}
         onBlur={field.handleBlur}
         error={field.error != null}
         helperText={field.error}

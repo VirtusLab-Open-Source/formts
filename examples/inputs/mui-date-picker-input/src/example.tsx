@@ -17,7 +17,7 @@ import ReactDOM from "react-dom";
 import "../index.css";
 
 const Schema = createFormSchema(fields => ({
-  date: fields.instanceOf(Date),
+  date: fields.date(),
 }));
 
 const Example: React.FC = () => {
@@ -44,7 +44,8 @@ const DatePickerInput: React.FC = () => {
         variant="inline"
         label="Choose your favourite date"
         value={dateField.value}
-        onChange={date => dateField.setValue(date as Date)}
+        onChange={dateField.setValue}
+        onBlur={dateField.handleBlur}
         fullWidth
         autoOk
       />

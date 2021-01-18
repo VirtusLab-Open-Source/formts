@@ -4,6 +4,7 @@ import { opaque } from "../types/type-mapper-util";
 /**
  * Define field of type `boolean`.
  * Default initial value will be `false`.
+ * Accepts boolean values and string "true" | "false".
  *
  * @example
  * ```
@@ -22,8 +23,20 @@ export const bool = (): FieldDecoder<boolean> => {
       switch (typeof value) {
         case "boolean":
           return { ok: true, value };
+
+        case "string": {
+          switch (value.toLowerCase().trim()) {
+            case "true":
+              return { ok: true, value: true };
+            case "false":
+              return { ok: true, value: false };
+            default:
+              return { ok: false };
+          }
+        }
+
         default:
-          return { ok: false, value };
+          return { ok: false };
       }
     },
   };

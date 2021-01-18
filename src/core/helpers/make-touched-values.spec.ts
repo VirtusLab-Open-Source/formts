@@ -51,7 +51,7 @@ describe("makeTouchedValues", () => {
     });
   });
 
-  it("should work for instance values", () => {
+  it("should work for date values", () => {
     const values = {
       empty: null as Date | null,
       instance: new Date() as Date | null,
@@ -145,7 +145,7 @@ describe("makeUntouchedValues", () => {
     });
   });
 
-  it("should work for instance values", () => {
+  it("should work for date values", () => {
     const values = {
       empty: null as Date | null,
       instance: new Date() as Date | null,

@@ -15,3 +15,6 @@ export const range = (start: number, end: number): number[] => {
 
   return result;
 };
+
+export const isValidDate = (val: unknown): val is Date =>
+  val instanceof Date && !Number.isNaN(val.valueOf());

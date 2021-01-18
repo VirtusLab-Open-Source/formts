@@ -48,6 +48,17 @@ describe("_FieldDecoderImpl type", () => {
     assert<IsExact<Actual, Expected>>(true);
   });
 
+  it("handles date fields", () => {
+    type Actual = _FieldDecoderImpl<Date | null>;
+    type Expected = {
+      fieldType: FieldType;
+      init: () => Date | null;
+      decode: (val: unknown) => DecoderResult<Date | null>;
+    };
+
+    assert<IsExact<Actual, Expected>>(true);
+  });
+
   it("handles array fields", () => {
     type Actual = _FieldDecoderImpl<string[]>;
     type Expected = {
