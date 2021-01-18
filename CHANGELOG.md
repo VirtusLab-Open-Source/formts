@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.15](https://github.com/VirtusLab/formts/compare/v0.1.14...v0.1.15) (2021-01-18)
+
+
+### Features
+
+* handle change method ([#58](https://github.com/VirtusLab/formts/issues/58)) ([a013729](https://github.com/VirtusLab/formts/commit/a0137297d112c4ac7626a666e3c57cbfa9e29fb7))
+
 ### [0.1.14](https://github.com/VirtusLab/formts/compare/v0.1.13...v0.1.14) (2021-01-11)
 
 
