@@ -14,7 +14,7 @@ type ObjectFieldDecoderWithGuards<
 
 /**
  * Define nested object field with shape defined by `innerDecoders` param.
- * Will check if value is an object and if it contains all specified properties of the right types at runtime.
+ * Accepts any objects containing all specified properties which are valid in respect to rules imposed by their respective decoders.
  *
  * **Does not accept empty objects and objects with reserved 'root' property**
  *
@@ -47,7 +47,7 @@ export const object = <O extends object>(
 
     decode: value => {
       if (typeof value !== "object" || value == null) {
-        return { ok: false, value };
+        return { ok: false };
       }
 
       const decodedObject = {} as O;
@@ -56,7 +56,7 @@ export const object = <O extends object>(
           (value as O)[key as keyof O]
         );
         if (!result.ok) {
-          return { ok: false, value };
+          return { ok: false };
         } else {
           decodedObject[key as keyof O] = result.value;
         }

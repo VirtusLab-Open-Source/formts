@@ -60,7 +60,7 @@ const ColorsCheckboxGroup: React.FC = () => {
             name={colors.id}
             checked={field.value}
             onBlur={field.handleBlur}
-            onChange={e => field.setValue(e.target.checked)}
+            onChange={field.handleChange}
           />
           <label htmlFor={field.id}>{labels[key]}</label>
         </div>

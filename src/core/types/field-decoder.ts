@@ -7,7 +7,7 @@ export type _FieldDecoderImpl<T> = [T] extends [Array<any>]
     ? _ObjectFieldDecoderImpl<T>
     : IsStringUnion<T> extends true
       ? _ChoiceFieldDecoderImpl<T>
-      : _FieldDecoderBaseImpl<T>;
+      : _FieldDecoderBaseImpl<T>
 
 export type _FieldDecoderBaseImpl<T> = {
   fieldType: FieldType;
@@ -57,9 +57,9 @@ export type FieldType =
   | "choice"
   | "bool"
   | "array"
-  | "class"
+  | "date"
   | "object";
 
 export type DecoderResult<T> =
   | { ok: true; value: T }
-  | { ok: false; value: unknown };
+  | { ok: false; value?: undefined };

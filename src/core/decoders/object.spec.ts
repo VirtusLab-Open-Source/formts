@@ -5,7 +5,7 @@ import { impl } from "../types/type-mapper-util";
 import { array } from "./array";
 import { bool } from "./bool";
 import { choice } from "./choice";
-import { instanceOf } from "./instanceof";
+import { date } from "./date";
 import { number } from "./number";
 import { object } from "./object";
 import { string } from "./string";
@@ -63,7 +63,7 @@ describe("object decoder", () => {
           str: string(),
           num: number(),
           choice: choice("A", "B"),
-          instance: instanceOf(Date),
+          date: date(),
         })
       );
 
@@ -72,7 +72,7 @@ describe("object decoder", () => {
         str: "foo",
         num: 42,
         choice: "B",
-        instance: new Date(),
+        date: new Date(),
       };
 
       expect(decoder.decode(value)).toEqual({ ok: true, value });
@@ -85,7 +85,7 @@ describe("object decoder", () => {
           str: string(),
           num: number(),
           choice: choice("A", "B"),
-          instance: instanceOf(Date),
+          date: date(),
         })
       );
 
@@ -94,10 +94,10 @@ describe("object decoder", () => {
         str: "foo",
         num: 42,
         choice: "invalid choice",
-        instance: new Date(),
+        date: new Date(),
       };
 
-      expect(decoder.decode(value)).toEqual({ ok: false, value });
+      expect(decoder.decode(value)).toEqual({ ok: false });
     });
 
     it("should NOT decode empty object", () => {
@@ -107,13 +107,13 @@ describe("object decoder", () => {
           str: string(),
           num: number(),
           choice: choice("A", "B"),
-          instance: instanceOf(Date),
+          date: date(),
         })
       );
 
       const value = {};
 
-      expect(decoder.decode(value)).toEqual({ ok: false, value });
+      expect(decoder.decode(value)).toEqual({ ok: false });
     });
 
     it("should NOT decode nulls", () => {
@@ -123,13 +123,13 @@ describe("object decoder", () => {
           str: string(),
           num: number(),
           choice: choice("A", "B"),
-          instance: instanceOf(Date),
+          date: date(),
         })
       );
 
       const value = null;
 
-      expect(decoder.decode(value)).toEqual({ ok: false, value });
+      expect(decoder.decode(value)).toEqual({ ok: false });
     });
   });
 
@@ -163,7 +163,7 @@ describe("object decoder", () => {
         obj: { arr: [false, true] },
       };
 
-      expect(decoder.decode(value)).toEqual({ ok: false, value });
+      expect(decoder.decode(value)).toEqual({ ok: false });
     });
   });
 });

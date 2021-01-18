@@ -3,8 +3,8 @@ import { impl, opaque } from "../types/type-mapper-util";
 
 /**
  * Define array field with elements of type defined by provided `innerDecoder`.
- * Will check if value is array and if each element matches expected type at runtime.
  * Default initial value will be `[]`
+ * Accepts empty arrays and arrays containing elements which are valid in respect to rules imposed by `innerDecoder`.
  *
  * @example
  * ```
@@ -23,7 +23,7 @@ export const array = <E>(
     init: () => [],
 
     decode: value => {
-      if (Array.isArray(value)) {
+      if (value && Array.isArray(value)) {
         const decodeResults = value.map(impl(innerDecoder).decode);
         if (decodeResults.every(result => result.ok)) {
           return {
@@ -32,7 +32,7 @@ export const array = <E>(
           };
         }
       }
-      return { ok: false, value };
+      return { ok: false };
     },
   };
 

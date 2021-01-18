@@ -113,6 +113,10 @@ const createFieldHandle = <T, Err>(
       return methods.setFieldValue(descriptor, val);
     },
 
+    handleChange: event => {
+      return methods.setFieldValueFromEvent(descriptor, event);
+    },
+
     setError: error => {
       methods.setFieldErrors({ field: descriptor, error });
     },

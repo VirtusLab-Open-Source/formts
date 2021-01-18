@@ -1,3 +1,5 @@
+import { ChangeEvent } from "react";
+
 import { ArrayElement, IdentityDict, IsUnion } from "../../utils";
 
 import { FieldDescriptor } from "./field-descriptor";
@@ -49,25 +51,26 @@ type BaseFieldHandle<T, Err> = {
   descriptor: FieldDescriptor<T, Err>;
 
   /**
-   * Direct field value setter.
+   * Sets field value.
    * Will cause field validation to run with the `change` trigger.
    * Will set `isTouched` to `true`.
+   * If value is not of the desired type there is no effect.
    */
-  setValue: SetValue<T>;
+  setValue: (value: T) => void;
+
+  /**
+   * Attempts to extract value out of the event based on field type and `event.target`.
+   * Will cause field validation to run with the `change` trigger.
+   * Will set `isTouched` to `true`.
+   * If value of the desired type can't be extracted there is no effect.
+   */
+  handleChange: (event: ChangeEvent<unknown>) => void;
 
   /** Sets field error, affecting `isValid` flag */
   setError: (error: null | Err) => void;
 
   /** runs all validation rules of the field, regardless of their validation triggers */
   validate: () => void;
-
-  /**
-   * Attempts to extract value out of React.ChangeEvent based on field type and event.target.
-   * Will cause field validation to run with the `change` trigger.
-   * Will set `isTouched` to `true`.
-   * If value of desired type can't be extracted there is no effect (other than console warning in development mode)
-   */
-  // handleChange: (event: any) => void;
 
   /**
    * Will cause field validation to run with the `blur` trigger.
@@ -116,8 +119,3 @@ type ChoiceFieldHandle<T> = [T] extends [string]
       }
     : void
   : void;
-
-type SetValue<T> = {
-  (value: T): void;
-  // (setter: (current: T) => T): void;
-};

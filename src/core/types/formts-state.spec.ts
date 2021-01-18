@@ -14,7 +14,7 @@ type SomeValues = {
   objObj: { nested: { num: number | "" } };
   objObjArray: { nested: { arrayString: string[] } };
   arrayObj: Array<{ string: string }>;
-  instance: Date | null;
+  date: Date | null;
 };
 
 describe("TouchedValues type", () => {
@@ -34,7 +34,7 @@ describe("TouchedValues type", () => {
       | "objObj"
       | "objObjArray"
       | "arrayObj"
-      | "instance";
+      | "date";
 
     assert<IsExact<Actual, Expected>>(true);
   });
@@ -109,8 +109,8 @@ describe("TouchedValues type", () => {
     assert<IsExact<Actual, Expected>>(true);
   });
 
-  it("handles class fields", () => {
-    type Actual = Touched["instance"];
+  it("handles date fields", () => {
+    type Actual = Touched["date"];
     type Expected = boolean;
 
     assert<IsExact<Actual, Expected>>(true);

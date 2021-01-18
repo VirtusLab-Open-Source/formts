@@ -42,14 +42,15 @@ const ColorsRadioGroup: React.FC = () => {
       <legend>Choose your favourite color:</legend>
 
       {Object.values(colors.options).map(option => (
-        <div key={colors.id}>
+        <div key={option}>
           <input
             id={option}
             type="radio"
             name={colors.id}
+            value={option}
             checked={colors.value === option}
             onBlur={colors.handleBlur}
-            onChange={e => e.target.checked && colors.setValue(option)}
+            onChange={colors.handleChange}
           />
           <label htmlFor={option}>{labels[option]}</label>
         </div>

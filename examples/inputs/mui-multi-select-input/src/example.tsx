@@ -56,10 +56,7 @@ const ColorsMultiSelectInput: React.FC = () => {
         <Select
           labelId={colors.id}
           value={colors.value}
-          onChange={e => {
-            // TODO: simplify when field.handleChange is implemented
-            colors.setValue(e.target.value as Array<"red" | "green" | "blue">);
-          }}
+          onChange={colors.handleChange}
           input={<Input />}
           renderValue={selected => (selected as string[]).join(", ")}
           multiple

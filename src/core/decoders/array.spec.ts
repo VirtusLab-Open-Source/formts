@@ -42,7 +42,7 @@ describe("array decoder", () => {
       const decoder = impl(array(string()));
       const value = [null, "foo", 42, "", []];
 
-      expect(decoder.decode(value)).toEqual({ ok: false, value });
+      expect(decoder.decode(value)).toEqual({ ok: false });
     });
   });
 
@@ -64,7 +64,7 @@ describe("array decoder", () => {
       const decoder = impl(array(string()));
       const value = [null, "foo", 42, "", []];
 
-      expect(decoder.decode(value)).toEqual({ ok: false, value });
+      expect(decoder.decode(value)).toEqual({ ok: false });
     });
   });
 
@@ -87,7 +87,7 @@ describe("array decoder", () => {
       const decoder = impl(array(string()));
       const value = [null, "foo", 42, "", []];
 
-      expect(decoder.decode(value)).toEqual({ ok: false, value });
+      expect(decoder.decode(value)).toEqual({ ok: false });
     });
   });
 });
