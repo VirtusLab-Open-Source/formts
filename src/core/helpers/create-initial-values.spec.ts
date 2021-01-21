@@ -112,7 +112,7 @@ describe("createInitialValues", () => {
 
   it("for date field", () => {
     const schema = createFormSchema(fields => ({
-      dateField: fields.instanceOf(Date),
+      dateField: fields.date(),
     }));
 
     expect(
