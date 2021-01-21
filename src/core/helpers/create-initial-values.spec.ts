@@ -109,4 +109,14 @@ describe("createInitialValues", () => {
       arr: [{ two: [10] }],
     });
   });
+
+  it("for date field", () => {
+    const schema = createFormSchema(fields => ({
+      dateField: fields.date(),
+    }));
+
+    expect(
+      createInitialValues(schema, { dateField: Date.UTC(2021, 1, 1) })
+    ).toEqual({ dateField: Date.UTC(2021, 1, 1) });
+  });
 });
