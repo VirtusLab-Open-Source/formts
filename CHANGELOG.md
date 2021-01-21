@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.17](https://github.com/VirtusLab/formts/compare/v0.1.16...v0.1.17) (2021-01-21)
+
+
+### Bug Fixes
+
+* **core:** parsing date instance initial value ([#61](https://github.com/VirtusLab/formts/issues/61)) ([34b7818](https://github.com/VirtusLab/formts/commit/34b7818a4ae72fd9b44544b510ada81b87bb6998))
+
 ### [0.1.16](https://github.com/VirtusLab/formts/compare/v0.1.15...v0.1.16) (2021-01-18)
 
 
