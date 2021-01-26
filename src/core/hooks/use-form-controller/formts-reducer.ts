@@ -6,134 +6,147 @@ import {
   makeUntouchedValues,
 } from "../../helpers";
 import { FormtsOptions } from "../../types/formts-options";
-import { FormtsAction, FormtsState } from "../../types/formts-state";
+import { FormtsAction, FormtsAtomState } from "../../types/formts-state";
 
 export const getInitialState = <Values extends object, Err>({
   Schema,
   initialValues,
-}: FormtsOptions<Values, Err>): Atom<FormtsState<Values, Err>> => {
+}: FormtsOptions<Values, Err>): FormtsAtomState<Values, Err> => {
   const values = createInitialValues(Schema, initialValues);
   const touched = makeUntouchedValues(values);
 
-  return Atom.of({
-    values,
-    touched,
-    errors: {},
-    validating: {},
-    isSubmitting: false,
-  } as FormtsState<Values, Err>);
+  return {
+    values: Atom.of(values),
+    touched: Atom.of(touched),
+    errors: Atom.of({}),
+    validating: Atom.of({}),
+    isSubmitting: Atom.of<boolean>(false),
+  };
 };
 
+export const createStateDispatch = <Values extends object, Err>(
+  stateAtom: FormtsAtomState<Values, Err>
+) => (action: FormtsAction<Values, Err>) => {
+  const state = {
+    values: stateAtom.values.val,
+    touched: stateAtom.touched.val,
+    errors: stateAtom.errors.val,
+    validating: stateAtom.validating.val,
+    isSubmitting: stateAtom.validating.val,
+  };
 
-export const createStateDispatch = <Values extends object, Err>(stateAtom: Atom<FormtsState<Values, Err>>) =>
-  (action: FormtsAction<Values, Err>) => {
-    const state = stateAtom.val
-    switch (action.type) {
-      case "reset": {
-        const { values } = action.payload;
-        const touched = makeUntouchedValues(values);
+  switch (action.type) {
+    case "reset": {
+      const { values } = action.payload;
+      const touched = makeUntouchedValues(values);
 
-        return stateAtom.set({
-          values,
-          touched,
-          errors: {},
-          validating: {},
-          isSubmitting: false,
-        });
-      }
+      stateAtom.values.set(values);
+      stateAtom.touched.set(touched);
+      stateAtom.errors.set({});
+      stateAtom.validating.set({});
+      stateAtom.isSubmitting.set(false);
+      break;
+    }
 
-      case "touchValue": {
-        const { path } = action.payload;
+    case "touchValue": {
+      const { path } = action.payload;
 
-        const value = get(state.values, path);
-        const touched = set(state.touched, path, makeTouchedValues(value));
+      const value = get(state.values, path);
+      const touched = set(state.touched, path, makeTouchedValues(value));
 
-        return stateAtom.set({ ...state, touched });
-      }
+      stateAtom.touched.set(touched);
+      break;
+    }
 
-      case "setValue": {
-        const { path, value } = action.payload;
+    case "setValue": {
+      const { path, value } = action.payload;
 
-        const resolveErrors = () => {
-          if (!Array.isArray(value)) {
-            return state.errors;
-          }
+      const resolveErrors = () => {
+        if (!Array.isArray(value)) {
+          return state.errors;
+        }
 
-          const currentValue = get(state.values, path) as unknown[];
-          if (currentValue.length <= value.length) {
-            return state.errors;
-          }
+        const currentValue = get(state.values, path) as unknown[];
+        if (currentValue.length <= value.length) {
+          return state.errors;
+        }
 
-          const hangingIndexes = range(value.length, currentValue.length - 1);
-          const errors = filter(
-            state.errors,
-            ({ key }) =>
-              !hangingIndexes.some(i => key.startsWith(`${path}[${i}]`))
-          );
-
-          return errors;
-        };
-
-        const values = set(state.values, path, value);
-        const touched = set(state.touched, path, makeTouchedValues(value));
-
-        return stateAtom.set({ ...state, values, touched, errors: resolveErrors() });
-      }
-
-      case "setErrors": {
-        const errors = action.payload.reduce(
-          (dict, { path, error }) => {
-            if (error != null) {
-              dict[path] = error;
-            } else {
-              delete dict[path];
-            }
-            return dict;
-          },
-          { ...state.errors }
+        const hangingIndexes = range(value.length, currentValue.length - 1);
+        const errors = filter(
+          state.errors,
+          ({ key }) =>
+            !hangingIndexes.some(i => key.startsWith(`${path}[${i}]`))
         );
 
-        return stateAtom.set({ ...state, errors });
-      }
+        return errors;
+      };
 
-      case "validatingStart": {
-        const { path, uuid } = action.payload;
+      const values = set(state.values, path, value);
+      const touched = set(state.touched, path, makeTouchedValues(value));
 
-        const validating = {
-          ...state.validating,
-          [path]: { ...state.validating[path], [uuid]: true as const },
-       };
+      stateAtom.values.set(values);
+      stateAtom.touched.set(touched);
+      stateAtom.errors.set(resolveErrors());
+      break;
+    }
 
-        return stateAtom.set({ ...state, validating });
-      }
-
-      case "validatingStop": {
-        const { path, uuid } = action.payload;
-
-        const validating = (() => {
-          if (state.validating[path] == null) {
-            return state.validating;
+    case "setErrors": {
+      const errors = action.payload.reduce(
+        (dict, { path, error }) => {
+          if (error != null) {
+            dict[path] = error;
+          } else {
+            delete dict[path];
           }
+          return dict;
+        },
+        { ...state.errors }
+      );
 
-          const validating = { ...state.validating };
-          const uuids = { ...validating[path] };
-          validating[path] = uuids;
+      stateAtom.errors.set(errors);
+      break;
+    }
 
-          delete uuids[uuid];
+    case "validatingStart": {
+      const { path, uuid } = action.payload;
 
-          if (Object.keys(uuids).length === 0) {
-            delete validating[path];
-          }
+      const validating = {
+        ...state.validating,
+        [path]: { ...state.validating[path], [uuid]: true as const },
+      };
 
-          return validating;
-        })();
+      stateAtom.validating.set(validating);
+      break;
+    }
 
-        return stateAtom.set({ ...state, validating });
-      }
+    case "validatingStop": {
+      const { path, uuid } = action.payload;
 
-      case "setIsSubmitting": {
-        const { isSubmitting } = action.payload;
-        return stateAtom.set({ ...state, isSubmitting });
-      }
+      const validating = (() => {
+        if (state.validating[path] == null) {
+          return state.validating;
+        }
+
+        const validating = { ...state.validating };
+        const uuids = { ...validating[path] };
+        validating[path] = uuids;
+
+        delete uuids[uuid];
+
+        if (Object.keys(uuids).length === 0) {
+          delete validating[path];
+        }
+
+        return validating;
+      })();
+
+      stateAtom.validating.set(validating);
+      break;
+    }
+
+    case "setIsSubmitting": {
+      const { isSubmitting } = action.payload;
+      return stateAtom.isSubmitting.set(isSubmitting);
     }
   }
+};

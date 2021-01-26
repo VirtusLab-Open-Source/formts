@@ -1,3 +1,5 @@
+import { Atom } from "../../utils/atoms";
+
 // internal state & actions
 export type FormtsAction<Values, Err> =
   | { type: "reset"; payload: { values: Values } }
@@ -14,6 +16,14 @@ export type FormtsState<Values extends object, Err> = {
   errors: FieldErrors<Err>;
   validating: FieldValidatingState;
   isSubmitting: boolean;
+};
+
+export type FormtsAtomState<Values extends object, Err> = {
+  values: Atom<Values>;
+  touched: Atom<TouchedValues<Values>>;
+  errors: Atom<FieldErrors<Err>>;
+  validating: Atom<FieldValidatingState>;
+  isSubmitting: Atom<boolean>;
 };
 
 export type TouchedValues<V> = [V] extends [Array<infer U>]
