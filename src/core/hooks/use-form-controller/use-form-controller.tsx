@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from "react";
 
+import { useSubscription } from "../../../utils/use-subscription";
 import {
   FormController,
   _FormControllerImpl,
@@ -34,10 +35,12 @@ import { createStateDispatch, getInitialState } from "./formts-reducer";
 export const useFormController = <Values extends object, Err>(
   options: FormtsOptions<Values, Err>
 ): FormController => {
-  const state = useMemo(() => getInitialState(options), [])
-  const dispatch = useCallback(createStateDispatch(state), [state])
+  const state = useMemo(() => getInitialState(options), []);
+  const dispatch = useCallback(createStateDispatch(state), [state]);
 
   const methods = createFormtsMethods({ options, state: state.val, dispatch });
+
+  useSubscription(state); // TODO move to proper hooks
 
   const controller: _FormControllerImpl<Values, Err> = {
     __ctx: { options, state: state.val, methods },
