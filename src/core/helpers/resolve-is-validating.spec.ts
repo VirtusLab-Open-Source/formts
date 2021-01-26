@@ -8,12 +8,14 @@ const primitiveDescriptor = (path: string): FieldDescriptor<unknown> =>
   opaque({
     __path: path,
     __decoder: { fieldType: "string" } as any,
+    __lens: (() => "") as any,
   });
 
 const complexDescriptor = (path: string): FieldDescriptor<unknown> =>
   opaque({
     __path: path,
     __decoder: { fieldType: "object" } as any,
+    __lens: (() => "") as any,
   });
 
 describe("resolveIsValidating", () => {

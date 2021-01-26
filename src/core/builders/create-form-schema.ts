@@ -1,4 +1,5 @@
 import { assertNever, defineProperties, keys } from "../../utils";
+import { Lens } from "../../utils/lenses";
 import * as Decoders from "../decoders";
 import { FieldDecoder, _FieldDecoderImpl } from "../types/field-decoder";
 import { _FieldDescriptorImpl } from "../types/field-descriptor";
@@ -33,17 +34,20 @@ type ErrorsMarker<Err> = (errors: <Err>() => Err) => Err;
 export const createFormSchema = <Values extends object, Err = never>(
   fields: BuilderFn<Values>,
   _errors?: ErrorsMarker<Err>
-): FormSchema<Values, Err> => createObjectSchema(fields(Decoders)) as any;
+): FormSchema<Values, Err> =>
+  createObjectSchema(fields(Decoders), Lens.identity()) as any;
 
-const createObjectSchema = <O extends object>(
+const createObjectSchema = <O extends object, Root>(
   decodersMap: DecodersMap<O>,
+  lens: Lens<Root, O>,
   path?: string
 ) => {
   return keys(decodersMap).reduce((schema, key) => {
     const decoder = decodersMap[key];
     (schema as any)[key] = createFieldDescriptor(
       impl(decoder) as _FieldDecoderImpl<any>,
-      path ? `${path}.${key}` : `${key}`
+      path ? `${path}.${key}` : `${key}`,
+      Lens.compose(lens, Lens.prop(key as any))
     );
     return schema;
   }, {} as FormSchema<O, unknown>);
@@ -51,7 +55,8 @@ const createObjectSchema = <O extends object>(
 
 const createFieldDescriptor = (
   decoder: _FieldDecoderImpl<any>,
-  path: string
+  path: string,
+  lens: Lens<any, any>
 ): _FieldDescriptorImpl<any> => {
   // these properties are hidden implementation details and thus should not be enumerable
   const rootDescriptor = defineProperties(
@@ -65,6 +70,12 @@ const createFieldDescriptor = (
       },
       __path: {
         value: path,
+        enumerable: false,
+        writable: false,
+        configurable: false,
+      },
+      __lens: {
+        value: lens,
         enumerable: false,
         writable: false,
         configurable: false,
@@ -84,7 +95,8 @@ const createFieldDescriptor = (
       const nthHandler = (i: number) =>
         createFieldDescriptor(
           decoder.inner as _FieldDecoderImpl<any>,
-          `${path}[${i}]`
+          `${path}[${i}]`,
+          Lens.compose(lens, Lens.index(i))
         );
 
       const nth = defineProperties(nthHandler, {
@@ -101,7 +113,8 @@ const createFieldDescriptor = (
 
     case "object": {
       const props = createObjectSchema(
-        decoder.inner as DecodersMap<object>,
+        decoder.inner as DecodersMap<unknown>,
+        lens,
         path
       );
       return Object.assign(rootDescriptor, props);
