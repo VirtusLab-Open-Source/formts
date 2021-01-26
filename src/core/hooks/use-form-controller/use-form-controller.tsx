@@ -1,4 +1,4 @@
-import React from "react";
+import { useCallback, useMemo } from "react";
 
 import {
   FormController,
@@ -8,7 +8,7 @@ import { FormtsOptions } from "../../types/formts-options";
 import { opaque } from "../../types/type-mapper-util";
 
 import { createFormtsMethods } from "./formts-methods";
-import { createReducer, getInitialState } from "./formts-reducer";
+import { createStateDispatch, getInitialState } from "./formts-reducer";
 
 /**
  * Hook that manages form state - should be used in main form component.
@@ -34,16 +34,13 @@ import { createReducer, getInitialState } from "./formts-reducer";
 export const useFormController = <Values extends object, Err>(
   options: FormtsOptions<Values, Err>
 ): FormController => {
-  const [state, dispatch] = React.useReducer(
-    createReducer<Values, Err>(),
-    options,
-    getInitialState
-  );
+  const state = useMemo(() => getInitialState(options), [])
+  const dispatch = useCallback(createStateDispatch(state), [state])
 
-  const methods = createFormtsMethods({ options, state, dispatch });
+  const methods = createFormtsMethods({ options, state: state.val, dispatch });
 
   const controller: _FormControllerImpl<Values, Err> = {
-    __ctx: { options, state, methods },
+    __ctx: { options, state: state.val, methods },
   };
 
   return opaque(controller);
