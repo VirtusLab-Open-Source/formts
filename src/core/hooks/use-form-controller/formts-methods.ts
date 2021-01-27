@@ -12,12 +12,12 @@ import {
   InternalFormtsMethods,
 } from "../../types/formts-context";
 import { FormtsOptions } from "../../types/formts-options";
-import { FormtsAction, FormtsState } from "../../types/formts-state";
+import { FormtsAction, FormtsAtomState } from "../../types/formts-state";
 import { impl } from "../../types/type-mapper-util";
 
 type Input<Values extends object, Err> = {
   options: FormtsOptions<Values, Err>;
-  state: FormtsState<Values, Err>;
+  state: FormtsAtomState<Values, Err>;
   dispatch: React.Dispatch<FormtsAction<Values, Err>>;
 };
 
@@ -28,22 +28,25 @@ export const createFormtsMethods = <Values extends object, Err>({
 }: Input<Values, Err>): InternalFormtsMethods<Values, Err> => {
   const getField = <T>(field: FieldDescriptor<T, Err> | string): T => {
     const path = typeof field === "string" ? field : impl(field).__path;
-    return get(state.values, path) as any;
+    return get(state.values.val, path) as any;
   };
 
   const getFieldError = (field: FieldDescriptor<any, Err>): Err | null => {
-    const error = state.errors[impl(field).__path];
+    const error = state.errors.val[impl(field).__path];
     return error == null ? null : error;
   };
 
-  const isFieldTouched = <T>(field: FieldDescriptor<T, Err>) =>
-    Helpers.resolveTouched(get(state.touched as object, impl(field).__path));
+  const isFieldTouched = <T>(field: FieldDescriptor<T, Err>) => {
+    return Helpers.resolveTouched(
+      get(state.touched.val as object, impl(field).__path)
+    );
+  };
 
   const isFieldValid = <T>(field: FieldDescriptor<T, Err>) =>
-    Helpers.resolveIsValid(state.errors, field);
+    Helpers.resolveIsValid(state.errors.val, field);
 
   const isFieldValidating = <T>(field: FieldDescriptor<T, Err>) =>
-    Helpers.resolveIsValidating(state.validating, field);
+    Helpers.resolveIsValidating(state.validating.val, field);
 
   const validateField = <T>(
     field: FieldDescriptor<T, Err>,
@@ -227,7 +230,7 @@ export const createFormtsMethods = <Values extends object, Err>({
           return { ok: false, errors } as const;
         }
 
-        return { ok: true, values: state.values } as const;
+        return { ok: true, values: state.values.val } as const;
       })
       .then(result => {
         dispatch({

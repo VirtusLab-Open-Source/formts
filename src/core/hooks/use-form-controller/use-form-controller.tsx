@@ -1,7 +1,5 @@
 import { useCallback, useMemo } from "react";
 
-import { Atom } from "../../../utils/atoms";
-import { useSubscription } from "../../../utils/use-subscription";
 import {
   FormController,
   _FormControllerImpl,
@@ -39,29 +37,9 @@ export const useFormController = <Values extends object, Err>(
   const state = useMemo(() => getInitialState(options), []);
   const dispatch = useCallback(createStateDispatch(state), [state]);
 
-  const stateAtom = useMemo(
-    () =>
-      Atom.fuse(
-        (values, touched, validating, errors, isSubmitting) => ({
-          values,
-          touched,
-          validating,
-          errors,
-          isSubmitting,
-        }),
-        state.values,
-        state.touched,
-        state.validating,
-        state.errors,
-        state.isSubmitting
-      ),
-    [state]
-  );
-  useSubscription(stateAtom); // TODO move to proper hooks
-
   const methods = createFormtsMethods({
     options,
-    state: stateAtom.val,
+    state,
     dispatch,
   });
 

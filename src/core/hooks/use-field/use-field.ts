@@ -1,4 +1,6 @@
 import { keys, toIdentityDict } from "../../../utils";
+import { Atom } from "../../../utils/atoms";
+import { useSubscription } from "../../../utils/use-subscription";
 import { useFormtsContext } from "../../context";
 import { isChoiceDecoder } from "../../types/field-decoder";
 import {
@@ -38,7 +40,16 @@ export const useField = <T, Err>(
   fieldDescriptor: GenericFieldDescriptor<T, Err>,
   controller?: FormController
 ): FieldHandle<T, Err> => {
-  const { methods } = useFormtsContext<object, Err>(controller);
+  const { methods, state } = useFormtsContext<object, Err>(controller);
+
+  const lens = impl(fieldDescriptor).__lens;
+  const valueAtom = Atom.entangle(state.values, lens);
+  const touchedAtom = Atom.entangle(state.touched, lens);
+
+  useSubscription(valueAtom);
+  useSubscription(touchedAtom);
+  useSubscription(state.validating);
+  useSubscription(state.errors);
 
   return createFieldHandle(fieldDescriptor, methods);
 };
