@@ -66,7 +66,7 @@ export const useFormController = <Values extends object, Err>(
   });
 
   const controller: _FormControllerImpl<Values, Err> = {
-    __ctx: { options, state: stateAtom.val, methods },
+    __ctx: { options, state, methods },
   };
 
   return opaque(controller);
