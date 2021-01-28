@@ -37,11 +37,7 @@ export const useFormController = <Values extends object, Err>(
   const state = useMemo(() => getInitialState(options), []);
   const dispatch = useCallback(createStateDispatch(state), [state]);
 
-  const methods = createFormtsMethods({
-    options,
-    state,
-    dispatch,
-  });
+  const methods = createFormtsMethods({ options, state, dispatch });
 
   const controller: _FormControllerImpl<Values, Err> = {
     __ctx: { options, state, methods },
