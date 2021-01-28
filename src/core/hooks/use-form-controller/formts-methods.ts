@@ -27,8 +27,9 @@ export const createFormtsMethods = <Values extends object, Err>({
   dispatch,
 }: Input<Values, Err>): InternalFormtsMethods<Values, Err> => {
   const getField = <T>(field: FieldDescriptor<T, Err> | string): T => {
-    const path = typeof field === "string" ? field : impl(field).__path;
-    return get(state.values.val, path) as any;
+    return typeof field === "string"
+      ? get(state.values.val, field)
+      : impl(field).__lens.get(state.values);
   };
 
   const validateField = <T>(
