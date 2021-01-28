@@ -11,11 +11,6 @@ export type FormSubmissionResult<Values extends object, Err> =
   | { ok: false; errors: Array<FieldError<Err>> };
 
 export type InternalFormtsMethods<Values extends object, Err> = {
-  getField: <T>(field: FieldDescriptor<T, Err>) => T;
-  getFieldError: (field: FieldDescriptor<any, Err>) => Err | null;
-  isFieldTouched: <T>(field: FieldDescriptor<T, Err>) => boolean;
-  isFieldValid: <T>(field: FieldDescriptor<T, Err>) => boolean;
-  isFieldValidating: <T>(field: FieldDescriptor<T, Err>) => boolean;
   validateField: <T>(
     field: FieldDescriptor<T, Err>,
     trigger?: ValidationTrigger

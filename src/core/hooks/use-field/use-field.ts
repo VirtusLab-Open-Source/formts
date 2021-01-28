@@ -127,7 +127,7 @@ const createFieldHandle = <T, Err>(
       }
 
       if (isArrayDescriptor(descriptor)) {
-        const value = methods.getField(descriptor) as unknown[];
+        const value = (fieldState.val.value as unknown) as unknown[];
         return value.map((_, i) => {
           const childDescriptor = descriptor.nth(i);
           const childState = createFieldState(formState, childDescriptor);

@@ -31,23 +31,6 @@ export const createFormtsMethods = <Values extends object, Err>({
     return get(state.values.val, path) as any;
   };
 
-  const getFieldError = (field: FieldDescriptor<any, Err>): Err | null => {
-    const error = state.errors.val[impl(field).__path];
-    return error == null ? null : error;
-  };
-
-  const isFieldTouched = <T>(field: FieldDescriptor<T, Err>) => {
-    return Helpers.resolveTouched(
-      get(state.touched.val as object, impl(field).__path)
-    );
-  };
-
-  const isFieldValid = <T>(field: FieldDescriptor<T, Err>) =>
-    Helpers.resolveIsValid(state.errors.val, field);
-
-  const isFieldValidating = <T>(field: FieldDescriptor<T, Err>) =>
-    Helpers.resolveIsValidating(state.validating.val, field);
-
   const validateField = <T>(
     field: FieldDescriptor<T, Err>,
     trigger?: ValidationTrigger
@@ -243,11 +226,6 @@ export const createFormtsMethods = <Values extends object, Err>({
   };
 
   return {
-    getField,
-    getFieldError,
-    isFieldTouched,
-    isFieldValid,
-    isFieldValidating,
     validateField,
     validateForm,
     setFieldValue,
