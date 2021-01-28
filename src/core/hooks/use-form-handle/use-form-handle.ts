@@ -40,15 +40,15 @@ export const useFormHandle = <Values extends object, Err>(
   const stateAtom = useMemo(
     () =>
       Atom.fuse(
-        (touched, validating, errors, isSubmitting) => ({
-          touched,
-          validating,
-          errors,
+        (isTouched, isValid, isValidating, isSubmitting) => ({
+          isTouched,
+          isValid,
+          isValidating,
           isSubmitting,
         }),
-        state.touched,
-        state.validating,
-        state.errors,
+        Atom.fuse(resolveTouched, state.touched),
+        Atom.fuse(x => values(x).every(err => err == null), state.errors),
+        Atom.fuse(x => keys(x).length > 0, state.validating),
         state.isSubmitting
       ),
     [state]
@@ -57,19 +57,13 @@ export const useFormHandle = <Values extends object, Err>(
   useSubscription(stateAtom);
 
   return {
-    isSubmitting: state.isSubmitting.val,
+    isSubmitting: stateAtom.val.isSubmitting,
 
-    get isTouched() {
-      return resolveTouched(state.touched.val);
-    },
+    isTouched: stateAtom.val.isTouched,
 
-    get isValid() {
-      return values(state.errors.val).filter(err => err != null).length === 0;
-    },
+    isValid: stateAtom.val.isValid,
 
-    get isValidating() {
-      return keys(state.validating.val).length > 0;
-    },
+    isValidating: stateAtom.val.isValidating,
 
     validate: methods.validateForm,
 
