@@ -1,10 +1,15 @@
 import { Atom } from "../../utils/atoms";
 
+import { FieldDescriptor } from "./field-descriptor";
+
 // internal state & actions
 export type FormtsAction<Values, Err> =
   | { type: "reset"; payload: { values: Values } }
-  | { type: "touchValue"; payload: { path: string } }
-  | { type: "setValue"; payload: { path: string; value: any } }
+  | { type: "touchValue"; payload: { field: FieldDescriptor<unknown> } }
+  | {
+      type: "setValue";
+      payload: { field: FieldDescriptor<unknown>; value: any };
+    }
   | { type: "setErrors"; payload: Array<{ path: string; error: Err | null }> }
   | { type: "validatingStart"; payload: { path: string; uuid: string } }
   | { type: "validatingStop"; payload: { path: string; uuid: string } }

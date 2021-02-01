@@ -149,13 +149,13 @@ export const createFormtsMethods = <Values extends object, Err>({
 
     dispatch({
       type: "setValue",
-      payload: { path: impl(field).__path, value },
+      payload: { field, value },
     });
     return validateAfterChange();
   };
 
   const touchField = <T>(field: FieldDescriptor<T, Err>) =>
-    dispatch({ type: "touchValue", payload: { path: impl(field).__path } });
+    dispatch({ type: "touchValue", payload: { field } });
 
   const setFieldErrors = (
     ...fields: Array<{

@@ -7,8 +7,8 @@ import {
 import { FormtsOptions } from "../../types/formts-options";
 import { opaque } from "../../types/type-mapper-util";
 
+import { createStateDispatch, getInitialState } from "./formts-dispatch";
 import { createFormtsMethods } from "./formts-methods";
-import { createStateDispatch, getInitialState } from "./formts-reducer";
 
 /**
  * Hook that manages form state - should be used in main form component.
