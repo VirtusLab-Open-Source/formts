@@ -1,3 +1,5 @@
+import { useMemo } from "react";
+
 import { keys, toIdentityDict } from "../../../utils";
 import { Atom } from "../../../utils/atoms";
 import { useSubscription } from "../../../utils/use-subscription";
@@ -44,7 +46,9 @@ export const useField = <T, Err>(
 ): FieldHandle<T, Err> => {
   const { methods, state } = useFormtsContext<object, Err>(controller);
 
-  const fieldState = createFieldState(state, fieldDescriptor);
+  const fieldState = useMemo(() => createFieldState(state, fieldDescriptor), [
+    state,
+  ]);
   useSubscription(fieldState);
 
   return createFieldHandle(fieldDescriptor, methods, fieldState, state);
