@@ -29,7 +29,7 @@ export const createFormtsMethods = <Values extends object, Err>({
   const getField = <T>(field: FieldDescriptor<T, Err> | string): T => {
     return typeof field === "string"
       ? get(state.values.val, field)
-      : impl(field).__lens.get(state.values);
+      : impl(field).__lens.get(state.values.val);
   };
 
   const validateField = <T>(
@@ -129,20 +129,6 @@ export const createFormtsMethods = <Values extends object, Err>({
         return Promise.resolve();
       }
 
-      // TODO: getField is problematic when relaying on useReducer, should be solved when Atom based state is implemented
-      const modifiedGetField = <T>(
-        fieldToValidate: FieldDescriptor<T, Err> | string
-      ): T => {
-        const path =
-          typeof fieldToValidate === "string"
-            ? fieldToValidate
-            : impl(fieldToValidate).__path;
-        if (impl(field).__path === path) {
-          return value as any;
-        }
-        return getField(fieldToValidate);
-      };
-
       const {
         onFieldValidationStart,
         onFieldValidationEnd,
@@ -151,7 +137,7 @@ export const createFormtsMethods = <Values extends object, Err>({
       return options.validator
         .validate({
           fields: [field],
-          getValue: modifiedGetField,
+          getValue: getField,
           trigger: "change",
           onFieldValidationStart,
           onFieldValidationEnd,
