@@ -15,7 +15,12 @@ import {
 import { FieldHandle, toFieldHandle } from "../../types/field-handle";
 import { FormController } from "../../types/form-controller";
 import { InternalFormtsMethods } from "../../types/formts-context";
-import { FormtsAtomState } from "../../types/formts-state";
+import {
+  FieldErrors,
+  FieldValidatingState,
+  FormtsAtomState,
+  TouchedValues,
+} from "../../types/formts-state";
 import { impl } from "../../types/type-mapper-util";
 
 /**
@@ -57,10 +62,9 @@ export const useField = <T, Err>(
 
 type FieldState<T, Err> = Atom.Readonly<{
   value: T;
-  isTouched: boolean;
-  error: Err | null;
-  isValid: boolean;
-  isValidating: boolean;
+  touched: TouchedValues<T>;
+  errors: FieldErrors<Err>;
+  validating: FieldValidatingState;
 }>;
 
 const createFieldState = <T, Err>(
@@ -68,21 +72,18 @@ const createFieldState = <T, Err>(
   field: FieldDescriptor<T, Err>
 ): FieldState<T, Err> => {
   const lens = impl(field).__lens;
-  const path = impl(field).__path;
 
   return Atom.fuse(
-    (value, isTouched, error, isValid, isValidating) => ({
+    (value, touched, errors, validating) => ({
       value,
-      isTouched,
-      error,
-      isValid,
-      isValidating,
+      touched: touched as any,
+      errors,
+      validating,
     }),
     Atom.entangle(state.values, lens),
-    Atom.fuse(x => Helpers.resolveTouched(lens.get(x)), state.touched),
-    Atom.fuse(x => x[path] ?? null, state.errors),
-    Atom.fuse(x => Helpers.resolveIsValid(x, field), state.errors),
-    Atom.fuse(x => Helpers.resolveIsValidating(x, field), state.validating)
+    Atom.entangle(state.touched, lens),
+    Atom.fuse(x => Helpers.extractFieldErrors(x, field), state.errors),
+    Atom.fuse(x => Helpers.extractFieldValidating(x, field), state.validating)
   );
 };
 
@@ -99,13 +100,16 @@ const createFieldHandle = <T, Err>(
 
     value: fieldState.val.value,
 
-    isTouched: fieldState.val.isTouched,
+    isTouched: Helpers.resolveTouched(fieldState.val.touched),
 
-    error: fieldState.val.error,
+    error: fieldState.val.errors[impl(descriptor).__path] ?? null,
 
-    isValid: fieldState.val.isValid,
+    isValid: Helpers.resolveIsValid(fieldState.val.errors, descriptor),
 
-    isValidating: fieldState.val.isValidating,
+    isValidating: Helpers.resolveIsValidating(
+      fieldState.val.validating,
+      descriptor
+    ),
 
     get children() {
       if (isObjectDescriptor(descriptor)) {
