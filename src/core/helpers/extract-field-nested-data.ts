@@ -3,30 +3,28 @@ import { FieldDescriptor } from "../types/field-descriptor";
 import { FieldErrors, FieldValidatingState } from "../types/formts-state";
 import { impl } from "../types/type-mapper-util";
 
-export const extractFieldErrors = <Err>(
+export const childrenErrorsStateString = <Err>(
   errors: FieldErrors<Err>,
   field: FieldDescriptor<unknown>
-): FieldErrors<Err> => {
+): string => {
   const path = impl(field).__path;
 
-  return keys(errors)
-    .filter(key => key.startsWith(path))
-    .reduce((acc, key) => {
-      acc[key] = errors[key];
-      return acc;
-    }, {} as FieldErrors<Err>);
+  const childrenErrors = keys(errors).filter(
+    key => key.startsWith(path) && key !== path
+  );
+
+  return JSON.stringify(childrenErrors);
 };
 
-export const extractFieldValidating = (
-  errors: FieldValidatingState,
+export const childrenValidatingStateString = (
+  validating: FieldValidatingState,
   field: FieldDescriptor<unknown>
-): FieldValidatingState => {
+): string => {
   const path = impl(field).__path;
 
-  return keys(errors)
-    .filter(key => key.startsWith(path))
-    .reduce((acc, key) => {
-      acc[key] = errors[key];
-      return acc;
-    }, {} as FieldValidatingState);
+  const childrenValidating = keys(validating).filter(
+    key => key.startsWith(path) && key !== path
+  );
+
+  return JSON.stringify(childrenValidating);
 };

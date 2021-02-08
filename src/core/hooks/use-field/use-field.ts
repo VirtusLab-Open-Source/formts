@@ -15,12 +15,7 @@ import {
 import { FieldHandle, toFieldHandle } from "../../types/field-handle";
 import { FormController } from "../../types/form-controller";
 import { InternalFormtsMethods } from "../../types/formts-context";
-import {
-  FieldErrors,
-  FieldValidatingState,
-  FormtsAtomState,
-  TouchedValues,
-} from "../../types/formts-state";
+import { FormtsAtomState, TouchedValues } from "../../types/formts-state";
 import { impl } from "../../types/type-mapper-util";
 
 /**
@@ -55,6 +50,7 @@ export const useField = <T, Err>(
     state,
     impl(fieldDescriptor).__path,
   ]);
+
   useSubscription(fieldState);
 
   return createFieldHandle(fieldDescriptor, methods, fieldState, state);
@@ -63,28 +59,66 @@ export const useField = <T, Err>(
 type FieldState<T, Err> = Atom.Readonly<{
   value: T;
   touched: TouchedValues<T>;
-  errors: FieldErrors<Err>;
-  validating: FieldValidatingState;
+  error: Err | null;
+  isValid: boolean;
+  isValidating: boolean;
 }>;
 
 const createFieldState = <T, Err>(
   state: FormtsAtomState<object, Err>,
-  field: FieldDescriptor<T, Err>
+  field: FieldDescriptor<T, Err>,
+  includeChildrenDependencies: boolean = false
 ): FieldState<T, Err> => {
   const lens = impl(field).__lens;
+  const path = impl(field).__path;
 
-  return Atom.fuse(
-    (value, touched, errors, validating) => ({
-      value,
-      touched: touched as any,
-      errors,
-      validating,
-    }),
-    Atom.entangle(state.values, lens),
-    Atom.entangle(state.touched, lens),
-    Atom.fuse(x => Helpers.extractFieldErrors(x, field), state.errors),
-    Atom.fuse(x => Helpers.extractFieldValidating(x, field), state.validating)
-  );
+  return includeChildrenDependencies
+    ? Atom.fuse(
+        (
+          value,
+          touched,
+          error,
+          isValid,
+          isValidating,
+          _childrenErrors,
+          _childrenValidating
+        ) => ({
+          value,
+          touched: touched as any,
+          error,
+          isValid,
+          isValidating,
+          _childrenErrors,
+          _childrenValidating,
+        }),
+        Atom.entangle(state.values, lens),
+        Atom.entangle(state.touched, lens),
+        Atom.fuse(x => x[path] ?? null, state.errors),
+        Atom.fuse(x => Helpers.resolveIsValid(x, field), state.errors),
+        Atom.fuse(x => Helpers.resolveIsValidating(x, field), state.validating),
+        Atom.fuse(
+          x => Helpers.childrenErrorsStateString(x, field),
+          state.errors
+        ),
+        Atom.fuse(
+          x => Helpers.childrenValidatingStateString(x, field),
+          state.validating
+        )
+      )
+    : Atom.fuse(
+        (value, touched, error, isValid, isValidating) => ({
+          value,
+          touched: touched as any,
+          error,
+          isValid,
+          isValidating,
+        }),
+        Atom.entangle(state.values, lens),
+        Atom.entangle(state.touched, lens),
+        Atom.fuse(x => x[path] ?? null, state.errors),
+        Atom.fuse(x => Helpers.resolveIsValid(x, field), state.errors),
+        Atom.fuse(x => Helpers.resolveIsValidating(x, field), state.validating)
+      );
 };
 
 const createFieldHandle = <T, Err>(
@@ -102,14 +136,11 @@ const createFieldHandle = <T, Err>(
 
     isTouched: Helpers.resolveTouched(fieldState.val.touched),
 
-    error: fieldState.val.errors[impl(descriptor).__path] ?? null,
+    error: fieldState.val.error,
 
-    isValid: Helpers.resolveIsValid(fieldState.val.errors, descriptor),
+    isValid: fieldState.val.isValid,
 
-    isValidating: Helpers.resolveIsValidating(
-      fieldState.val.validating,
-      descriptor
-    ),
+    isValidating: fieldState.val.isValidating,
 
     get children() {
       if (isObjectDescriptor(descriptor)) {
