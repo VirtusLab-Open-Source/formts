@@ -48,6 +48,7 @@ export const useField = <T, Err>(
 
   const fieldState = useMemo(() => createFieldState(state, fieldDescriptor), [
     state,
+    impl(fieldDescriptor).__path,
   ]);
   useSubscription(fieldState);
 

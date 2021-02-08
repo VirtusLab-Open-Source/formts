@@ -15,14 +15,6 @@ export type FormtsAction<Values, Err> =
   | { type: "validatingStop"; payload: { path: string; uuid: string } }
   | { type: "setIsSubmitting"; payload: { isSubmitting: boolean } };
 
-export type FormtsState<Values extends object, Err> = {
-  values: Values;
-  touched: TouchedValues<Values>;
-  errors: FieldErrors<Err>;
-  validating: FieldValidatingState;
-  isSubmitting: boolean;
-};
-
 export type FormtsAtomState<Values extends object, Err> = {
   values: Atom<Values>;
   touched: Atom<TouchedValues<Values>>;

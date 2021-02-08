@@ -46,8 +46,8 @@ const createObjectSchema = <O extends object, Root>(
     const decoder = decodersMap[key];
     (schema as any)[key] = createFieldDescriptor(
       impl(decoder) as _FieldDecoderImpl<any>,
-      path ? `${path}.${key}` : `${key}`,
-      Lens.compose(lens, Lens.prop(key as any))
+      Lens.compose(lens, Lens.prop(key as any)),
+      path ? `${path}.${key}` : `${key}`
     );
     return schema;
   }, {} as FormSchema<O, unknown>);
@@ -55,8 +55,8 @@ const createObjectSchema = <O extends object, Root>(
 
 const createFieldDescriptor = (
   decoder: _FieldDecoderImpl<any>,
-  path: string,
-  lens: Lens<any, any>
+  lens: Lens<any, any>,
+  path: string
 ): _FieldDescriptorImpl<any> => {
   // these properties are hidden implementation details and thus should not be enumerable
   const rootDescriptor = defineProperties(
@@ -95,8 +95,8 @@ const createFieldDescriptor = (
       const nthHandler = (i: number) =>
         createFieldDescriptor(
           decoder.inner as _FieldDecoderImpl<any>,
-          `${path}[${i}]`,
-          Lens.compose(lens, Lens.index(i))
+          Lens.compose(lens, Lens.index(i)),
+          `${path}[${i}]`
         );
 
       const nth = defineProperties(nthHandler, {
