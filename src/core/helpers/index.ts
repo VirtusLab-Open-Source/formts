@@ -5,3 +5,4 @@ export * from "./make-validation-handlers";
 export * from "./resolve-is-valid";
 export * from "./resolve-is-validating";
 export * from "./resolve-touched";
+export * from "./branch-values";

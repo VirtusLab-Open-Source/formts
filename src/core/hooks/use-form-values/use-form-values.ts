@@ -1,3 +1,4 @@
+import { useSubscription } from "../../../utils/use-subscription";
 import { useFormtsContext } from "../../context";
 import { FormController } from "../../types/form-controller";
 import { FormSchema } from "../../types/form-schema";
@@ -29,6 +30,6 @@ export const useFormValues = <Values extends object, Err>(
   controller?: FormController
 ): Values => {
   const { state } = useFormtsContext<Values, Err>(controller);
-
-  return state.values;
+  useSubscription(state.values);
+  return state.values.val;
 };

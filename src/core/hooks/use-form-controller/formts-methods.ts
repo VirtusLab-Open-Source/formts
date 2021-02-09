@@ -12,12 +12,12 @@ import {
   InternalFormtsMethods,
 } from "../../types/formts-context";
 import { FormtsOptions } from "../../types/formts-options";
-import { FormtsAction, FormtsState } from "../../types/formts-state";
+import { FormtsAction, FormtsAtomState } from "../../types/formts-state";
 import { impl } from "../../types/type-mapper-util";
 
 type Input<Values extends object, Err> = {
   options: FormtsOptions<Values, Err>;
-  state: FormtsState<Values, Err>;
+  state: FormtsAtomState<Values, Err>;
   dispatch: React.Dispatch<FormtsAction<Values, Err>>;
 };
 
@@ -27,23 +27,10 @@ export const createFormtsMethods = <Values extends object, Err>({
   dispatch,
 }: Input<Values, Err>): InternalFormtsMethods<Values, Err> => {
   const getField = <T>(field: FieldDescriptor<T, Err> | string): T => {
-    const path = typeof field === "string" ? field : impl(field).__path;
-    return get(state.values, path) as any;
+    return typeof field === "string"
+      ? get(state.values.val, field)
+      : impl(field).__lens.get(state.values.val);
   };
-
-  const getFieldError = (field: FieldDescriptor<any, Err>): Err | null => {
-    const error = state.errors[impl(field).__path];
-    return error == null ? null : error;
-  };
-
-  const isFieldTouched = <T>(field: FieldDescriptor<T, Err>) =>
-    Helpers.resolveTouched(get(state.touched as object, impl(field).__path));
-
-  const isFieldValid = <T>(field: FieldDescriptor<T, Err>) =>
-    Helpers.resolveIsValid(state.errors, field);
-
-  const isFieldValidating = <T>(field: FieldDescriptor<T, Err>) =>
-    Helpers.resolveIsValidating(state.validating, field);
 
   const validateField = <T>(
     field: FieldDescriptor<T, Err>,
@@ -142,20 +129,6 @@ export const createFormtsMethods = <Values extends object, Err>({
         return Promise.resolve();
       }
 
-      // TODO: getField is problematic when relaying on useReducer, should be solved when Atom based state is implemented
-      const modifiedGetField = <T>(
-        fieldToValidate: FieldDescriptor<T, Err> | string
-      ): T => {
-        const path =
-          typeof fieldToValidate === "string"
-            ? fieldToValidate
-            : impl(fieldToValidate).__path;
-        if (impl(field).__path === path) {
-          return value as any;
-        }
-        return getField(fieldToValidate);
-      };
-
       const {
         onFieldValidationStart,
         onFieldValidationEnd,
@@ -164,7 +137,7 @@ export const createFormtsMethods = <Values extends object, Err>({
       return options.validator
         .validate({
           fields: [field],
-          getValue: modifiedGetField,
+          getValue: getField,
           trigger: "change",
           onFieldValidationStart,
           onFieldValidationEnd,
@@ -176,13 +149,13 @@ export const createFormtsMethods = <Values extends object, Err>({
 
     dispatch({
       type: "setValue",
-      payload: { path: impl(field).__path, value },
+      payload: { field, value },
     });
     return validateAfterChange();
   };
 
   const touchField = <T>(field: FieldDescriptor<T, Err>) =>
-    dispatch({ type: "touchValue", payload: { path: impl(field).__path } });
+    dispatch({ type: "touchValue", payload: { field } });
 
   const setFieldErrors = (
     ...fields: Array<{
@@ -227,7 +200,7 @@ export const createFormtsMethods = <Values extends object, Err>({
           return { ok: false, errors } as const;
         }
 
-        return { ok: true, values: state.values } as const;
+        return { ok: true, values: state.values.val } as const;
       })
       .then(result => {
         dispatch({
@@ -240,11 +213,6 @@ export const createFormtsMethods = <Values extends object, Err>({
   };
 
   return {
-    getField,
-    getFieldError,
-    isFieldTouched,
-    isFieldValid,
-    isFieldValidating,
     validateField,
     validateForm,
     setFieldValue,

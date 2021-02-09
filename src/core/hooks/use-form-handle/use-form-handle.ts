@@ -1,4 +1,8 @@
+import { useMemo } from "react";
+
 import { keys, values } from "../../../utils";
+import { Atom } from "../../../utils/atoms";
+import { useSubscription } from "../../../utils/use-subscription";
 import { useFormtsContext } from "../../context";
 import { resolveTouched } from "../../helpers";
 import { FormController } from "../../types/form-controller";
@@ -33,20 +37,33 @@ export const useFormHandle = <Values extends object, Err>(
 ): FormHandle<Values, Err> => {
   const { state, methods } = useFormtsContext<Values, Err>(controller);
 
+  const stateAtom = useMemo(
+    () =>
+      Atom.fuse(
+        (isTouched, isValid, isValidating, isSubmitting) => ({
+          isTouched,
+          isValid,
+          isValidating,
+          isSubmitting,
+        }),
+        Atom.fuse(resolveTouched, state.touched),
+        Atom.fuse(x => values(x).every(err => err == null), state.errors),
+        Atom.fuse(x => keys(x).length > 0, state.validating),
+        state.isSubmitting
+      ),
+    [state]
+  );
+
+  useSubscription(stateAtom);
+
   return {
-    isSubmitting: state.isSubmitting,
+    isSubmitting: stateAtom.val.isSubmitting,
 
-    get isTouched() {
-      return resolveTouched(state.touched);
-    },
+    isTouched: stateAtom.val.isTouched,
 
-    get isValid() {
-      return values(state.errors).filter(err => err != null).length === 0;
-    },
+    isValid: stateAtom.val.isValid,
 
-    get isValidating() {
-      return keys(state.validating).length > 0;
-    },
+    isValidating: stateAtom.val.isValidating,
 
     validate: methods.validateForm,
 

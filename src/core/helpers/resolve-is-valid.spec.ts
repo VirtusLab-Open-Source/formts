@@ -1,3 +1,4 @@
+import { Lens } from "../../utils/lenses";
 import { FieldDescriptor } from "../types/field-descriptor";
 import { FieldErrors } from "../types/formts-state";
 import { opaque } from "../types/type-mapper-util";
@@ -8,12 +9,14 @@ const primitiveDescriptor = (path: string): FieldDescriptor<unknown> =>
   opaque({
     __path: path,
     __decoder: { fieldType: "string" } as any,
+    __lens: Lens.prop(path), // not used,
   });
 
 const complexDescriptor = (path: string): FieldDescriptor<unknown> =>
   opaque({
     __path: path,
     __decoder: { fieldType: "object" } as any,
+    __lens: Lens.prop(path), // not used,
   });
 
 describe("resolveIsValid", () => {

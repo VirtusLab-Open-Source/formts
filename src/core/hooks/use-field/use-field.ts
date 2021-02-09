@@ -1,5 +1,10 @@
+import { useMemo } from "react";
+
 import { keys, toIdentityDict } from "../../../utils";
+import { Atom } from "../../../utils/atoms";
+import { useSubscription } from "../../../utils/use-subscription";
 import { useFormtsContext } from "../../context";
+import * as Helpers from "../../helpers";
 import { isChoiceDecoder } from "../../types/field-decoder";
 import {
   FieldDescriptor,
@@ -10,6 +15,7 @@ import {
 import { FieldHandle, toFieldHandle } from "../../types/field-handle";
 import { FormController } from "../../types/form-controller";
 import { InternalFormtsMethods } from "../../types/formts-context";
+import { FormtsAtomState, TouchedValues } from "../../types/formts-state";
 import { impl } from "../../types/type-mapper-util";
 
 /**
@@ -38,38 +44,85 @@ export const useField = <T, Err>(
   fieldDescriptor: GenericFieldDescriptor<T, Err>,
   controller?: FormController
 ): FieldHandle<T, Err> => {
-  const { methods } = useFormtsContext<object, Err>(controller);
+  const { methods, state } = useFormtsContext<object, Err>(controller);
 
-  return createFieldHandle(fieldDescriptor, methods);
+  const fieldState = useMemo(() => createFieldState(state, fieldDescriptor), [
+    state,
+    impl(fieldDescriptor).__path,
+  ]);
+  const dependencies = useMemo(
+    () => createDependenciesState(state, fieldDescriptor),
+    [state, impl(fieldDescriptor).__path]
+  );
+
+  useSubscription(fieldState);
+  useSubscription(dependencies);
+
+  return createFieldHandle(fieldDescriptor, methods, fieldState, state);
+};
+
+type FieldState<T> = Atom.Readonly<{
+  value: T;
+  touched: TouchedValues<T>;
+}>;
+
+const createFieldState = <T, Err>(
+  state: FormtsAtomState<object, Err>,
+  field: FieldDescriptor<T, Err>
+): FieldState<T> => {
+  const lens = impl(field).__lens;
+
+  return Atom.fuse(
+    (value, touched) => ({
+      value,
+      touched: touched as any,
+    }),
+    Atom.entangle(state.values, lens),
+    Atom.entangle(state.touched, lens)
+  );
+};
+
+const createDependenciesState = <T, Err>(
+  state: FormtsAtomState<object, Err>,
+  field: FieldDescriptor<T, Err>
+): Atom.Readonly<{}> => {
+  return Atom.fuse(
+    (_branchErrors, _branchValidating) => ({}),
+    Atom.fuse(x => Helpers.constructBranchErrorsString(x, field), state.errors),
+    Atom.fuse(
+      x => Helpers.constructBranchValidatingString(x, field),
+      state.validating
+    )
+  );
 };
 
 const createFieldHandle = <T, Err>(
   descriptor: FieldDescriptor<T, Err>,
-  methods: InternalFormtsMethods<object, Err>
+  methods: InternalFormtsMethods<object, Err>,
+  fieldState: FieldState<T>,
+  formState: FormtsAtomState<object, Err>
 ): FieldHandle<T, Err> =>
   toFieldHandle({
     descriptor,
 
     id: impl(descriptor).__path,
 
-    get value() {
-      return methods.getField(descriptor);
-    },
+    value: fieldState.val.value,
 
     get isTouched() {
-      return methods.isFieldTouched(descriptor);
+      return Helpers.resolveTouched(fieldState.val.touched);
     },
 
     get error() {
-      return methods.getFieldError(descriptor);
+      return formState.errors.val[impl(descriptor).__path] ?? null;
     },
 
     get isValid() {
-      return methods.isFieldValid(descriptor);
+      return Helpers.resolveIsValid(formState.errors.val, descriptor);
     },
 
     get isValidating() {
-      return methods.isFieldValidating(descriptor);
+      return Helpers.resolveIsValidating(formState.validating.val, descriptor);
     },
 
     get children() {
@@ -80,7 +133,16 @@ const createFieldHandle = <T, Err>(
               enumerable: true,
               get: function () {
                 const nestedDescriptor = descriptor[key];
-                return createFieldHandle(nestedDescriptor, methods);
+                const childState = createFieldState(
+                  formState,
+                  nestedDescriptor
+                );
+                return createFieldHandle(
+                  nestedDescriptor,
+                  methods,
+                  childState,
+                  formState
+                );
               },
             }),
           {}
@@ -88,10 +150,17 @@ const createFieldHandle = <T, Err>(
       }
 
       if (isArrayDescriptor(descriptor)) {
-        const value = methods.getField(descriptor) as unknown[];
-        return value.map((_, i) =>
-          createFieldHandle(descriptor.nth(i), methods)
-        );
+        const value = (fieldState.val.value as unknown) as unknown[];
+        return value.map((_, i) => {
+          const childDescriptor = descriptor.nth(i);
+          const childState = createFieldState(formState, childDescriptor);
+          return createFieldHandle(
+            descriptor.nth(i),
+            methods,
+            childState,
+            formState
+          );
+        });
       }
 
       return undefined;
@@ -123,7 +192,7 @@ const createFieldHandle = <T, Err>(
 
     addItem: item => {
       if (isArrayDescriptor(descriptor)) {
-        const array = methods.getField(descriptor) as unknown[];
+        const array = (fieldState.val.value as unknown) as unknown[];
         const updatedArray = [...array, item];
         return methods.setFieldValue(descriptor, updatedArray);
       }
@@ -133,7 +202,7 @@ const createFieldHandle = <T, Err>(
 
     removeItem: index => {
       if (isArrayDescriptor(descriptor)) {
-        const array = methods.getField(descriptor) as unknown[];
+        const array = (fieldState.val.value as unknown) as unknown[];
         const updatedArray = array.filter((_, i) => i !== index);
         return methods.setFieldValue(descriptor, updatedArray);
       }
