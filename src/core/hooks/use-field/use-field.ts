@@ -46,12 +46,17 @@ export const useField = <T, Err>(
 ): FieldHandle<T, Err> => {
   const { methods, state } = useFormtsContext<object, Err>(controller);
 
-  const fieldState = useMemo(
-    () => createFieldState(state, fieldDescriptor, true),
+  const fieldState = useMemo(() => createFieldState(state, fieldDescriptor), [
+    state,
+    impl(fieldDescriptor).__path,
+  ]);
+  const childrenDependencies = useMemo(
+    () => createChildrenDependenciesState(state, fieldDescriptor),
     [state, impl(fieldDescriptor).__path]
   );
 
   useSubscription(fieldState);
+  useSubscription(childrenDependencies);
 
   return createFieldHandle(fieldDescriptor, methods, fieldState, state);
 };
@@ -63,36 +68,32 @@ type FieldState<T> = Atom.Readonly<{
 
 const createFieldState = <T, Err>(
   state: FormtsAtomState<object, Err>,
-  field: FieldDescriptor<T, Err>,
-  includeTriggers: boolean = false
+  field: FieldDescriptor<T, Err>
 ): FieldState<T> => {
   const lens = impl(field).__lens;
 
-  return includeTriggers
-    ? Atom.fuse(
-        (value, touched, _branchErrors, _branchValidating) => ({
-          value,
-          touched: touched as any,
-        }),
-        Atom.entangle(state.values, lens),
-        Atom.entangle(state.touched, lens),
-        Atom.fuse(
-          x => Helpers.constructBranchErrorsString(x, field),
-          state.errors
-        ),
-        Atom.fuse(
-          x => Helpers.constructBranchValidatingString(x, field),
-          state.validating
-        )
-      )
-    : Atom.fuse(
-        (value, touched) => ({
-          value,
-          touched: touched as any,
-        }),
-        Atom.entangle(state.values, lens),
-        Atom.entangle(state.touched, lens)
-      );
+  return Atom.fuse(
+    (value, touched) => ({
+      value,
+      touched: touched as any,
+    }),
+    Atom.entangle(state.values, lens),
+    Atom.entangle(state.touched, lens)
+  );
+};
+
+const createChildrenDependenciesState = <T, Err>(
+  state: FormtsAtomState<object, Err>,
+  field: FieldDescriptor<T, Err>
+): Atom.Readonly<{}> => {
+  return Atom.fuse(
+    (_branchErrors, _branchValidating) => ({}),
+    Atom.fuse(x => Helpers.constructBranchErrorsString(x, field), state.errors),
+    Atom.fuse(
+      x => Helpers.constructBranchValidatingString(x, field),
+      state.validating
+    )
+  );
 };
 
 const createFieldHandle = <T, Err>(
