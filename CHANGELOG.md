@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.18](https://github.com/VirtusLab/formts/compare/v0.1.17...v0.1.18) (2021-02-09)
+
+
+### Features
+
+* atom-based form state ([#63](https://github.com/VirtusLab/formts/issues/63)) ([b2b90b2](https://github.com/VirtusLab/formts/commit/b2b90b28c495422f30830a0be8664755e119b518))
+
 ### [0.1.17](https://github.com/VirtusLab/formts/compare/v0.1.16...v0.1.17) (2021-01-21)
 
 
