@@ -50,13 +50,13 @@ export const useField = <T, Err>(
     state,
     impl(fieldDescriptor).__path,
   ]);
-  const childrenDependencies = useMemo(
-    () => createChildrenDependenciesState(state, fieldDescriptor),
+  const dependencies = useMemo(
+    () => createDependenciesState(state, fieldDescriptor),
     [state, impl(fieldDescriptor).__path]
   );
 
   useSubscription(fieldState);
-  useSubscription(childrenDependencies);
+  useSubscription(dependencies);
 
   return createFieldHandle(fieldDescriptor, methods, fieldState, state);
 };
@@ -82,7 +82,7 @@ const createFieldState = <T, Err>(
   );
 };
 
-const createChildrenDependenciesState = <T, Err>(
+const createDependenciesState = <T, Err>(
   state: FormtsAtomState<object, Err>,
   field: FieldDescriptor<T, Err>
 ): Atom.Readonly<{}> => {
