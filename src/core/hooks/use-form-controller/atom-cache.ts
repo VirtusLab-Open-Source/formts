@@ -103,7 +103,7 @@ const getCachedOrCreate = <T>(input: {
 }): T => {
   const { cache, factory, key } = input;
 
-  if (cache[key]) {
+  if (cache[key] !== undefined) {
     return cache[key]!;
   }
 
