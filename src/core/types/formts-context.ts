@@ -12,10 +12,6 @@ import { ValidationResult, ValidationTrigger } from "./form-validator";
 import { FormtsOptions } from "./formts-options";
 import { FormtsAtomState } from "./formts-state";
 
-export type FormSubmissionResult<Values extends object, Err> =
-  | { ok: true; values: Values }
-  | { ok: false; errors: Array<FieldError<Err>> };
-
 export type InternalFormtsMethods<Values extends object, Err> = {
   validateField: <T>(
     field: FieldDescriptor<T, Err>,
@@ -30,7 +26,10 @@ export type InternalFormtsMethods<Values extends object, Err> = {
   touchField: <T>(field: FieldDescriptor<T, Err>) => void;
   setFieldErrors: (...fields: ValidationResult<Err>) => void;
   resetForm: () => void;
-  submitForm: () => Future<FormSubmissionResult<Values, Err>>;
+  submitForm: (
+    onSuccess: (values: Values) => Future<void>,
+    onFailure: (errors: Array<FieldError<Err>>) => Future<void>
+  ) => Future<void>;
 };
 
 // internal context consumed by hooks

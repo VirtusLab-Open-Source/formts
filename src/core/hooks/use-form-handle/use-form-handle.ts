@@ -2,6 +2,7 @@ import { useMemo } from "react";
 
 import { keys, values } from "../../../utils";
 import { Atom } from "../../../utils/atoms";
+import { Future } from "../../../utils/future";
 import { useSubscription } from "../../../utils/use-subscription";
 import { useFormtsContext } from "../../context";
 import { resolveTouched } from "../../helpers";
@@ -71,15 +72,11 @@ export const useFormHandle = <Values extends object, Err>(
 
     submit: (onSuccess, onFailure) => {
       return methods
-        .submitForm()
-        .runPromise()
-        .then(resp => {
-          if (resp.ok) {
-            return onSuccess(resp.values);
-          } else {
-            return onFailure?.(resp.errors);
-          }
-        });
+        .submitForm(
+          values => Future.from(() => onSuccess(values)).map(() => {}),
+          errors => Future.from(() => onFailure?.(errors))
+        )
+        .runPromise();
     },
 
     setFieldValue: (field, value) => {

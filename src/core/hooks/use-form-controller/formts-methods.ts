@@ -4,14 +4,12 @@ import { get, logger, values } from "../../../utils";
 import { Future } from "../../../utils/future";
 import * as Helpers from "../../helpers";
 import { FieldDescriptor } from "../../types/field-descriptor";
+import { FieldError } from "../../types/form-handle";
 import {
   ValidationResult,
   ValidationTrigger,
 } from "../../types/form-validator";
-import {
-  FormSubmissionResult,
-  InternalFormtsMethods,
-} from "../../types/formts-context";
+import { InternalFormtsMethods } from "../../types/formts-context";
 import { FormtsOptions } from "../../types/formts-options";
 import { FormtsAction, FormtsAtomState } from "../../types/formts-state";
 import { impl } from "../../types/type-mapper-util";
@@ -165,7 +163,10 @@ export const createFormtsMethods = <Values extends object, Err>({
     });
   };
 
-  const submitForm = (): Future<FormSubmissionResult<Values, Err>> => {
+  const submitForm = (
+    onSuccess: (values: Values) => Future<void>,
+    onFailure: (errors: Array<FieldError<Err>>) => Future<void>
+  ): Future<void> => {
     dispatch({ type: "setIsSubmitting", payload: { isSubmitting: true } });
 
     const cleanup = () => {
@@ -184,16 +185,15 @@ export const createFormtsMethods = <Values extends object, Err>({
             error: error!,
           }))
       )
-      .map(errors => {
+      .flatMap(errors => {
         if (errors.length > 0) {
-          return { ok: false, errors } as const;
+          return onFailure(errors);
+        } else {
+          return onSuccess(state.values.val);
         }
-
-        return { ok: true, values: state.values.val } as const;
       })
-      .map(result => {
+      .map(() => {
         cleanup();
-        return result;
       })
       .mapErr(err => {
         cleanup();
