@@ -83,6 +83,10 @@ export const createFormtsMethods = <Values extends object, Err>({
     field: FieldDescriptor<T, Err>,
     value: T
   ): Future<void> => {
+    if (state.isSubmitting.val) {
+      return Future.success();
+    }
+
     const { __decoder, __path } = impl(field);
     const decodeResult = __decoder.decode(value);
 
@@ -91,7 +95,7 @@ export const createFormtsMethods = <Values extends object, Err>({
         `Can not set field value for: '${__path}' [${__decoder.fieldType}] - illegal value type.`,
         value
       );
-      return Future.success(undefined);
+      return Future.success();
     }
 
     return _setDecodedFieldValue(field, decodeResult.value);
@@ -101,6 +105,10 @@ export const createFormtsMethods = <Values extends object, Err>({
     field: FieldDescriptor<T, Err>,
     event: React.ChangeEvent<unknown>
   ): Future<void> => {
+    if (state.isSubmitting.val) {
+      return Future.success();
+    }
+
     const { __decoder, __path } = impl(field);
     const decodeResult = Helpers.decodeChangeEvent({
       event,
@@ -160,6 +168,13 @@ export const createFormtsMethods = <Values extends object, Err>({
   const submitForm = (): Future<FormSubmissionResult<Values, Err>> => {
     dispatch({ type: "setIsSubmitting", payload: { isSubmitting: true } });
 
+    const cleanup = () => {
+      dispatch({
+        type: "setIsSubmitting",
+        payload: { isSubmitting: false },
+      });
+    };
+
     return validateForm("submit")
       .map(errors =>
         errors
@@ -177,12 +192,12 @@ export const createFormtsMethods = <Values extends object, Err>({
         return { ok: true, values: state.values.val } as const;
       })
       .map(result => {
-        dispatch({
-          type: "setIsSubmitting",
-          payload: { isSubmitting: false },
-        });
-
+        cleanup();
         return result;
+      })
+      .mapErr(err => {
+        cleanup();
+        return err;
       });
   };
 

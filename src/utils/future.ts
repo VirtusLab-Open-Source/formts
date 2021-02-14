@@ -6,6 +6,9 @@
  *  - typed error
  */
 export class Future<T, Err = unknown> {
+  // @ts-ignore
+  static success(): Future<void, never>;
+  static success<T>(val: T): Future<T, never>;
   static success<T>(val: T) {
     return Future.make<T, never>(({ resolve }) => {
       resolve(val);
