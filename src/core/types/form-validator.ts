@@ -1,4 +1,4 @@
-import { Falsy, NoInfer } from "../../utils";
+import { Falsy, NoInfer, Nominal } from "../../utils";
 import { Future } from "../../utils/future";
 
 import {
@@ -45,7 +45,11 @@ export type GetValue = {
 };
 
 // @ts-ignore
-export type FormValidator<Values extends object, Err> = {
+export interface FormValidator<Values extends object, Err>
+  extends Nominal<"FormValidator"> {}
+
+// @ts-ignore
+export type _FormValidatorImpl<Values extends object, Err> = {
   validate: (input: ValidateIn<Err>) => Future<ValidationResult<Err>, unknown>;
 };
 

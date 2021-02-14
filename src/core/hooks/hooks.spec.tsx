@@ -5,6 +5,7 @@ import { Future } from "../../utils/future";
 import { createFormSchema } from "../builders";
 import { FormProvider } from "../context";
 import { ValidateIn } from "../types/form-validator";
+import { impl, opaque } from "../types/type-mapper-util";
 
 import { useField } from "./use-field";
 import { useFormHandle } from "./use-form-handle";
@@ -735,7 +736,7 @@ describe("formts hooks API", () => {
   });
 
   it("validates field when FieldHandle blur handler is called", async () => {
-    const validator = {
+    const validator = opaque({
       validate: jest
         .fn()
         .mockReturnValueOnce(
@@ -744,7 +745,7 @@ describe("formts hooks API", () => {
         .mockReturnValueOnce(
           Future.success([{ field: Schema.theNum, error: null }])
         ),
-    };
+    });
 
     const { result: controllerHook } = renderHook(() =>
       useFormController({ Schema, validator })
@@ -769,7 +770,7 @@ describe("formts hooks API", () => {
       expect(numberFieldHook.current.isValid).toBe(true);
       expect(numberFieldHook.current.error).toBe(null);
 
-      expect(validator.validate).not.toHaveBeenCalled();
+      expect(impl(validator).validate).not.toHaveBeenCalled();
     }
 
     await act(async () => {
@@ -783,7 +784,7 @@ describe("formts hooks API", () => {
       expect(numberFieldHook.current.isValid).toBe(false);
       expect(numberFieldHook.current.error).toBe("ERR_1");
 
-      expect(validator.validate).toHaveBeenCalledTimes(1);
+      expect(impl(validator).validate).toHaveBeenCalledTimes(1);
     }
 
     await act(async () => {
@@ -797,12 +798,12 @@ describe("formts hooks API", () => {
       expect(numberFieldHook.current.isValid).toBe(true);
       expect(numberFieldHook.current.error).toBe(null);
 
-      expect(validator.validate).toHaveBeenCalledTimes(2);
+      expect(impl(validator).validate).toHaveBeenCalledTimes(2);
     }
   });
 
   it("validates field when FieldHandle validate method is called", async () => {
-    const validator = {
+    const validator = opaque({
       validate: jest
         .fn()
         .mockReturnValueOnce(
@@ -811,7 +812,7 @@ describe("formts hooks API", () => {
         .mockReturnValueOnce(
           Future.success([{ field: Schema.theNum, error: null }])
         ),
-    };
+    });
 
     const { result: controllerHook } = renderHook(() =>
       useFormController({ Schema, validator })
@@ -836,7 +837,7 @@ describe("formts hooks API", () => {
       expect(numberFieldHook.current.isValid).toBe(true);
       expect(numberFieldHook.current.error).toBe(null);
 
-      expect(validator.validate).not.toHaveBeenCalled();
+      expect(impl(validator).validate).not.toHaveBeenCalled();
     }
 
     await act(async () => {
@@ -850,7 +851,7 @@ describe("formts hooks API", () => {
       expect(numberFieldHook.current.isValid).toBe(false);
       expect(numberFieldHook.current.error).toBe("ERR_1");
 
-      expect(validator.validate).toHaveBeenCalledTimes(1);
+      expect(impl(validator).validate).toHaveBeenCalledTimes(1);
     }
 
     await act(async () => {
@@ -864,12 +865,12 @@ describe("formts hooks API", () => {
       expect(numberFieldHook.current.isValid).toBe(true);
       expect(numberFieldHook.current.error).toBe(null);
 
-      expect(validator.validate).toHaveBeenCalledTimes(2);
+      expect(impl(validator).validate).toHaveBeenCalledTimes(2);
     }
   });
 
   it("validates field when its values is changed", async () => {
-    const validator = {
+    const validator = opaque({
       validate: jest
         .fn()
         .mockImplementation(({ fields, getValue }: ValidateIn<any>) =>
@@ -880,7 +881,7 @@ describe("formts hooks API", () => {
             }))
           )
         ),
-    };
+    });
 
     const { result: controllerHook } = renderHook(() =>
       useFormController({ Schema, validator })
@@ -905,7 +906,7 @@ describe("formts hooks API", () => {
       expect(numberFieldHook.current.isValid).toBe(true);
       expect(numberFieldHook.current.error).toBe(null);
 
-      expect(validator.validate).not.toHaveBeenCalled();
+      expect(impl(validator).validate).not.toHaveBeenCalled();
     }
 
     await act(async () => {
@@ -919,7 +920,7 @@ describe("formts hooks API", () => {
       expect(numberFieldHook.current.isValid).toBe(true);
       expect(numberFieldHook.current.error).toBe(null);
 
-      expect(validator.validate).toHaveBeenCalledTimes(1);
+      expect(impl(validator).validate).toHaveBeenCalledTimes(1);
     }
 
     await act(async () => {
@@ -933,18 +934,18 @@ describe("formts hooks API", () => {
       expect(numberFieldHook.current.isValid).toBe(false);
       expect(numberFieldHook.current.error).toBe("REQUIRED");
 
-      expect(validator.validate).toHaveBeenCalledTimes(2);
+      expect(impl(validator).validate).toHaveBeenCalledTimes(2);
     }
   });
 
   it("validates all fields when form validate method is called", async () => {
-    const validator = {
+    const validator = opaque({
       validate: jest
         .fn()
         .mockImplementation(({ fields }: ValidateIn<any>) =>
           Future.success(fields.map(field => ({ field, error: "ERROR" })))
         ),
-    };
+    });
 
     const { result: controllerHook } = renderHook(() =>
       useFormController({ Schema, validator })
@@ -964,7 +965,7 @@ describe("formts hooks API", () => {
     };
 
     {
-      expect(validator.validate).not.toHaveBeenCalled();
+      expect(impl(validator).validate).not.toHaveBeenCalled();
 
       expect(formHandleHook.current.isValid).toBe(true);
 
@@ -978,7 +979,7 @@ describe("formts hooks API", () => {
     });
 
     {
-      expect(validator.validate).toHaveBeenCalledTimes(1);
+      expect(impl(validator).validate).toHaveBeenCalledTimes(1);
 
       expect(formHandleHook.current.isValid).toBe(false);
 
@@ -988,14 +989,14 @@ describe("formts hooks API", () => {
   });
 
   it("creates submit handler which runs validation of all fields and invokes proper callback", async () => {
-    const validator = {
+    const validator = opaque({
       validate: jest
         .fn()
         .mockImplementationOnce(({ fields }: ValidateIn<any>) =>
           Future.success(fields.map(field => ({ field, error: "ERROR" })))
         )
         .mockReturnValueOnce(Future.success([])),
-    };
+    });
 
     const { result: controllerHook } = renderHook(() =>
       useFormController({ Schema, validator })
@@ -1008,7 +1009,7 @@ describe("formts hooks API", () => {
     const onFailure = jest.fn();
 
     {
-      expect(validator.validate).not.toHaveBeenCalled();
+      expect(impl(validator).validate).not.toHaveBeenCalled();
       expect(onSuccess).not.toHaveBeenCalled();
       expect(onFailure).not.toHaveBeenCalled();
     }
@@ -1019,7 +1020,7 @@ describe("formts hooks API", () => {
     });
 
     {
-      expect(validator.validate).toHaveBeenCalledTimes(1);
+      expect(impl(validator).validate).toHaveBeenCalledTimes(1);
       expect(onSuccess).not.toHaveBeenCalled();
       expect(onFailure).toHaveBeenCalledTimes(1);
       expect(onFailure).toHaveBeenCalledWith([
@@ -1040,7 +1041,7 @@ describe("formts hooks API", () => {
     });
 
     {
-      expect(validator.validate).toHaveBeenCalledTimes(2);
+      expect(impl(validator).validate).toHaveBeenCalledTimes(2);
       expect(onSuccess).toHaveBeenCalledTimes(1);
       expect(onSuccess).toHaveBeenCalledWith({
         theString: "",

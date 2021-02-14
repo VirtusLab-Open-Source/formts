@@ -7,6 +7,7 @@ import {
   _NTHHandler,
 } from "./field-descriptor";
 import { FormController, _FormControllerImpl } from "./form-controller";
+import { FormValidator, _FormValidatorImpl } from "./form-validator";
 
 /**
  * expose implementation details of opaque type.
@@ -31,6 +32,11 @@ type GetImplFn = {
   <T extends any>(it: ArrayFieldDescriptor<T[], unknown>["nth"]): _NTHHandler<
     T
   >;
+
+  <V extends object, Err>(it: FormValidator<V, Err>): _FormValidatorImpl<
+    V,
+    Err
+  >;
 };
 
 /**
@@ -42,4 +48,8 @@ type GetOpaque = {
   <T, Err>(it: _FieldDescriptorImpl<T>): FieldDescriptor<T, Err>;
   <T>(it: _FieldDecoderImpl<T>): FieldDecoder<T>;
   <V extends object, Err>(it: _FormControllerImpl<V, Err>): FormController;
+  <V extends object, Err>(it: _FormValidatorImpl<V, Err>): FormValidator<
+    V,
+    Err
+  >;
 };

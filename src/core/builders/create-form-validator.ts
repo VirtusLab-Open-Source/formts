@@ -20,8 +20,9 @@ import {
   ValidateFn,
   ValidationTrigger,
   Validator,
+  _FormValidatorImpl,
 } from "../types/form-validator";
-import { impl } from "../types/type-mapper-util";
+import { impl, opaque } from "../types/type-mapper-util";
 
 /**
  * Create form validator based on provided set of validation rules.
@@ -71,7 +72,7 @@ export const createFormValidator = <Values extends object, Err>(
     });
   };
 
-  const formValidator: FormValidator<Values, Err> = {
+  const formValidator: _FormValidatorImpl<Values, Err> = {
     validate: ({
       fields,
       trigger,
@@ -121,7 +122,7 @@ export const createFormValidator = <Values extends object, Err>(
     },
   };
 
-  return formValidator;
+  return opaque(formValidator);
 };
 
 const validate: ValidateFn = <T, Err, Deps extends any[]>(

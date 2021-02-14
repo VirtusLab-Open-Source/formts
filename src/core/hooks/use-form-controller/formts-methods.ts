@@ -58,7 +58,7 @@ export const createFormtsMethods = <Values extends object, Err>({
       flushValidationHandlers,
     } = Helpers.makeValidationHandlers(dispatch);
 
-    const validationFuture = options.validator
+    const validationFuture = impl(options.validator)
       .validate({
         fields,
         trigger,
