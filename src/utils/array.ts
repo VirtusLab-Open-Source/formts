@@ -18,3 +18,6 @@ export const uniqBy = <T, K extends string | number | symbol>(
     }
   });
 };
+
+export const compact = <T>(list: Array<T | null | undefined>): T[] =>
+  list.filter(it => it != null) as T[];

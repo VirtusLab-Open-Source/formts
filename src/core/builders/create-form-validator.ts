@@ -1,5 +1,5 @@
 import { isFalsy } from "../../utils";
-import { flatMap, uniqBy } from "../../utils/array";
+import { compact, flatMap, uniqBy } from "../../utils/array";
 import { Future } from "../../utils/future";
 import {
   FieldDescriptor,
@@ -61,6 +61,11 @@ export const createFormValidator = <Values extends object, Err>(
   const allValidators = builder(validate);
   const dependenciesDict = buildDependenciesDict(allValidators);
 
+  const ongoingValidationTimestamps: Record<
+    FieldValidationKey,
+    Timestamp | undefined
+  > = {};
+
   const getValidatorsForField = (
     descriptor: FieldDescriptor<unknown, Err>,
     trigger?: ValidationTrigger
@@ -80,45 +85,70 @@ export const createFormValidator = <Values extends object, Err>(
       onFieldValidationStart,
       onFieldValidationEnd,
     }) => {
-      const allFields = flatMap(fields, x =>
-        getChildrenDescriptors(x, getValue)
-      );
-      const dependents = flatMap(fields, x =>
-        getDependents(x, dependenciesDict, getValue)
-      );
-      const uniqueFields = uniqBy(
-        [...allFields, ...dependents],
-        x => impl(x).__path
-      );
+      const timestamp = Timestamp.make();
 
-      const fieldsToValidate = uniqueFields
-        .map(field => ({
-          field,
-          validators: getValidatorsForField(field, trigger),
-        }))
-        .filter(x => x.validators.length > 0);
+      const resolveFieldsToValidate = () => {
+        const allFields = flatMap(fields, x =>
+          getChildrenDescriptors(x, getValue)
+        );
+        const dependents = flatMap(fields, x =>
+          getDependents(x, dependenciesDict, getValue)
+        );
+        const uniqueFields = uniqBy(
+          [...allFields, ...dependents],
+          x => impl(x).__path
+        );
 
-      return Future.all(
-        ...fieldsToValidate.map(({ field, validators }) => {
-          const value = getValue(field);
-          onFieldValidationStart?.(field);
+        return uniqueFields
+          .map(field => ({
+            field,
+            validators: getValidatorsForField(field, trigger),
+          }))
+          .filter(x => x.validators.length > 0);
+      };
 
-          return firstNonNullFutureResult(
-            validators.map(v => runValidationForField(v, value, getValue))
-          )
-            .flatMapErr(err => {
-              if (err === true) {
-                return Future.success(null); // optional validator edge-case
-              }
-              onFieldValidationEnd?.(field);
-              return Future.failure(err);
+      return Future.from(resolveFieldsToValidate)
+        .flatMap(fieldsToValidate =>
+          Future.all(
+            ...fieldsToValidate.map(({ field, validators }) => {
+              const validationKey = FieldValidationKey.make(field, trigger);
+
+              return Future.from(() => {
+                onFieldValidationStart?.(field);
+                ongoingValidationTimestamps[validationKey] = timestamp;
+                return getValue(field);
+              })
+                .flatMap(value =>
+                  firstNonNullFutureResult(
+                    validators.map(v =>
+                      runValidationForField(v, value, getValue)
+                    )
+                  )
+                )
+                .flatMapErr(err => {
+                  if (err === true) {
+                    return Future.success(null); // optional validator edge-case
+                  }
+                  onFieldValidationEnd?.(field);
+                  return Future.failure(err);
+                })
+                .map(validationError => {
+                  onFieldValidationEnd?.(field);
+
+                  if (
+                    ongoingValidationTimestamps[validationKey] === timestamp
+                  ) {
+                    delete ongoingValidationTimestamps[validationKey];
+                    return { field, error: validationError };
+                  }
+
+                  // primitive cancellation of outdated validation results
+                  return null;
+                });
             })
-            .map(validationError => {
-              onFieldValidationEnd?.(field);
-              return { field, error: validationError };
-            });
-        })
-      );
+          )
+        )
+        .map(compact);
     },
   };
 
@@ -264,3 +294,17 @@ const getRootArrayPath = (path: string): string | undefined => {
     return path.slice(0, indexStart);
   }
 };
+
+type FieldValidationKey = string;
+namespace FieldValidationKey {
+  export const make = (
+    field: FieldDescriptor<unknown>,
+    trigger?: ValidationTrigger
+  ): FieldValidationKey =>
+    `${impl(field).__path}:t-${trigger ?? "none"}` as any;
+}
+
+type Timestamp = number;
+namespace Timestamp {
+  export const make = () => Date.now();
+}
