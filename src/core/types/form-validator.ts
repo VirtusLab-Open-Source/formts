@@ -1,4 +1,5 @@
 import { Falsy, NoInfer } from "../../utils";
+import { Future } from "../../utils/future";
 
 import {
   ArrayFieldDescriptor,
@@ -45,7 +46,7 @@ export type GetValue = {
 
 // @ts-ignore
 export type FormValidator<Values extends object, Err> = {
-  validate: (input: ValidateIn<Err>) => Promise<ValidationResult<Err>>;
+  validate: (input: ValidateIn<Err>) => Future<ValidationResult<Err>, unknown>;
 };
 
 export type FieldValidator<T, Err, Dependencies extends any[]> = {

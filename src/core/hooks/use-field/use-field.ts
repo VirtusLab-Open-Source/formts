@@ -149,15 +149,15 @@ const createFieldHandle = <T, Err>(
 
     handleBlur: () => {
       methods.touchField(descriptor);
-      return methods.validateField(descriptor, "blur");
+      return methods.validateField(descriptor, "blur").runPromise();
     },
 
     setValue: val => {
-      return methods.setFieldValue(descriptor, val);
+      return methods.setFieldValue(descriptor, val).runPromise();
     },
 
     handleChange: event => {
-      return methods.setFieldValueFromEvent(descriptor, event);
+      return methods.setFieldValueFromEvent(descriptor, event).runPromise();
     },
 
     setError: error => {
@@ -168,23 +168,23 @@ const createFieldHandle = <T, Err>(
       if (isArrayDescriptor(descriptor)) {
         const array = (fieldState.val.value as unknown) as unknown[];
         const updatedArray = [...array, item];
-        return methods.setFieldValue(descriptor, updatedArray);
+        return methods.setFieldValue(descriptor, updatedArray).runPromise();
       }
 
-      return undefined;
+      return Promise.resolve();
     },
 
     removeItem: index => {
       if (isArrayDescriptor(descriptor)) {
         const array = (fieldState.val.value as unknown) as unknown[];
         const updatedArray = array.filter((_, i) => i !== index);
-        return methods.setFieldValue(descriptor, updatedArray);
+        return methods.setFieldValue(descriptor, updatedArray).runPromise();
       }
 
-      return undefined;
+      return Promise.resolve();
     },
 
     validate: () => {
-      return methods.validateField(descriptor);
+      return methods.validateField(descriptor).runPromise();
     },
   });

@@ -74,7 +74,10 @@ describe("createFormValidator", () => {
     ]);
     const getValue = () => "" as any;
 
-    const validation = await validate({ fields: [Schema.string], getValue });
+    const validation = await validate({
+      fields: [Schema.string],
+      getValue,
+    }).runPromise();
 
     expect(validation).toEqual([{ field: Schema.string, error: "REQUIRED" }]);
   });
@@ -89,7 +92,10 @@ describe("createFormValidator", () => {
     ]);
     const getValue = () => "defined string" as any;
 
-    const validation = await validate({ fields: [Schema.string], getValue });
+    const validation = await validate({
+      fields: [Schema.string],
+      getValue,
+    }).runPromise();
 
     expect(validation).toEqual([{ field: Schema.string, error: null }]);
   });
@@ -107,7 +113,10 @@ describe("createFormValidator", () => {
     ]);
     const getValue = () => "" as any;
 
-    const validation = await validate({ fields: [Schema.string], getValue });
+    const validation = await validate({
+      fields: [Schema.string],
+      getValue,
+    }).runPromise();
 
     expect(validation).toEqual([{ field: Schema.string, error: "REQUIRED" }]);
   });
@@ -125,7 +134,10 @@ describe("createFormValidator", () => {
     ]);
     const getValue = () => "ab" as any;
 
-    const validation = await validate({ fields: [Schema.string], getValue });
+    const validation = await validate({
+      fields: [Schema.string],
+      getValue,
+    }).runPromise();
 
     expect(validation).toEqual([{ field: Schema.string, error: "TOO_SHORT" }]);
   });
@@ -143,7 +155,10 @@ describe("createFormValidator", () => {
     ]);
     const getValue = () => "abcd" as any;
 
-    const validation = await validate({ fields: [Schema.string], getValue });
+    const validation = await validate({
+      fields: [Schema.string],
+      getValue,
+    }).runPromise();
 
     expect(validation).toEqual([{ field: Schema.string, error: null }]);
   });
@@ -157,7 +172,10 @@ describe("createFormValidator", () => {
     ]);
     const getValue = () => "A" as any;
 
-    const validation = await validate({ fields: [Schema.choice], getValue });
+    const validation = await validate({
+      fields: [Schema.choice],
+      getValue,
+    }).runPromise();
 
     expect(validation).toEqual([
       { field: Schema.choice, error: "INVALID_VALUE" },
@@ -173,7 +191,10 @@ describe("createFormValidator", () => {
     ]);
     const getValue = () => "C" as any;
 
-    const validation = await validate({ fields: [Schema.choice], getValue });
+    const validation = await validate({
+      fields: [Schema.choice],
+      getValue,
+    }).runPromise();
 
     expect(validation).toEqual([{ field: Schema.choice, error: null }]);
   });
@@ -187,7 +208,10 @@ describe("createFormValidator", () => {
     ]);
     const getValue = () => null as any;
 
-    const validation = await validate({ fields: [Schema.date], getValue });
+    const validation = await validate({
+      fields: [Schema.date],
+      getValue,
+    }).runPromise();
 
     expect(validation).toEqual([{ field: Schema.date, error: "REQUIRED" }]);
   });
@@ -207,7 +231,7 @@ describe("createFormValidator", () => {
     const validation = await validate({
       fields: [Schema.arrayString],
       getValue,
-    });
+    }).runPromise();
 
     expect(validation).toEqual([
       { field: Schema.arrayString, error: "INVALID_VALUE" },
@@ -227,7 +251,7 @@ describe("createFormValidator", () => {
     const validation = await validate({
       fields: [Schema.arrayArrayString],
       getValue,
-    });
+    }).runPromise();
 
     expect(validation).toEqual([
       { field: Schema.arrayArrayString, error: null },
@@ -243,7 +267,10 @@ describe("createFormValidator", () => {
     ]);
     const getValue = () => null as any;
 
-    const validation = await validate({ fields: [Schema.object], getValue });
+    const validation = await validate({
+      fields: [Schema.object],
+      getValue,
+    }).runPromise();
 
     expect(validation).toEqual([
       { field: Schema.object, error: "INVALID_VALUE" },
@@ -259,7 +286,10 @@ describe("createFormValidator", () => {
     ]);
     const getValue = () => null as any;
 
-    const validation = await validate({ fields: [Schema.object], getValue });
+    const validation = await validate({
+      fields: [Schema.object],
+      getValue,
+    }).runPromise();
 
     expect(validation).toEqual([{ field: Schema.object, error: "REQUIRED" }]);
   });
@@ -273,7 +303,10 @@ describe("createFormValidator", () => {
     ]);
     const getValue = () => null as any;
 
-    const validation = await validate({ fields: [Schema.object], getValue });
+    const validation = await validate({
+      fields: [Schema.object],
+      getValue,
+    }).runPromise();
 
     expect(validation).toEqual([{ field: Schema.object, error: null }]);
   });
@@ -312,7 +345,7 @@ describe("createFormValidator", () => {
         Schema.arrayObjectString.nth(3),
       ],
       getValue,
-    });
+    }).runPromise();
 
     expect(validation).toEqual([
       { field: Schema.arrayObjectString.nth(0), error: "TOO_SHORT" },
@@ -356,7 +389,7 @@ describe("createFormValidator", () => {
         Schema.arrayObjectString.nth(1),
       ],
       getValue,
-    });
+    }).runPromise();
 
     expect(validation).toEqual([
       { field: Schema.arrayChoice.nth(1), error: null },
@@ -393,7 +426,7 @@ describe("createFormValidator", () => {
       fields: [Schema.string, Schema.choice],
       getValue,
       trigger: "change",
-    });
+    }).runPromise();
 
     expect(validation).toEqual([{ field: Schema.choice, error: "REQUIRED" }]);
   });
@@ -459,7 +492,7 @@ describe("createFormValidator", () => {
       fields: [Schema.string, Schema.number, Schema.choice],
       getValue,
       trigger: "change",
-    });
+    }).runPromise();
 
     expect(validation).toEqual([
       { field: Schema.string, error: "TOO_SHORT" },
@@ -521,7 +554,7 @@ describe("createFormValidator", () => {
         Schema.string,
       ],
       getValue,
-    });
+    }).runPromise();
 
     expect(result).toEqual([
       { field: Schema.arrayString.nth(0), error: "INVALID_VALUE" },
@@ -569,7 +602,7 @@ describe("createFormValidator", () => {
       getValue: () => "foo" as any,
       onFieldValidationStart,
       onFieldValidationEnd,
-    });
+    }).runPromise();
 
     const expectField = (desc: FieldDescriptor<any>) =>
       expect.objectContaining({ __path: impl(desc).__path });
@@ -630,7 +663,10 @@ describe("createFormValidator", () => {
       .mockReturnValueOnce("foo");
 
     {
-      const result = await validate({ fields: [Schema.string], getValue });
+      const result = await validate({
+        fields: [Schema.string],
+        getValue,
+      }).runPromise();
 
       expect(result).toEqual([
         { field: Schema.arrayString.nth(0), error: null },
@@ -640,7 +676,10 @@ describe("createFormValidator", () => {
     }
 
     {
-      const result = await validate({ fields: [Schema.string], getValue });
+      const result = await validate({
+        fields: [Schema.string],
+        getValue,
+      }).runPromise();
 
       expect(result).toEqual([
         { field: Schema.arrayString.nth(0), error: "ERR_1" },
@@ -666,7 +705,7 @@ describe("createFormValidator", () => {
     const getValue = jest.fn().mockReturnValue("foo");
 
     await expect(() =>
-      validate({ fields: [Schema.string], getValue })
+      validate({ fields: [Schema.string], getValue }).runPromise()
     ).rejects.toBe(error);
   });
 
@@ -697,7 +736,7 @@ describe("createFormValidator", () => {
     const validation = await validate({
       fields: [Schema.arrayObjectString],
       getValue,
-    });
+    }).runPromise();
 
     expect(validation).toEqual([
       { field: Schema.arrayObjectString, error: "TOO_SHORT" },
@@ -730,7 +769,10 @@ describe("createFormValidator", () => {
       }
     };
 
-    const validation = await validate({ fields: [Schema.object], getValue });
+    const validation = await validate({
+      fields: [Schema.object],
+      getValue,
+    }).runPromise();
 
     expect(validation).toEqual([
       { field: Schema.object.str, error: "REQUIRED" },
@@ -780,7 +822,7 @@ describe("createFormValidator", () => {
         Schema.objectObjectArrayObjectString.obj.array.nth(0),
       ],
       getValue,
-    });
+    }).runPromise();
 
     expect(validation).toEqual([
       { field: Schema.objectObjectArrayObjectString.obj.array, error: null },
@@ -810,7 +852,10 @@ describe("createFormValidator", () => {
 
     const getValue = () => "" as any;
 
-    const validation = await validate({ fields: [Schema.string], getValue });
+    const validation = await validate({
+      fields: [Schema.string],
+      getValue,
+    }).runPromise();
 
     expect(validation).toEqual([{ field: Schema.string, error: "REQUIRED" }]);
   });
@@ -847,7 +892,7 @@ describe("createFormValidator", () => {
         Schema.arrayObjectString.nth(3),
       ],
       getValue,
-    });
+    }).runPromise();
 
     expect(validation).toEqual([
       { field: Schema.arrayObjectString.nth(0), error: "TOO_SHORT" },
@@ -874,7 +919,10 @@ describe("createFormValidator", () => {
 
     const getValue = () => "" as any;
 
-    const validation = await validate({ fields: [Schema.number], getValue });
+    const validation = await validate({
+      fields: [Schema.number],
+      getValue,
+    }).runPromise();
 
     expect(validation).toEqual([
       { field: Schema.number, error: "REQUIRED" },
@@ -911,7 +959,7 @@ describe("createFormValidator", () => {
     const validation = await validate({
       fields: [Schema.choice],
       getValue,
-    });
+    }).runPromise();
 
     expect(validation).toEqual([
       { field: Schema.choice, error: "INVALID_VALUE" },
@@ -941,7 +989,7 @@ describe("createFormValidator", () => {
     const validation = await validate({
       fields: [Schema.number, Schema.string],
       getValue,
-    });
+    }).runPromise();
 
     expect(validation).toEqual([
       { field: Schema.number, error: "REQUIRED" },
@@ -977,7 +1025,7 @@ describe("createFormValidator", () => {
       fields: [Schema.number],
       getValue,
       trigger: "change",
-    });
+    }).runPromise();
 
     expect(validation).toEqual([{ field: Schema.string, error: "REQUIRED" }]);
   });
@@ -1014,7 +1062,10 @@ describe("createFormValidator", () => {
       }
     };
 
-    const validation = await validate({ fields: [Schema.string], getValue });
+    const validation = await validate({
+      fields: [Schema.string],
+      getValue,
+    }).runPromise();
 
     expect(validation).toEqual([{ field: Schema.string, error: null }]);
     expect(rules).toHaveBeenCalledWith(2, "B", []);
@@ -1032,7 +1083,10 @@ describe("createFormValidator", () => {
 
     const getValue = (_field: FieldDescriptor<any> | string): any => "" as any;
 
-    const validation = await validate({ fields: [Schema.string], getValue });
+    const validation = await validate({
+      fields: [Schema.string],
+      getValue,
+    }).runPromise();
 
     expect(validation).toEqual([{ field: Schema.string, error: null }]);
   });

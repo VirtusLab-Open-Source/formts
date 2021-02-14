@@ -1,6 +1,7 @@
 import React from "react";
 
 import { get, logger, values } from "../../../utils";
+import { Future } from "../../../utils/future";
 import * as Helpers from "../../helpers";
 import { FieldDescriptor } from "../../types/field-descriptor";
 import {
@@ -35,33 +36,24 @@ export const createFormtsMethods = <Values extends object, Err>({
   const validateField = <T>(
     field: FieldDescriptor<T, Err>,
     trigger?: ValidationTrigger
-  ): Promise<void> => {
-    if (!options.validator) {
-      return Promise.resolve();
-    }
-    const {
-      onFieldValidationStart,
-      onFieldValidationEnd,
-    } = Helpers.makeValidationHandlers(dispatch);
-
-    return options.validator
-      .validate({
-        fields: [field],
-        getValue: getField,
-        trigger,
-        onFieldValidationStart,
-        onFieldValidationEnd,
-      })
-      .then(errors => {
-        setFieldErrors(...errors);
-      });
+  ): Future<void> => {
+    return _runValidation([field], trigger).map(it => void it);
   };
 
-  const validateForm = (): Promise<ValidationResult<Err>> => {
-    if (options.validator == null) {
-      return Promise.resolve([]);
-    }
+  const validateForm = (
+    trigger?: ValidationTrigger
+  ): Future<ValidationResult<Err>> => {
     const topLevelDescriptors = values(options.Schema);
+    return _runValidation(topLevelDescriptors, trigger);
+  };
+
+  const _runValidation = (
+    fields: Array<FieldDescriptor<unknown, Err>>,
+    trigger?: ValidationTrigger
+  ): Future<ValidationResult<Err>, unknown> => {
+    if (options.validator == null) {
+      return Future.success([]);
+    }
     const {
       onFieldValidationStart,
       onFieldValidationEnd,
@@ -69,12 +61,13 @@ export const createFormtsMethods = <Values extends object, Err>({
 
     return options.validator
       .validate({
-        fields: topLevelDescriptors,
+        fields,
+        trigger,
         getValue: getField,
         onFieldValidationStart,
         onFieldValidationEnd,
       })
-      .then(errors => {
+      .map(errors => {
         setFieldErrors(...errors);
         return errors;
       });
@@ -83,7 +76,7 @@ export const createFormtsMethods = <Values extends object, Err>({
   const setFieldValue = <T>(
     field: FieldDescriptor<T, Err>,
     value: T
-  ): Promise<void> => {
+  ): Future<void> => {
     const { __decoder, __path } = impl(field);
     const decodeResult = __decoder.decode(value);
 
@@ -92,7 +85,7 @@ export const createFormtsMethods = <Values extends object, Err>({
         `Can not set field value for: '${__path}' [${__decoder.fieldType}] - illegal value type.`,
         value
       );
-      return Promise.resolve();
+      return Future.success(undefined);
     }
 
     return _setDecodedFieldValue(field, decodeResult.value);
@@ -101,7 +94,7 @@ export const createFormtsMethods = <Values extends object, Err>({
   const setFieldValueFromEvent = <T>(
     field: FieldDescriptor<T, Err>,
     event: React.ChangeEvent<unknown>
-  ) => {
+  ): Future<void> => {
     const { __decoder, __path } = impl(field);
     const decodeResult = Helpers.decodeChangeEvent({
       event,
@@ -114,7 +107,7 @@ export const createFormtsMethods = <Values extends object, Err>({
         `Can not set field value for: '${__path}' [${__decoder.fieldType}] - failed to extract valid value from event.target.`,
         event?.target
       );
-      return Promise.resolve();
+      return Future.success(undefined);
     }
 
     return _setDecodedFieldValue(field, decodeResult.value);
@@ -123,35 +116,10 @@ export const createFormtsMethods = <Values extends object, Err>({
   const _setDecodedFieldValue = <T>(
     field: FieldDescriptor<T, Err>,
     value: T
-  ): Promise<void> => {
-    const validateAfterChange = () => {
-      if (!options.validator) {
-        return Promise.resolve();
-      }
+  ): Future<void> => {
+    dispatch({ type: "setValue", payload: { field, value } });
 
-      const {
-        onFieldValidationStart,
-        onFieldValidationEnd,
-      } = Helpers.makeValidationHandlers(dispatch);
-
-      return options.validator
-        .validate({
-          fields: [field],
-          getValue: getField,
-          trigger: "change",
-          onFieldValidationStart,
-          onFieldValidationEnd,
-        })
-        .then(errors => {
-          setFieldErrors(...errors);
-        });
-    };
-
-    dispatch({
-      type: "setValue",
-      payload: { field, value },
-    });
-    return validateAfterChange();
+    return validateField(field, "change");
   };
 
   const touchField = <T>(field: FieldDescriptor<T, Err>) =>
@@ -183,11 +151,11 @@ export const createFormtsMethods = <Values extends object, Err>({
     });
   };
 
-  const submitForm = (): Promise<FormSubmissionResult<Values, Err>> => {
+  const submitForm = (): Future<FormSubmissionResult<Values, Err>> => {
     dispatch({ type: "setIsSubmitting", payload: { isSubmitting: true } });
 
-    return validateForm()
-      .then(errors =>
+    return validateForm("submit")
+      .map(errors =>
         errors
           .filter(({ error }) => error != null)
           .map(({ field, error }) => ({
@@ -195,14 +163,14 @@ export const createFormtsMethods = <Values extends object, Err>({
             error: error!,
           }))
       )
-      .then(errors => {
+      .map(errors => {
         if (errors.length > 0) {
           return { ok: false, errors } as const;
         }
 
         return { ok: true, values: state.values.val } as const;
       })
-      .then(result => {
+      .map(result => {
         dispatch({
           type: "setIsSubmitting",
           payload: { isSubmitting: false },

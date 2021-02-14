@@ -1,5 +1,6 @@
 import { ChangeEvent } from "react";
 
+import { Future } from "../../utils/future";
 import type {
   FieldStateAtomCache,
   FieldDependenciesAtomCache,
@@ -19,17 +20,17 @@ export type InternalFormtsMethods<Values extends object, Err> = {
   validateField: <T>(
     field: FieldDescriptor<T, Err>,
     trigger?: ValidationTrigger
-  ) => Promise<void>;
-  validateForm: () => Promise<ValidationResult<Err>>;
-  setFieldValue: <T>(field: FieldDescriptor<T, Err>, value: T) => Promise<void>;
+  ) => Future<void>;
+  validateForm: () => Future<ValidationResult<Err>>;
+  setFieldValue: <T>(field: FieldDescriptor<T, Err>, value: T) => Future<void>;
   setFieldValueFromEvent: <T>(
     field: FieldDescriptor<T, Err>,
     event: ChangeEvent<unknown>
-  ) => Promise<void>;
+  ) => Future<void>;
   touchField: <T>(field: FieldDescriptor<T, Err>) => void;
   setFieldErrors: (...fields: ValidationResult<Err>) => void;
   resetForm: () => void;
-  submitForm: () => Promise<FormSubmissionResult<Values, Err>>;
+  submitForm: () => Future<FormSubmissionResult<Values, Err>>;
 };
 
 // internal context consumed by hooks

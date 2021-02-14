@@ -1,5 +1,6 @@
 import { isFalsy } from "../../utils";
 import { flatMap, uniqBy } from "../../utils/array";
+import { Future } from "../../utils/future";
 import {
   FieldDescriptor,
   getArrayDescriptorChildren,
@@ -96,24 +97,24 @@ export const createFormValidator = <Values extends object, Err>(
         }))
         .filter(x => x.validators.length > 0);
 
-      return Promise.all(
-        fieldsToValidate.map(({ field, validators }) => {
+      return Future.all(
+        ...fieldsToValidate.map(({ field, validators }) => {
           const value = getValue(field);
-
           onFieldValidationStart?.(field);
-          return firstNonNullPromise(validators, v =>
-            runValidationForField(v, value, getValue)
+
+          return firstNonNullFutureResult(
+            validators.map(v => runValidationForField(v, value, getValue))
           )
-            .catch(err => {
+            .flatMapErr(err => {
               if (err === true) {
-                return null; // optional validator edge-case
+                return Future.success(null); // optional validator edge-case
               }
               onFieldValidationEnd?.(field);
-              throw err;
+              return Future.failure(err);
             })
-            .then(error => {
+            .map(validationError => {
               onFieldValidationEnd?.(field);
-              return { field, error };
+              return { field, error: validationError };
             });
         })
       );
@@ -144,7 +145,7 @@ const runValidationForField = <Value, Err, Dependencies extends any[]>(
   validator: FieldValidator<Value, Err, Dependencies>,
   value: Value,
   getValue: GetValue
-): Promise<Err | null> => {
+): Future<Err | null, unknown> => {
   const dependenciesValues = !!validator.dependencies
     ? getDependenciesValues(validator.dependencies, getValue)
     : (([] as unknown) as Dependencies);
@@ -153,33 +154,28 @@ const runValidationForField = <Value, Err, Dependencies extends any[]>(
     .validators(...dependenciesValues)
     .filter(x => !isFalsy(x)) as Validator<Value, Err>[];
 
-  return firstNonNullPromise(rules, rule => {
-    try {
-      return Promise.resolve(rule(value));
-    } catch (err) {
-      return Promise.reject(err);
-    }
-  });
-};
-
-const firstNonNullPromise = <T, V>(
-  list: T[],
-  provider: (x: T) => Promise<V | null>
-): Promise<V | null> => {
-  if (list.length === 0) {
-    return Promise.resolve(null);
-  }
-
-  const [el, ...rest] = list;
-  return provider(el).then(result =>
-    result != null ? result : firstNonNullPromise(rest, provider)
+  return firstNonNullFutureResult(
+    rules.map(rule => Future.from(() => rule(value)))
   );
 };
 
-const getChildrenDescriptors = (
-  descriptor: FieldDescriptor<unknown, unknown>,
-  getValue: (field: FieldDescriptor<unknown, unknown>) => unknown
-): Array<FieldDescriptor<unknown, unknown>> => {
+const firstNonNullFutureResult = <T, E>(
+  futures: Array<Future<T | null, E>>
+): Future<T | null, E> => {
+  if (futures.length === 0) {
+    return Future.success(null);
+  }
+
+  const [first, ...rest] = futures;
+  return first.flatMap(result =>
+    result != null ? Future.success(result) : firstNonNullFutureResult(rest)
+  );
+};
+
+const getChildrenDescriptors = <Err>(
+  descriptor: FieldDescriptor<unknown, Err>,
+  getValue: (field: FieldDescriptor<unknown, Err>) => unknown
+): Array<FieldDescriptor<unknown, Err>> => {
   const root = [descriptor];
 
   if (isObjectDescriptor(descriptor)) {
@@ -222,11 +218,11 @@ const buildDependenciesDict = (
   return dict;
 };
 
-const getDependents = (
-  desc: FieldDescriptor<any>,
+const getDependents = <Err>(
+  desc: FieldDescriptor<any, Err>,
   dependenciesDict: DependenciesDict,
   getValue: GetValue
-): FieldDescriptor<any>[] => {
+): FieldDescriptor<any, Err>[] => {
   return flatMap(dependenciesDict[impl(desc).__path] ?? [], x => {
     if (isNth(x)) {
       const rootPath = impl(x).__rootPath;

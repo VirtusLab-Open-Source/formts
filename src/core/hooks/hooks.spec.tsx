@@ -1,6 +1,7 @@
 import { act, renderHook } from "@testing-library/react-hooks";
 import React from "react";
 
+import { Future } from "../../utils/future";
 import { createFormSchema } from "../builders";
 import { FormProvider } from "../context";
 import { ValidateIn } from "../types/form-validator";
@@ -737,8 +738,12 @@ describe("formts hooks API", () => {
     const validator = {
       validate: jest
         .fn()
-        .mockResolvedValueOnce([{ field: Schema.theNum, error: "ERR_1" }])
-        .mockResolvedValueOnce([{ field: Schema.theNum, error: null }]),
+        .mockReturnValueOnce(
+          Future.success([{ field: Schema.theNum, error: "ERR_1" }])
+        )
+        .mockReturnValueOnce(
+          Future.success([{ field: Schema.theNum, error: null }])
+        ),
     };
 
     const { result: controllerHook } = renderHook(() =>
@@ -800,8 +805,12 @@ describe("formts hooks API", () => {
     const validator = {
       validate: jest
         .fn()
-        .mockResolvedValueOnce([{ field: Schema.theNum, error: "ERR_1" }])
-        .mockResolvedValueOnce([{ field: Schema.theNum, error: null }]),
+        .mockReturnValueOnce(
+          Future.success([{ field: Schema.theNum, error: "ERR_1" }])
+        )
+        .mockReturnValueOnce(
+          Future.success([{ field: Schema.theNum, error: null }])
+        ),
     };
 
     const { result: controllerHook } = renderHook(() =>
@@ -864,7 +873,7 @@ describe("formts hooks API", () => {
       validate: jest
         .fn()
         .mockImplementation(({ fields, getValue }: ValidateIn<any>) =>
-          Promise.resolve(
+          Future.success(
             fields.map(field => ({
               field,
               error: getValue(field) === "" ? "REQUIRED" : null,
@@ -933,7 +942,7 @@ describe("formts hooks API", () => {
       validate: jest
         .fn()
         .mockImplementation(({ fields }: ValidateIn<any>) =>
-          Promise.resolve(fields.map(field => ({ field, error: "ERROR" })))
+          Future.success(fields.map(field => ({ field, error: "ERROR" })))
         ),
     };
 
@@ -983,9 +992,9 @@ describe("formts hooks API", () => {
       validate: jest
         .fn()
         .mockImplementationOnce(({ fields }: ValidateIn<any>) =>
-          Promise.resolve(fields.map(field => ({ field, error: "ERROR" })))
+          Future.success(fields.map(field => ({ field, error: "ERROR" })))
         )
-        .mockResolvedValueOnce([]),
+        .mockReturnValueOnce(Future.success([])),
     };
 
     const { result: controllerHook } = renderHook(() =>
