@@ -57,9 +57,10 @@ export const createFormtsMethods = <Values extends object, Err>({
     const {
       onFieldValidationStart,
       onFieldValidationEnd,
+      flushValidationHandlers,
     } = Helpers.makeValidationHandlers(dispatch);
 
-    return options.validator
+    const validationFuture = options.validator
       .validate({
         fields,
         trigger,
@@ -71,6 +72,11 @@ export const createFormtsMethods = <Values extends object, Err>({
         setFieldErrors(...errors);
         return errors;
       });
+
+    return Future.all(
+      validationFuture,
+      Future.from(flushValidationHandlers)
+    ).map(([validationResult]) => validationResult);
   };
 
   const setFieldValue = <T>(
