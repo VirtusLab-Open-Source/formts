@@ -4,6 +4,7 @@ import {
   createInitialValues,
   makeTouchedValues,
   makeUntouchedValues,
+  resolveTouched,
 } from "../../helpers";
 import { FormtsOptions } from "../../types/formts-options";
 import { FormtsAction, FormtsAtomState } from "../../types/formts-state";
@@ -44,12 +45,15 @@ export const createStateDispatch = <Values extends object, Err>(
     case "touchValue": {
       const lens = impl(action.payload.field).__lens;
 
-      const value = lens.get(state.values.val);
-      const touched = lens.update(state.touched.val, () =>
-        makeTouchedValues(value)
-      );
+      if (resolveTouched(lens.get(state.touched.val)) === false) {
+        const value = lens.get(state.values.val);
+        const touched = lens.update(state.touched.val, () =>
+          makeTouchedValues(value)
+        );
 
-      state.touched.set(touched);
+        state.touched.set(touched);
+      }
+
       break;
     }
 
@@ -78,15 +82,18 @@ export const createStateDispatch = <Values extends object, Err>(
 
         return errors;
       };
+      state.errors.set(resolveErrors());
 
       const values = lens.update(state.values.val, () => value);
-      const touched = lens.update(state.touched.val, () =>
-        makeTouchedValues(value)
-      );
-
-      state.errors.set(resolveErrors());
       state.values.set(values);
-      state.touched.set(touched);
+
+      if (resolveTouched(lens.get(state.touched.val)) === false) {
+        const touched = lens.update(state.touched.val, () =>
+          makeTouchedValues(value)
+        );
+        state.touched.set(touched);
+      }
+
       break;
     }
 

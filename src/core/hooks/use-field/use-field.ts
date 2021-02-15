@@ -1,5 +1,3 @@
-import { useMemo } from "react";
-
 import { keys, toIdentityDict } from "../../../utils";
 import { Atom } from "../../../utils/atoms";
 import { useSubscription } from "../../../utils/use-subscription";
@@ -17,6 +15,7 @@ import { FormController } from "../../types/form-controller";
 import { InternalFormtsMethods } from "../../types/formts-context";
 import { FormtsAtomState, TouchedValues } from "../../types/formts-state";
 import { impl } from "../../types/type-mapper-util";
+import { FieldStateAtomCache } from "../use-form-controller/atom-cache";
 
 /**
  * Hook used to gain access to field-specific state and methods
@@ -44,21 +43,26 @@ export const useField = <T, Err>(
   fieldDescriptor: GenericFieldDescriptor<T, Err>,
   controller?: FormController
 ): FieldHandle<T, Err> => {
-  const { methods, state } = useFormtsContext<object, Err>(controller);
-
-  const fieldState = useMemo(() => createFieldState(state, fieldDescriptor), [
+  const {
+    methods,
     state,
-    impl(fieldDescriptor).__path,
-  ]);
-  const dependencies = useMemo(
-    () => createDependenciesState(state, fieldDescriptor),
-    [state, impl(fieldDescriptor).__path]
-  );
+    fieldStateCache,
+    fieldDependenciesCache,
+  } = useFormtsContext<object, Err>(controller);
+
+  const fieldState = fieldStateCache.get(fieldDescriptor);
+  const dependencies = fieldDependenciesCache.get(fieldDescriptor);
 
   useSubscription(fieldState);
   useSubscription(dependencies);
 
-  return createFieldHandle(fieldDescriptor, methods, fieldState, state);
+  return createFieldHandle(
+    fieldDescriptor,
+    methods,
+    fieldState,
+    state,
+    fieldStateCache
+  );
 };
 
 type FieldState<T> = Atom.Readonly<{
@@ -66,41 +70,12 @@ type FieldState<T> = Atom.Readonly<{
   touched: TouchedValues<T>;
 }>;
 
-const createFieldState = <T, Err>(
-  state: FormtsAtomState<object, Err>,
-  field: FieldDescriptor<T, Err>
-): FieldState<T> => {
-  const lens = impl(field).__lens;
-
-  return Atom.fuse(
-    (value, touched) => ({
-      value,
-      touched: touched as any,
-    }),
-    Atom.entangle(state.values, lens),
-    Atom.entangle(state.touched, lens)
-  );
-};
-
-const createDependenciesState = <T, Err>(
-  state: FormtsAtomState<object, Err>,
-  field: FieldDescriptor<T, Err>
-): Atom.Readonly<{}> => {
-  return Atom.fuse(
-    (_branchErrors, _branchValidating) => ({}),
-    Atom.fuse(x => Helpers.constructBranchErrorsString(x, field), state.errors),
-    Atom.fuse(
-      x => Helpers.constructBranchValidatingString(x, field),
-      state.validating
-    )
-  );
-};
-
 const createFieldHandle = <T, Err>(
   descriptor: FieldDescriptor<T, Err>,
   methods: InternalFormtsMethods<object, Err>,
   fieldState: FieldState<T>,
-  formState: FormtsAtomState<object, Err>
+  formState: FormtsAtomState<object, Err>,
+  fieldStateCache: FieldStateAtomCache<object, Err>
 ): FieldHandle<T, Err> =>
   toFieldHandle({
     descriptor,
@@ -133,15 +108,13 @@ const createFieldHandle = <T, Err>(
               enumerable: true,
               get: function () {
                 const nestedDescriptor = descriptor[key];
-                const childState = createFieldState(
-                  formState,
-                  nestedDescriptor
-                );
+                const childState = fieldStateCache.get(nestedDescriptor);
                 return createFieldHandle(
                   nestedDescriptor,
                   methods,
                   childState,
-                  formState
+                  formState,
+                  fieldStateCache
                 );
               },
             }),
@@ -153,12 +126,13 @@ const createFieldHandle = <T, Err>(
         const value = (fieldState.val.value as unknown) as unknown[];
         return value.map((_, i) => {
           const childDescriptor = descriptor.nth(i);
-          const childState = createFieldState(formState, childDescriptor);
+          const childState = fieldStateCache.get(childDescriptor);
           return createFieldHandle(
             descriptor.nth(i),
             methods,
             childState,
-            formState
+            formState,
+            fieldStateCache
           );
         });
       }
