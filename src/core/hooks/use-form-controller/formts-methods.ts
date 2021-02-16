@@ -66,10 +66,7 @@ export const createFormtsMethods = <Values extends object, Err>({
         onFieldValidationStart,
         onFieldValidationEnd,
       })
-      .map(errors => {
-        setFieldErrors(...errors);
-        return errors;
-      });
+      .flatMap(errors => setFieldErrors(...errors).map(() => errors));
 
     return Future.all(
       validationFuture,
@@ -134,34 +131,37 @@ export const createFormtsMethods = <Values extends object, Err>({
     return validateField(field, "change");
   };
 
-  const touchField = <T>(field: FieldDescriptor<T, Err>) =>
-    dispatch({ type: "touchValue", payload: { field } });
+  const touchField = <T>(field: FieldDescriptor<T, Err>): Future<void> =>
+    Future.from(() => dispatch({ type: "touchValue", payload: { field } }));
 
   const setFieldErrors = (
     ...fields: Array<{
       field: FieldDescriptor<unknown, Err>;
       error: Err | null;
     }>
-  ) =>
-    dispatch({
-      type: "setErrors",
-      payload: fields.map(it => ({
-        path: impl(it.field).__path,
-        error: it.error,
-      })),
-    });
+  ): Future<void> =>
+    Future.from(() =>
+      dispatch({
+        type: "setErrors",
+        payload: fields.map(it => ({
+          path: impl(it.field).__path,
+          error: it.error,
+        })),
+      })
+    );
 
-  const resetForm = () => {
-    dispatch({
-      type: "reset",
-      payload: {
-        values: Helpers.createInitialValues(
-          options.Schema,
-          options.initialValues
-        ),
-      },
-    });
-  };
+  const resetForm = (): Future<void> =>
+    Future.from(() =>
+      dispatch({
+        type: "reset",
+        payload: {
+          values: Helpers.createInitialValues(
+            options.Schema,
+            options.initialValues
+          ),
+        },
+      })
+    );
 
   const submitForm = (
     onSuccess: (values: Values) => Future<void>,

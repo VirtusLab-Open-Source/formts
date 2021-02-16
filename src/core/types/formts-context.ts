@@ -23,9 +23,9 @@ export type InternalFormtsMethods<Values extends object, Err> = {
     field: FieldDescriptor<T, Err>,
     event: ChangeEvent<unknown>
   ) => Future<void>;
-  touchField: <T>(field: FieldDescriptor<T, Err>) => void;
-  setFieldErrors: (...fields: ValidationResult<Err>) => void;
-  resetForm: () => void;
+  touchField: <T>(field: FieldDescriptor<T, Err>) => Future<void>;
+  setFieldErrors: (...fields: ValidationResult<Err>) => Future<void>;
+  resetForm: () => Future<void>;
   submitForm: (
     onSuccess: (values: Values) => Future<void>,
     onFailure: (errors: Array<FieldError<Err>>) => Future<void>

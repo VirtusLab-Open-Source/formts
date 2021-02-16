@@ -66,25 +66,22 @@ export const useFormHandle = <Values extends object, Err>(
 
     isValidating: stateAtom.val.isValidating,
 
-    reset: methods.resetForm,
+    reset: () => methods.resetForm().runPromise(),
 
     validate: () => methods.validateForm().runPromise(),
 
-    submit: (onSuccess, onFailure) => {
-      return methods
+    submit: (onSuccess, onFailure) =>
+      methods
         .submitForm(
           values => Future.from(() => onSuccess(values)).map(() => {}),
           errors => Future.from(() => onFailure?.(errors))
         )
-        .runPromise();
-    },
+        .runPromise(),
 
-    setFieldValue: (field, value) => {
-      return methods.setFieldValue(field, value).runPromise();
-    },
+    setFieldValue: (field, value) =>
+      methods.setFieldValue(field, value).runPromise(),
 
-    setFieldError: (field, error) => {
-      methods.setFieldErrors({ field, error });
-    },
+    setFieldError: (field, error) =>
+      methods.setFieldErrors({ field, error }).runPromise(),
   };
 };
