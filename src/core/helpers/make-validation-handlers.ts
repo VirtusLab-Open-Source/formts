@@ -1,29 +1,23 @@
 import type { Dispatch } from "react";
 
-import { values } from "../../utils";
+import { keys } from "../../utils";
 import { FieldDescriptor } from "../types/field-descriptor";
 import { FormtsAction } from "../types/formts-state";
 import { impl } from "../types/type-mapper-util";
 
-type Task = () => void;
-type TaskCache = Record<string, Task | undefined>;
+type FieldPath = string;
 
 export const makeValidationHandlers = <Values extends object, Err>(
   dispatch: Dispatch<FormtsAction<Values, Err>>
 ) => {
   const uuid = generateSimpleUuid();
-  let pendingStartDispatchers: TaskCache = {};
+  let pendingValidationStartFields: Record<FieldPath, true> = {};
 
   return {
     /**  enqueues dispatch of 'validatingStart' action */
     onFieldValidationStart: (field: FieldDescriptor<unknown, Err>) => {
       const path = impl(field).__path;
-      pendingStartDispatchers[path] = () => {
-        dispatch({
-          type: "validatingStart",
-          payload: { path: impl(field).__path, uuid },
-        });
-      };
+      pendingValidationStartFields[path] = true;
     },
 
     /**
@@ -33,8 +27,8 @@ export const makeValidationHandlers = <Values extends object, Err>(
     onFieldValidationEnd: (field: FieldDescriptor<unknown, Err>) => {
       const path = impl(field).__path;
 
-      if (pendingStartDispatchers[path]) {
-        pendingStartDispatchers[path] = undefined;
+      if (pendingValidationStartFields[path]) {
+        delete pendingValidationStartFields[path];
       } else {
         dispatch({
           type: "validatingStop",
@@ -48,8 +42,13 @@ export const makeValidationHandlers = <Values extends object, Err>(
      * Should be called after invoking validation function, but before awaiting it's finish
      */
     flushValidationHandlers: () => {
-      values(pendingStartDispatchers).forEach(task => task?.());
-      pendingStartDispatchers = {};
+      keys(pendingValidationStartFields).forEach(path => {
+        dispatch({
+          type: "validatingStart",
+          payload: { path, uuid },
+        });
+      });
+      pendingValidationStartFields = {};
     },
   };
 };
