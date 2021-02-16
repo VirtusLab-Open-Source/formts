@@ -1,6 +1,6 @@
 import { keys, toIdentityDict } from "../../../utils";
 import { Atom } from "../../../utils/atoms";
-import { Future } from "../../../utils/future";
+import { Task } from "../../../utils/task";
 import { useSubscription } from "../../../utils/use-subscription";
 import { useFormtsContext } from "../../context";
 import * as Helpers from "../../helpers";
@@ -149,7 +149,7 @@ const createFieldHandle = <T, Err>(
     },
 
     handleBlur: () =>
-      Future.all(
+      Task.all(
         methods.touchField(descriptor),
         methods.validateField(descriptor, "blur")
       ).runPromise(),

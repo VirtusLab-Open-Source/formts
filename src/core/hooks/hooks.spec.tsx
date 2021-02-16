@@ -1,7 +1,7 @@
 import { act, renderHook } from "@testing-library/react-hooks";
 import React from "react";
 
-import { Future } from "../../utils/future";
+import { Task } from "../../utils/task";
 import { createFormSchema } from "../builders";
 import { FormProvider } from "../context";
 import { ValidateIn } from "../types/form-validator";
@@ -740,10 +740,10 @@ describe("formts hooks API", () => {
       validate: jest
         .fn()
         .mockReturnValueOnce(
-          Future.success([{ field: Schema.theNum, error: "ERR_1" }])
+          Task.success([{ field: Schema.theNum, error: "ERR_1" }])
         )
         .mockReturnValueOnce(
-          Future.success([{ field: Schema.theNum, error: null }])
+          Task.success([{ field: Schema.theNum, error: null }])
         ),
     });
 
@@ -807,10 +807,10 @@ describe("formts hooks API", () => {
       validate: jest
         .fn()
         .mockReturnValueOnce(
-          Future.success([{ field: Schema.theNum, error: "ERR_1" }])
+          Task.success([{ field: Schema.theNum, error: "ERR_1" }])
         )
         .mockReturnValueOnce(
-          Future.success([{ field: Schema.theNum, error: null }])
+          Task.success([{ field: Schema.theNum, error: null }])
         ),
     });
 
@@ -874,7 +874,7 @@ describe("formts hooks API", () => {
       validate: jest
         .fn()
         .mockImplementation(({ fields, getValue }: ValidateIn<any>) =>
-          Future.success(
+          Task.success(
             fields.map(field => ({
               field,
               error: getValue(field) === "" ? "REQUIRED" : null,
@@ -943,7 +943,7 @@ describe("formts hooks API", () => {
       validate: jest
         .fn()
         .mockImplementation(({ fields }: ValidateIn<any>) =>
-          Future.success(fields.map(field => ({ field, error: "ERROR" })))
+          Task.success(fields.map(field => ({ field, error: "ERROR" })))
         ),
     });
 
@@ -993,9 +993,9 @@ describe("formts hooks API", () => {
       validate: jest
         .fn()
         .mockImplementationOnce(({ fields }: ValidateIn<any>) =>
-          Future.success(fields.map(field => ({ field, error: "ERROR" })))
+          Task.success(fields.map(field => ({ field, error: "ERROR" })))
         )
-        .mockReturnValueOnce(Future.success([])),
+        .mockReturnValueOnce(Task.success([])),
     });
 
     const { result: controllerHook } = renderHook(() =>

@@ -1,7 +1,7 @@
 import React from "react";
 
 import { get, logger, values } from "../../../utils";
-import { Future } from "../../../utils/future";
+import { Task } from "../../../utils/task";
 import * as Helpers from "../../helpers";
 import { FieldDescriptor } from "../../types/field-descriptor";
 import { FieldError } from "../../types/form-handle";
@@ -34,13 +34,13 @@ export const createFormtsMethods = <Values extends object, Err>({
   const validateField = <T>(
     field: FieldDescriptor<T, Err>,
     trigger?: ValidationTrigger
-  ): Future<void> => {
+  ): Task<void> => {
     return _runValidation([field], trigger).map(it => void it);
   };
 
   const validateForm = (
     trigger?: ValidationTrigger
-  ): Future<ValidationResult<Err>> => {
+  ): Task<ValidationResult<Err>> => {
     const topLevelDescriptors = values(options.Schema);
     return _runValidation(topLevelDescriptors, trigger);
   };
@@ -48,9 +48,9 @@ export const createFormtsMethods = <Values extends object, Err>({
   const _runValidation = (
     fields: Array<FieldDescriptor<unknown, Err>>,
     trigger?: ValidationTrigger
-  ): Future<ValidationResult<Err>, unknown> => {
+  ): Task<ValidationResult<Err>, unknown> => {
     if (options.validator == null) {
-      return Future.success([]);
+      return Task.success([]);
     }
     const {
       onFieldValidationStart,
@@ -58,7 +58,7 @@ export const createFormtsMethods = <Values extends object, Err>({
       flushValidationHandlers,
     } = Helpers.makeValidationHandlers(dispatch);
 
-    const validationFuture = impl(options.validator)
+    const validationTask = impl(options.validator)
       .validate({
         fields,
         trigger,
@@ -68,18 +68,17 @@ export const createFormtsMethods = <Values extends object, Err>({
       })
       .flatMap(errors => setFieldErrors(...errors).map(() => errors));
 
-    return Future.all(
-      validationFuture,
-      Future.from(flushValidationHandlers)
-    ).map(([validationResult]) => validationResult);
+    return Task.all(validationTask, Task.from(flushValidationHandlers)).map(
+      ([validationResult]) => validationResult
+    );
   };
 
   const setFieldValue = <T>(
     field: FieldDescriptor<T, Err>,
     value: T
-  ): Future<void> => {
+  ): Task<void> => {
     if (state.isSubmitting.val) {
-      return Future.success();
+      return Task.success();
     }
 
     const { __decoder, __path } = impl(field);
@@ -90,7 +89,7 @@ export const createFormtsMethods = <Values extends object, Err>({
         `Can not set field value for: '${__path}' [${__decoder.fieldType}] - illegal value type.`,
         value
       );
-      return Future.success();
+      return Task.success();
     }
 
     return _setDecodedFieldValue(field, decodeResult.value);
@@ -99,9 +98,9 @@ export const createFormtsMethods = <Values extends object, Err>({
   const setFieldValueFromEvent = <T>(
     field: FieldDescriptor<T, Err>,
     event: React.ChangeEvent<unknown>
-  ): Future<void> => {
+  ): Task<void> => {
     if (state.isSubmitting.val) {
-      return Future.success();
+      return Task.success();
     }
 
     const { __decoder, __path } = impl(field);
@@ -116,7 +115,7 @@ export const createFormtsMethods = <Values extends object, Err>({
         `Can not set field value for: '${__path}' [${__decoder.fieldType}] - failed to extract valid value from event.target.`,
         event?.target
       );
-      return Future.success(undefined);
+      return Task.success(undefined);
     }
 
     return _setDecodedFieldValue(field, decodeResult.value);
@@ -125,22 +124,22 @@ export const createFormtsMethods = <Values extends object, Err>({
   const _setDecodedFieldValue = <T>(
     field: FieldDescriptor<T, Err>,
     value: T
-  ): Future<void> => {
+  ): Task<void> => {
     dispatch({ type: "setValue", payload: { field, value } });
 
     return validateField(field, "change");
   };
 
-  const touchField = <T>(field: FieldDescriptor<T, Err>): Future<void> =>
-    Future.from(() => dispatch({ type: "touchValue", payload: { field } }));
+  const touchField = <T>(field: FieldDescriptor<T, Err>): Task<void> =>
+    Task.from(() => dispatch({ type: "touchValue", payload: { field } }));
 
   const setFieldErrors = (
     ...fields: Array<{
       field: FieldDescriptor<unknown, Err>;
       error: Err | null;
     }>
-  ): Future<void> =>
-    Future.from(() =>
+  ): Task<void> =>
+    Task.from(() =>
       dispatch({
         type: "setErrors",
         payload: fields.map(it => ({
@@ -150,8 +149,8 @@ export const createFormtsMethods = <Values extends object, Err>({
       })
     );
 
-  const resetForm = (): Future<void> =>
-    Future.from(() =>
+  const resetForm = (): Task<void> =>
+    Task.from(() =>
       dispatch({
         type: "reset",
         payload: {
@@ -164,9 +163,9 @@ export const createFormtsMethods = <Values extends object, Err>({
     );
 
   const submitForm = (
-    onSuccess: (values: Values) => Future<void>,
-    onFailure: (errors: Array<FieldError<Err>>) => Future<void>
-  ): Future<void> => {
+    onSuccess: (values: Values) => Task<void>,
+    onFailure: (errors: Array<FieldError<Err>>) => Task<void>
+  ): Task<void> => {
     dispatch({ type: "setIsSubmitting", payload: { isSubmitting: true } });
 
     const cleanup = () => {

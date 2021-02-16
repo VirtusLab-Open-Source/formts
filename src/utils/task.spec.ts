@@ -1,20 +1,20 @@
 import { IsExact, assert } from "conditional-type-checks";
 
-import { Future } from "./future";
+import { Task } from "./task";
 
-const enqueueTask = (task: () => void) => {
-  setTimeout(task, 0);
+const enqueueEffect = (effect: () => void) => {
+  setTimeout(effect, 0);
 };
 
-describe("Future", () => {
+describe("Task", () => {
   describe("creators", () => {
     describe("success", () => {
-      it("creates sync success Future", () => {
-        const future = Future.success(42);
+      it("creates sync success Task", () => {
+        const task = Task.success(42);
 
         const onSuccess = jest.fn();
         const onFailure = jest.fn();
-        future.run({ onSuccess, onFailure });
+        task.run({ onSuccess, onFailure });
 
         expect(onSuccess).toHaveBeenCalledWith(42);
         expect(onFailure).not.toHaveBeenCalled();
@@ -22,12 +22,12 @@ describe("Future", () => {
     });
 
     describe("failure", () => {
-      it("creates sync failure Future", () => {
-        const future = Future.failure("much error!");
+      it("creates sync failure Task", () => {
+        const task = Task.failure("much error!");
 
         const onSuccess = jest.fn();
         const onFailure = jest.fn();
-        future.run({ onSuccess, onFailure });
+        task.run({ onSuccess, onFailure });
 
         expect(onSuccess).not.toHaveBeenCalled();
         expect(onFailure).toHaveBeenCalledWith("much error!");
@@ -35,16 +35,16 @@ describe("Future", () => {
     });
 
     describe("make", () => {
-      it("creates sync success Future using resolve cb", () => {
+      it("creates sync success Task using resolve cb", () => {
         const getVal = jest.fn().mockReturnValue(42);
 
-        const future = Future.make<number>(({ resolve }) => {
+        const task = Task.make<number>(({ resolve }) => {
           resolve(getVal());
         });
 
         expect(getVal).not.toHaveBeenCalled();
 
-        future.run({
+        task.run({
           onSuccess: val => {
             expect(val).toBe(42);
           },
@@ -57,16 +57,16 @@ describe("Future", () => {
         expect.assertions(3);
       });
 
-      it("creates sync failure Future using reject cb", () => {
+      it("creates sync failure Task using reject cb", () => {
         const getErr = jest.fn().mockReturnValue("ERR");
 
-        const future = Future.make<number>(({ reject }) => {
+        const task = Task.make<number>(({ reject }) => {
           reject(getErr());
         });
 
         expect(getErr).not.toHaveBeenCalled();
 
-        future.run({
+        task.run({
           onSuccess: () => {
             fail("expected onSuccess not to be called");
           },
@@ -79,18 +79,18 @@ describe("Future", () => {
         expect.assertions(3);
       });
 
-      it("creates async success Future using resolve cb", done => {
+      it("creates async success Task using resolve cb", done => {
         const getVal = jest.fn().mockReturnValue(42);
 
-        const future = Future.make<number>(({ resolve }) => {
-          enqueueTask(() => {
+        const task = Task.make<number>(({ resolve }) => {
+          enqueueEffect(() => {
             resolve(getVal());
           });
         });
 
         expect(getVal).not.toHaveBeenCalled();
 
-        future.run({
+        task.run({
           onSuccess: val => {
             expect(val).toBe(42);
             expect(getVal).toHaveBeenCalled();
@@ -106,18 +106,18 @@ describe("Future", () => {
         expect.assertions(4);
       });
 
-      it("creates async failure Future using resolve cb", done => {
+      it("creates async failure Task using resolve cb", done => {
         const getErr = jest.fn().mockReturnValue("ERR");
 
-        const future = Future.make<number>(({ reject }) => {
-          enqueueTask(() => {
+        const task = Task.make<number>(({ reject }) => {
+          enqueueEffect(() => {
             reject(getErr());
           });
         });
 
         expect(getErr).not.toHaveBeenCalled();
 
-        future.run({
+        task.run({
           onSuccess: () => {
             fail("expected onSuccess not to be called");
           },
@@ -133,13 +133,13 @@ describe("Future", () => {
       });
 
       it("ignores any extra sync calls of resolve/reject cb", () => {
-        const future = Future.make<number>(({ resolve, reject }) => {
+        const task = Task.make<number>(({ resolve, reject }) => {
           resolve(42);
           resolve(24);
           reject("ERR");
         });
 
-        future.run({
+        task.run({
           onSuccess: val => {
             expect(val).toBe(42);
           },
@@ -152,19 +152,19 @@ describe("Future", () => {
       });
 
       it("ignores any extra async calls of resolve/reject cb", done => {
-        const future = Future.make<number>(({ resolve, reject }) => {
-          enqueueTask(() => {
+        const task = Task.make<number>(({ resolve, reject }) => {
+          enqueueEffect(() => {
             resolve(42);
-            enqueueTask(() => {
+            enqueueEffect(() => {
               resolve(24);
-              enqueueTask(() => {
+              enqueueEffect(() => {
                 reject("ERR");
               });
             });
           });
         });
 
-        future.run({
+        task.run({
           onSuccess: val => {
             expect(val).toBe(42);
             done();
@@ -178,12 +178,12 @@ describe("Future", () => {
       });
 
       it("throws if make cb function throws", () => {
-        const future = Future.make<number>(() => {
+        const task = Task.make<number>(() => {
           throw "err";
         });
 
         expect(() =>
-          future.run({
+          task.run({
             onSuccess: () => {
               fail("expected onSuccess not to be called");
             },
@@ -196,51 +196,51 @@ describe("Future", () => {
     });
 
     describe("from", () => {
-      it("creates sync success Future if provided plain value", () => {
+      it("creates sync success Task if provided plain value", () => {
         const provider = () => 42;
 
-        const future = Future.from(provider);
+        const task = Task.from(provider);
 
         const onSuccess = jest.fn();
         const onFailure = jest.fn();
-        future.run({ onSuccess, onFailure });
+        task.run({ onSuccess, onFailure });
 
         expect(onSuccess).toHaveBeenCalledWith(42);
         expect(onFailure).not.toHaveBeenCalled();
       });
 
-      it("creates success Future if provided success Future", () => {
-        const provider = () => Future.success(42);
+      it("creates success Task if provided success Task", () => {
+        const provider = () => Task.success(42);
 
-        const future = Future.from(provider);
+        const task = Task.from(provider);
 
         const onSuccess = jest.fn();
         const onFailure = jest.fn();
-        future.run({ onSuccess, onFailure });
+        task.run({ onSuccess, onFailure });
 
         expect(onSuccess).toHaveBeenCalledWith(42);
         expect(onFailure).not.toHaveBeenCalled();
       });
 
-      it("creates failure Future if provided failure Future", () => {
-        const provider = () => Future.failure(666);
+      it("creates failure Task if provided failure Task", () => {
+        const provider = () => Task.failure(666);
 
-        const future = Future.from(provider);
+        const task = Task.from(provider);
 
         const onSuccess = jest.fn();
         const onFailure = jest.fn();
-        future.run({ onSuccess, onFailure });
+        task.run({ onSuccess, onFailure });
 
         expect(onSuccess).not.toHaveBeenCalled();
         expect(onFailure).toHaveBeenCalledWith(666);
       });
 
-      it("creates success Future if provided resolving Promise", done => {
+      it("creates success Task if provided resolving Promise", done => {
         const provider = () => Promise.resolve(42);
 
-        const future = Future.from(provider);
+        const task = Task.from(provider);
 
-        future.run({
+        task.run({
           onSuccess: val => {
             expect(val).toBe(42);
             done();
@@ -253,12 +253,12 @@ describe("Future", () => {
         expect.assertions(1);
       });
 
-      it("creates failure Future if provided rejecting Promise", done => {
+      it("creates failure Task if provided rejecting Promise", done => {
         const provider = () => Promise.reject(666);
 
-        const future = Future.from(provider);
+        const task = Task.from(provider);
 
-        future.run({
+        task.run({
           onSuccess: () => {
             fail("expected onSuccess not to be called");
           },
@@ -271,16 +271,16 @@ describe("Future", () => {
         expect.assertions(1);
       });
 
-      it("creates failure Future if provider throws", () => {
+      it("creates failure Task if provider throws", () => {
         const provider = () => {
           throw 666;
         };
 
-        const future = Future.from(provider);
+        const task = Task.from(provider);
 
         const onSuccess = jest.fn();
         const onFailure = jest.fn();
-        future.run({ onSuccess, onFailure });
+        task.run({ onSuccess, onFailure });
 
         expect(onSuccess).not.toHaveBeenCalled();
         expect(onFailure).toHaveBeenCalledWith(666);
@@ -288,54 +288,54 @@ describe("Future", () => {
     });
 
     describe("all", () => {
-      it("creates sync success future of empty tuple when called with no input futures", () => {
-        const future = Future.all();
+      it("creates sync success task of empty tuple when called with no input tasks", () => {
+        const task = Task.all();
 
         const onSuccess = jest.fn();
         const onFailure = jest.fn();
-        future.run({ onSuccess, onFailure });
+        task.run({ onSuccess, onFailure });
 
         expect(onSuccess).toHaveBeenCalledWith([]);
         expect(onFailure).not.toHaveBeenCalled();
       });
 
-      it("creates future which success type is a tuple and failure type is an union of input types", () => {
-        const f1: Future<"T1", "E1"> = Future.success("T1");
-        const f2: Future<"T2", "E2"> = Future.success("T2");
-        const f3: Future<"T3", "E3"> = Future.success("T3");
+      it("creates task which success type is a tuple and failure type is an union of input types", () => {
+        const t1: Task<"T1", "E1"> = Task.success("T1");
+        const t2: Task<"T2", "E2"> = Task.success("T2");
+        const t3: Task<"T3", "E3"> = Task.success("T3");
 
-        const future = Future.all(f1, f2, f3);
+        const task = Task.all(t1, t2, t3);
 
-        type Actual = typeof future;
-        type Expected = Future<["T1", "T2", "T3"], "E1" | "E2" | "E3">;
+        type Actual = typeof task;
+        type Expected = Task<["T1", "T2", "T3"], "E1" | "E2" | "E3">;
 
         assert<IsExact<Actual, Expected>>(true);
       });
 
-      it("creates sync success future of tuple value from provided sync futures", () => {
-        const f1 = Future.success("T1");
-        const f2 = Future.success("T2");
-        const f3 = Future.success("T3");
+      it("creates sync success task of tuple value from provided sync tasks", () => {
+        const t1 = Task.success("T1");
+        const t2 = Task.success("T2");
+        const t3 = Task.success("T3");
 
-        const future = Future.all(f1, f2, f3);
+        const task = Task.all(t1, t2, t3);
 
         const onSuccess = jest.fn();
         const onFailure = jest.fn();
-        future.run({ onSuccess, onFailure });
+        task.run({ onSuccess, onFailure });
 
         expect(onSuccess).toHaveBeenCalledWith(["T1", "T2", "T3"]);
         expect(onFailure).not.toHaveBeenCalled();
       });
 
-      it("creates async success future of tuple value from provided async futures", done => {
-        const f1 = Future.success("T1");
-        const f2 = Future.success("T2");
-        const f3 = Future.from(() => Promise.resolve("T3"));
+      it("creates async success task of tuple value from provided async tasks", done => {
+        const t1 = Task.success("T1");
+        const t2 = Task.success("T2");
+        const t3 = Task.from(() => Promise.resolve("T3"));
 
-        const future = Future.all(f1, f2, f3);
+        const task = Task.all(t1, t2, t3);
         const spy = jest.fn();
 
-        future.run({
+        task.run({
           onSuccess: val => {
             spy();
             expect(val).toEqual(["T1", "T2", "T3"]);
@@ -350,30 +350,30 @@ describe("Future", () => {
         expect.assertions(2);
       });
 
-      it("creates sync failure future of tuple value from provided sync futures when one fails", () => {
-        const f1 = Future.success("T1");
-        const f2 = Future.failure("E2");
-        const f3 = Future.success("T3");
+      it("creates sync failure task of tuple value from provided sync tasks when one fails", () => {
+        const t1 = Task.success("T1");
+        const t2 = Task.failure("E2");
+        const t3 = Task.success("T3");
 
-        const future = Future.all(f1, f2, f3);
+        const task = Task.all(t1, t2, t3);
 
         const onSuccess = jest.fn();
         const onFailure = jest.fn();
-        future.run({ onSuccess, onFailure });
+        task.run({ onSuccess, onFailure });
 
         expect(onFailure).toHaveBeenCalledWith("E2");
         expect(onSuccess).not.toHaveBeenCalled();
       });
 
-      it("creates async failure future of tuple value from provided async futures when one fails", done => {
-        const f1 = Future.success("T1");
-        const f2 = Future.from(() => Promise.reject("E2"));
-        const f3 = Future.success("T3");
+      it("creates async failure task of tuple value from provided async tasks when one fails", done => {
+        const t1 = Task.success("T1");
+        const t2 = Task.from(() => Promise.reject("E2"));
+        const t3 = Task.success("T3");
 
-        const future = Future.all(f1, f2, f3);
+        const task = Task.all(t1, t2, t3);
         const spy = jest.fn();
 
-        future.run({
+        task.run({
           onSuccess: () => {
             fail("expected onSuccess not to be called");
           },
@@ -392,11 +392,11 @@ describe("Future", () => {
 
   describe("methods", () => {
     describe("run", () => {
-      it("executes onSuccess callback for successful Future", done => {
+      it("executes onSuccess callback for successful Task", done => {
         const effect = jest.fn();
-        const future = Future.make<number>(({ resolve, reject }) => {
+        const task = Task.make<number>(({ resolve, reject }) => {
           effect();
-          enqueueTask(() => {
+          enqueueEffect(() => {
             resolve(42);
             reject("ERR");
           });
@@ -404,7 +404,7 @@ describe("Future", () => {
 
         expect(effect).not.toHaveBeenCalled();
 
-        future.run({
+        task.run({
           onSuccess: val => {
             expect(val).toBe(42);
             done();
@@ -419,11 +419,11 @@ describe("Future", () => {
         expect.assertions(3);
       });
 
-      it("executes onFailure callback for successful Future", done => {
+      it("executes onFailure callback for successful Task", done => {
         const effect = jest.fn();
-        const future = Future.make<number>(({ resolve, reject }) => {
+        const task = Task.make<number>(({ resolve, reject }) => {
           effect();
-          enqueueTask(() => {
+          enqueueEffect(() => {
             reject("ERR");
             resolve(42);
           });
@@ -431,7 +431,7 @@ describe("Future", () => {
 
         expect(effect).not.toHaveBeenCalled();
 
-        future.run({
+        task.run({
           onSuccess: () => {
             fail("expected onSuccess not to be called");
           },
@@ -451,20 +451,20 @@ describe("Future", () => {
         const onSuccess = jest.fn();
         const onFailure = jest.fn();
 
-        const future = Future.make<number>(({ resolve }) => {
+        const task = Task.make<number>(({ resolve }) => {
           effect();
           resolve(42);
         });
 
         expect(effect).not.toHaveBeenCalled();
 
-        future.run({ onSuccess, onFailure });
+        task.run({ onSuccess, onFailure });
 
         expect(effect).toHaveBeenCalledTimes(1);
         expect(onSuccess).toHaveBeenCalledTimes(1);
         expect(onFailure).not.toHaveBeenCalled();
 
-        future.run({ onSuccess, onFailure });
+        task.run({ onSuccess, onFailure });
 
         expect(effect).toHaveBeenCalledTimes(2);
         expect(onSuccess).toHaveBeenCalledTimes(2);
@@ -473,17 +473,17 @@ describe("Future", () => {
     });
 
     describe("runPromise", () => {
-      it("runs effect and returns resolving Promise for successful Future", async () => {
+      it("runs effect and returns resolving Promise for successful Task", async () => {
         const effect = jest.fn();
 
-        const future = Future.make<number>(({ resolve }) => {
+        const task = Task.make<number>(({ resolve }) => {
           effect();
           resolve(42);
         });
 
         expect(effect).not.toHaveBeenCalled();
 
-        const promise = future.runPromise();
+        const promise = task.runPromise();
 
         expect(effect).toHaveBeenCalled();
 
@@ -491,17 +491,17 @@ describe("Future", () => {
         expect(value).toBe(42);
       });
 
-      it("runs effect and returns rejecting Promise for failing Future", async () => {
+      it("runs effect and returns rejecting Promise for failing Task", async () => {
         const effect = jest.fn();
 
-        const future = Future.make<number>(({ reject }) => {
+        const task = Task.make<number>(({ reject }) => {
           effect();
           reject("ERR");
         });
 
         expect(effect).not.toHaveBeenCalled();
 
-        const promise = future.runPromise();
+        const promise = task.runPromise();
 
         expect(effect).toHaveBeenCalled();
 
@@ -516,29 +516,27 @@ describe("Future", () => {
     });
 
     describe("map", () => {
-      it("returns new Future with modified success flow using provided mapping function", () => {
+      it("returns new Task with modified success flow using provided mapping function", () => {
         const fn = jest.fn().mockReturnValue(24);
         const onSuccess = jest.fn();
         const onFailure = jest.fn();
 
-        const future = Future.success(42).map(fn);
+        const task = Task.success(42).map(fn);
 
         expect(fn).not.toHaveBeenCalled();
 
-        future.run({ onSuccess, onFailure });
+        task.run({ onSuccess, onFailure });
 
         expect(fn).toHaveBeenCalledWith(42);
         expect(onSuccess).toHaveBeenCalledWith(24);
         expect(onFailure).not.toHaveBeenCalled();
       });
 
-      it("success type of returned Future is controlled by return type of mapping function", () => {
-        const future = Future.from<"T1", "E">(() => "T1").map(
-          _ => "T2" as const
-        );
+      it("success type of returned Task is controlled by return type of mapping function", () => {
+        const task = Task.from<"T1", "E">(() => "T1").map(_ => "T2" as const);
 
-        type Actual = typeof future;
-        type Expected = Future<"T2", "E">;
+        type Actual = typeof task;
+        type Expected = Task<"T2", "E">;
 
         assert<IsExact<Actual, Expected>>(true);
       });
@@ -548,26 +546,26 @@ describe("Future", () => {
         const onSuccess = jest.fn();
         const onFailure = jest.fn();
 
-        const future = Future.failure("err").map(fn);
-        future.run({ onSuccess, onFailure });
+        const task = Task.failure("err").map(fn);
+        task.run({ onSuccess, onFailure });
 
         expect(fn).not.toHaveBeenCalled();
         expect(onSuccess).not.toHaveBeenCalled();
         expect(onFailure).toHaveBeenCalledWith("err");
       });
 
-      it("does not mutate original Future", () => {
+      it("does not mutate original Task", () => {
         const fn = jest.fn().mockReturnValue(24);
 
-        const originalFuture = Future.success(42);
-        const mappedFuture = originalFuture.map(fn);
+        const originalTask = Task.success(42);
+        const mappedTask = originalTask.map(fn);
 
         expect(fn).not.toHaveBeenCalled();
 
         {
           const onSuccess = jest.fn();
           const onFailure = jest.fn();
-          originalFuture.run({ onSuccess, onFailure });
+          originalTask.run({ onSuccess, onFailure });
 
           expect(fn).not.toHaveBeenCalled();
           expect(onSuccess).toHaveBeenCalledWith(42);
@@ -576,7 +574,7 @@ describe("Future", () => {
         {
           const onSuccess = jest.fn();
           const onFailure = jest.fn();
-          mappedFuture.run({ onSuccess, onFailure });
+          mappedTask.run({ onSuccess, onFailure });
 
           expect(fn).toHaveBeenCalledWith(42);
           expect(onSuccess).toHaveBeenCalledWith(24);
@@ -586,75 +584,75 @@ describe("Future", () => {
     });
 
     describe("flatMap", () => {
-      it("returns new Future with modified success flow using provided fn for composition into success flow", () => {
-        const fn = jest.fn().mockReturnValue(Future.success(24));
+      it("returns new Task with modified success flow using provided fn for composition into success flow", () => {
+        const fn = jest.fn().mockReturnValue(Task.success(24));
         const onSuccess = jest.fn();
         const onFailure = jest.fn();
 
-        const future = Future.success(42).flatMap(fn);
+        const task = Task.success(42).flatMap(fn);
 
         expect(fn).not.toHaveBeenCalled();
 
-        future.run({ onSuccess, onFailure });
+        task.run({ onSuccess, onFailure });
 
         expect(fn).toHaveBeenCalledWith(42);
         expect(onSuccess).toHaveBeenCalledWith(24);
         expect(onFailure).not.toHaveBeenCalled();
       });
 
-      it("returns new Future with modified success flow using provided fn for composition into failure flow", () => {
-        const fn = jest.fn().mockReturnValue(Future.failure("err"));
+      it("returns new Task with modified success flow using provided fn for composition into failure flow", () => {
+        const fn = jest.fn().mockReturnValue(Task.failure("err"));
         const onSuccess = jest.fn();
         const onFailure = jest.fn();
 
-        const future = Future.success(42).flatMap(fn);
+        const task = Task.success(42).flatMap(fn);
 
         expect(fn).not.toHaveBeenCalled();
 
-        future.run({ onSuccess, onFailure });
+        task.run({ onSuccess, onFailure });
 
         expect(fn).toHaveBeenCalledWith(42);
         expect(onFailure).toHaveBeenCalledWith("err");
         expect(onSuccess).not.toHaveBeenCalled();
       });
 
-      it("success and failure types of returned Future are controlled by return type of composition function", () => {
-        const f1 = Future.from<"T1", "E1">(() => "T1");
-        const f2 = Future.from<"T2", "E2">(() => "T2");
+      it("success and failure types of returned Task are controlled by return type of composition function", () => {
+        const t1 = Task.from<"T1", "E1">(() => "T1");
+        const t2 = Task.from<"T2", "E2">(() => "T2");
 
-        const future = f1.flatMap(_ => f2);
+        const task = t1.flatMap(_ => t2);
 
-        type Actual = typeof future;
-        type Expected = Future<"T2", "E1" | "E2">;
+        type Actual = typeof task;
+        type Expected = Task<"T2", "E1" | "E2">;
 
         assert<IsExact<Actual, Expected>>(true);
       });
 
-      it("has no effect for failure flow of original Future", () => {
-        const fn = jest.fn().mockReturnValue(Future.success(24));
+      it("has no effect for failure flow of original Task", () => {
+        const fn = jest.fn().mockReturnValue(Task.success(24));
         const onSuccess = jest.fn();
         const onFailure = jest.fn();
 
-        const future = Future.failure("err").flatMap(fn);
-        future.run({ onSuccess, onFailure });
+        const task = Task.failure("err").flatMap(fn);
+        task.run({ onSuccess, onFailure });
 
         expect(fn).not.toHaveBeenCalled();
         expect(onFailure).toHaveBeenCalledWith("err");
         expect(onSuccess).not.toHaveBeenCalled();
       });
 
-      it("does not mutate original Future", () => {
-        const fn = jest.fn().mockReturnValue(Future.success(24));
+      it("does not mutate original Task", () => {
+        const fn = jest.fn().mockReturnValue(Task.success(24));
 
-        const originalFuture = Future.success(42);
-        const mappedFuture = originalFuture.flatMap(fn);
+        const originalTask = Task.success(42);
+        const mappedTask = originalTask.flatMap(fn);
 
         expect(fn).not.toHaveBeenCalled();
 
         {
           const onSuccess = jest.fn();
           const onFailure = jest.fn();
-          originalFuture.run({ onSuccess, onFailure });
+          originalTask.run({ onSuccess, onFailure });
 
           expect(fn).not.toHaveBeenCalled();
           expect(onSuccess).toHaveBeenCalledWith(42);
@@ -663,7 +661,7 @@ describe("Future", () => {
         {
           const onSuccess = jest.fn();
           const onFailure = jest.fn();
-          mappedFuture.run({ onSuccess, onFailure });
+          mappedTask.run({ onSuccess, onFailure });
 
           expect(fn).toHaveBeenCalledWith(42);
           expect(onSuccess).toHaveBeenCalledWith(24);
@@ -673,29 +671,29 @@ describe("Future", () => {
     });
 
     describe("mapErr", () => {
-      it("returns new Future with modified failure flow using provided mapping function", () => {
+      it("returns new Task with modified failure flow using provided mapping function", () => {
         const fn = jest.fn().mockReturnValue("err2");
         const onSuccess = jest.fn();
         const onFailure = jest.fn();
 
-        const future = Future.failure("err1").mapErr(fn);
+        const task = Task.failure("err1").mapErr(fn);
 
         expect(fn).not.toHaveBeenCalled();
 
-        future.run({ onSuccess, onFailure });
+        task.run({ onSuccess, onFailure });
 
         expect(fn).toHaveBeenCalledWith("err1");
         expect(onFailure).toHaveBeenCalledWith("err2");
         expect(onSuccess).not.toHaveBeenCalled();
       });
 
-      it("failure type of returned Future is controlled by return type of mapping function", () => {
-        const future = Future.from<"T", "E1">(() => {
+      it("failure type of returned Task is controlled by return type of mapping function", () => {
+        const task = Task.from<"T", "E1">(() => {
           throw "E1";
         }).mapErr(_ => "E2" as const);
 
-        type Actual = typeof future;
-        type Expected = Future<"T", "E2">;
+        type Actual = typeof task;
+        type Expected = Task<"T", "E2">;
 
         assert<IsExact<Actual, Expected>>(true);
       });
@@ -705,26 +703,26 @@ describe("Future", () => {
         const onSuccess = jest.fn();
         const onFailure = jest.fn();
 
-        const future = Future.success(42).mapErr(fn);
-        future.run({ onSuccess, onFailure });
+        const task = Task.success(42).mapErr(fn);
+        task.run({ onSuccess, onFailure });
 
         expect(fn).not.toHaveBeenCalled();
         expect(onSuccess).toHaveBeenCalledWith(42);
         expect(onFailure).not.toHaveBeenCalled();
       });
 
-      it("does not mutate original Future", () => {
+      it("does not mutate original Task", () => {
         const fn = jest.fn().mockReturnValue("err2");
 
-        const originalFuture = Future.failure("err1");
-        const mappedFuture = originalFuture.mapErr(fn);
+        const originalTask = Task.failure("err1");
+        const mappedTask = originalTask.mapErr(fn);
 
         expect(fn).not.toHaveBeenCalled();
 
         {
           const onSuccess = jest.fn();
           const onFailure = jest.fn();
-          originalFuture.run({ onSuccess, onFailure });
+          originalTask.run({ onSuccess, onFailure });
 
           expect(fn).not.toHaveBeenCalled();
           expect(onFailure).toHaveBeenCalledWith("err1");
@@ -733,7 +731,7 @@ describe("Future", () => {
         {
           const onSuccess = jest.fn();
           const onFailure = jest.fn();
-          mappedFuture.run({ onSuccess, onFailure });
+          mappedTask.run({ onSuccess, onFailure });
 
           expect(fn).toHaveBeenCalledWith("err1");
           expect(onFailure).toHaveBeenCalledWith("err2");
@@ -743,75 +741,75 @@ describe("Future", () => {
     });
 
     describe("flatMapErr", () => {
-      it("returns new Future with modified failure flow using provided fn for composition into success flow", () => {
-        const fn = jest.fn().mockReturnValue(Future.success(24));
+      it("returns new Task with modified failure flow using provided fn for composition into success flow", () => {
+        const fn = jest.fn().mockReturnValue(Task.success(24));
         const onSuccess = jest.fn();
         const onFailure = jest.fn();
 
-        const future = Future.failure("err").flatMapErr(fn);
+        const task = Task.failure("err").flatMapErr(fn);
 
         expect(fn).not.toHaveBeenCalled();
 
-        future.run({ onSuccess, onFailure });
+        task.run({ onSuccess, onFailure });
 
         expect(fn).toHaveBeenCalledWith("err");
         expect(onSuccess).toHaveBeenCalledWith(24);
         expect(onFailure).not.toHaveBeenCalled();
       });
 
-      it("returns new Future with modified failure flow using provided fn for composition into failure flow", () => {
-        const fn = jest.fn().mockReturnValue(Future.failure("err2"));
+      it("returns new Task with modified failure flow using provided fn for composition into failure flow", () => {
+        const fn = jest.fn().mockReturnValue(Task.failure("err2"));
         const onSuccess = jest.fn();
         const onFailure = jest.fn();
 
-        const future = Future.failure("err1").flatMapErr(fn);
+        const task = Task.failure("err1").flatMapErr(fn);
 
         expect(fn).not.toHaveBeenCalled();
 
-        future.run({ onSuccess, onFailure });
+        task.run({ onSuccess, onFailure });
 
         expect(fn).toHaveBeenCalledWith("err1");
         expect(onFailure).toHaveBeenCalledWith("err2");
         expect(onSuccess).not.toHaveBeenCalled();
       });
 
-      it("success and failure types of returned Future are controlled by return type of composition function", () => {
-        const f1 = Future.from<"T1", "E1">(() => "T1");
-        const f2 = Future.from<"T2", "E2">(() => "T2");
+      it("success and failure types of returned Task are controlled by return type of composition function", () => {
+        const t1 = Task.from<"T1", "E1">(() => "T1");
+        const t2 = Task.from<"T2", "E2">(() => "T2");
 
-        const future = f1.flatMapErr(_ => f2);
+        const task = t1.flatMapErr(_ => t2);
 
-        type Actual = typeof future;
-        type Expected = Future<"T1" | "T2", "E2">;
+        type Actual = typeof task;
+        type Expected = Task<"T1" | "T2", "E2">;
 
         assert<IsExact<Actual, Expected>>(true);
       });
 
-      it("has no effect for success flow of original Future", () => {
-        const fn = jest.fn().mockReturnValue(Future.success(24));
+      it("has no effect for success flow of original Task", () => {
+        const fn = jest.fn().mockReturnValue(Task.success(24));
         const onSuccess = jest.fn();
         const onFailure = jest.fn();
 
-        const future = Future.success(42).flatMapErr(fn);
-        future.run({ onSuccess, onFailure });
+        const task = Task.success(42).flatMapErr(fn);
+        task.run({ onSuccess, onFailure });
 
         expect(fn).not.toHaveBeenCalled();
         expect(onSuccess).toHaveBeenCalledWith(42);
         expect(onFailure).not.toHaveBeenCalled();
       });
 
-      it("does not mutate original Future", () => {
-        const fn = jest.fn().mockReturnValue(Future.success(24));
+      it("does not mutate original Task", () => {
+        const fn = jest.fn().mockReturnValue(Task.success(24));
 
-        const originalFuture = Future.failure("err");
-        const mappedFuture = originalFuture.flatMapErr(fn);
+        const originalTask = Task.failure("err");
+        const mappedTask = originalTask.flatMapErr(fn);
 
         expect(fn).not.toHaveBeenCalled();
 
         {
           const onSuccess = jest.fn();
           const onFailure = jest.fn();
-          originalFuture.run({ onSuccess, onFailure });
+          originalTask.run({ onSuccess, onFailure });
 
           expect(fn).not.toHaveBeenCalled();
           expect(onFailure).toHaveBeenCalledWith("err");
@@ -820,7 +818,7 @@ describe("Future", () => {
         {
           const onSuccess = jest.fn();
           const onFailure = jest.fn();
-          mappedFuture.run({ onSuccess, onFailure });
+          mappedTask.run({ onSuccess, onFailure });
 
           expect(fn).toHaveBeenCalledWith("err");
           expect(onSuccess).toHaveBeenCalledWith(24);

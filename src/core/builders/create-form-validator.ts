@@ -1,6 +1,6 @@
 import { isFalsy } from "../../utils";
 import { compact, flatMap, uniqBy } from "../../utils/array";
-import { Future } from "../../utils/future";
+import { Task } from "../../utils/task";
 import {
   FieldDescriptor,
   getArrayDescriptorChildren,
@@ -107,19 +107,19 @@ export const createFormValidator = <Values extends object, Err>(
           .filter(x => x.validators.length > 0);
       };
 
-      return Future.from(resolveFieldsToValidate)
+      return Task.from(resolveFieldsToValidate)
         .flatMap(fieldsToValidate =>
-          Future.all(
+          Task.all(
             ...fieldsToValidate.map(({ field, validators }) => {
               const validationKey = FieldValidationKey.make(field, trigger);
 
-              return Future.from(() => {
+              return Task.from(() => {
                 onFieldValidationStart?.(field);
                 ongoingValidationTimestamps[validationKey] = timestamp;
                 return getValue(field);
               })
                 .flatMap(value =>
-                  firstNonNullFutureResult(
+                  firstNonNullTaskResult(
                     validators.map(v =>
                       runValidationForField(v, value, getValue)
                     )
@@ -127,10 +127,10 @@ export const createFormValidator = <Values extends object, Err>(
                 )
                 .flatMapErr(err => {
                   if (err === true) {
-                    return Future.success(null); // optional validator edge-case
+                    return Task.success(null); // optional validator edge-case
                   }
                   onFieldValidationEnd?.(field);
-                  return Future.failure(err);
+                  return Task.failure(err);
                 })
                 .map(validationError => {
                   onFieldValidationEnd?.(field);
@@ -176,7 +176,7 @@ const runValidationForField = <Value, Err, Dependencies extends any[]>(
   validator: FieldValidator<Value, Err, Dependencies>,
   value: Value,
   getValue: GetValue
-): Future<Err | null, unknown> => {
+): Task<Err | null, unknown> => {
   const dependenciesValues = !!validator.dependencies
     ? getDependenciesValues(validator.dependencies, getValue)
     : (([] as unknown) as Dependencies);
@@ -185,21 +185,21 @@ const runValidationForField = <Value, Err, Dependencies extends any[]>(
     .validators(...dependenciesValues)
     .filter(x => !isFalsy(x)) as Validator<Value, Err>[];
 
-  return firstNonNullFutureResult(
-    rules.map(rule => Future.from(() => rule(value)))
+  return firstNonNullTaskResult(
+    rules.map(rule => Task.from(() => rule(value)))
   );
 };
 
-const firstNonNullFutureResult = <T, E>(
-  futures: Array<Future<T | null, E>>
-): Future<T | null, E> => {
-  if (futures.length === 0) {
-    return Future.success(null);
+const firstNonNullTaskResult = <T, E>(
+  tasks: Array<Task<T | null, E>>
+): Task<T | null, E> => {
+  if (tasks.length === 0) {
+    return Task.success(null);
   }
 
-  const [first, ...rest] = futures;
+  const [first, ...rest] = tasks;
   return first.flatMap(result =>
-    result != null ? Future.success(result) : firstNonNullFutureResult(rest)
+    result != null ? Task.success(result) : firstNonNullTaskResult(rest)
   );
 };
 

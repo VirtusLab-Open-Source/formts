@@ -2,7 +2,7 @@ import { useMemo } from "react";
 
 import { keys, values } from "../../../utils";
 import { Atom } from "../../../utils/atoms";
-import { Future } from "../../../utils/future";
+import { Task } from "../../../utils/task";
 import { useSubscription } from "../../../utils/use-subscription";
 import { useFormtsContext } from "../../context";
 import { resolveTouched } from "../../helpers";
@@ -73,8 +73,8 @@ export const useFormHandle = <Values extends object, Err>(
     submit: (onSuccess, onFailure) =>
       methods
         .submitForm(
-          values => Future.from(() => onSuccess(values)).map(() => {}),
-          errors => Future.from(() => onFailure?.(errors))
+          values => Task.from(() => onSuccess(values)).map(() => {}),
+          errors => Task.from(() => onFailure?.(errors))
         )
         .runPromise(),
 

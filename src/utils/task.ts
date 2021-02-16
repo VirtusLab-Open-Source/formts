@@ -5,33 +5,33 @@
  *  - monadic API
  *  - typed error
  */
-export class Future<T, Err = unknown> {
+export class Task<T, Err = unknown> {
   // @ts-ignore
-  static success(): Future<void, never>;
-  static success<T>(val: T): Future<T, never>;
+  static success(): Task<void, never>;
+  static success<T>(val: T): Task<T, never>;
   static success<T>(val: T) {
-    return Future.make<T, never>(({ resolve }) => {
+    return Task.make<T, never>(({ resolve }) => {
       resolve(val);
     });
   }
 
   static failure<Err>(err: Err) {
-    return Future.make<never, Err>(({ reject }) => {
+    return Task.make<never, Err>(({ reject }) => {
       reject(err);
     });
   }
 
-  static make<T, Err = unknown>(exec: Executor<T, Err>): Future<T, Err> {
-    return new Future(exec);
+  static make<T, Err = unknown>(exec: Executor<T, Err>): Task<T, Err> {
+    return new Task(exec);
   }
 
-  static from<T, Err>(provider: () => Future<T, Err> | Promise<T> | T) {
-    return Future.make<T, Err>(({ resolve, reject }) => {
+  static from<T, Err>(provider: () => Task<T, Err> | Promise<T> | T) {
+    return Task.make<T, Err>(({ resolve, reject }) => {
       try {
         const it = provider();
         if (isPromise(it)) {
           it.then(resolve, reject);
-        } else if (it instanceof Future) {
+        } else if (it instanceof Task) {
           it.run({ onSuccess: resolve, onFailure: reject });
         } else {
           resolve(it);
@@ -43,29 +43,29 @@ export class Future<T, Err = unknown> {
   }
 
   /**
-   * Combine several futures into one
-   * which runs all provided futures in parallel.
-   * It will fail if any of the futures fail.
+   * Combine several tasks into one
+   * which runs all provided tasks in parallel.
+   * It will fail if any of the tasks fail.
    */
-  static all<TFutures extends Future<any, any>[]>(
-    ...futures: TFutures
-  ): Future<FutureValuesTuple<TFutures>, FutureErrorUnion<TFutures>> {
-    return Future.make(({ resolve, reject }) => {
-      const results: FutureValuesTuple<TFutures> = [] as any;
+  static all<TasksArr extends Task<any, any>[]>(
+    ...tasks: TasksArr
+  ): Task<TaskValuesTuple<TasksArr>, TaskErrorUnion<TasksArr>> {
+    return Task.make(({ resolve, reject }) => {
+      const results: TaskValuesTuple<TasksArr> = [] as any;
       const completed: true[] = [];
 
-      if (futures.length === 0) {
+      if (tasks.length === 0) {
         resolve(results);
       }
 
       const resolveIfReady = () => {
-        if (futures.every((_, i) => completed[i])) {
+        if (tasks.every((_, i) => completed[i])) {
           resolve(results);
         }
       };
 
-      futures.forEach((future, i) => {
-        future.run({
+      tasks.forEach((task, i) => {
+        task.run({
           onSuccess: val => {
             results[i] = val;
             completed[i] = true;
@@ -107,8 +107,8 @@ export class Future<T, Err = unknown> {
     });
   }
 
-  map<Q>(fn: (val: T) => Q): Future<Q, Err> {
-    return Future.make(({ resolve, reject }) => {
+  map<Q>(fn: (val: T) => Q): Task<Q, Err> {
+    return Task.make(({ resolve, reject }) => {
       this.run({
         onSuccess: val => {
           resolve(fn(val));
@@ -118,8 +118,8 @@ export class Future<T, Err = unknown> {
     });
   }
 
-  flatMap<Q, Err2>(fn: (val: T) => Future<Q, Err2>): Future<Q, Err | Err2> {
-    return Future.make(({ resolve, reject }) => {
+  flatMap<Q, Err2>(fn: (val: T) => Task<Q, Err2>): Task<Q, Err | Err2> {
+    return Task.make(({ resolve, reject }) => {
       this.run({
         onSuccess: val => {
           fn(val).run({
@@ -132,8 +132,8 @@ export class Future<T, Err = unknown> {
     });
   }
 
-  mapErr<Err2>(fn: (err: Err) => Err2): Future<T, Err2> {
-    return Future.make(({ resolve, reject }) => {
+  mapErr<Err2>(fn: (err: Err) => Err2): Task<T, Err2> {
+    return Task.make(({ resolve, reject }) => {
       this.run({
         onSuccess: resolve,
         onFailure: err => {
@@ -143,8 +143,8 @@ export class Future<T, Err = unknown> {
     });
   }
 
-  flatMapErr<Q, Err2>(fn: (err: Err) => Future<Q, Err2>): Future<T | Q, Err2> {
-    return Future.make(({ resolve, reject }) => {
+  flatMapErr<Q, Err2>(fn: (err: Err) => Task<Q, Err2>): Task<T | Q, Err2> {
+    return Task.make(({ resolve, reject }) => {
       this.run({
         onSuccess: resolve,
         onFailure: err => {
@@ -163,19 +163,22 @@ type Executor<T, Err> = (handlers: {
   reject: (err: Err) => void;
 }) => void;
 
-type FutureTuple<Values extends readonly any[], Err> = {
-  [Index in keyof Values]: Future<Values[Index], Err>;
+type TaskTuple<Values extends readonly any[], Err> = {
+  [Index in keyof Values]: Task<Values[Index], Err>;
 };
 
-type FutureValuesTuple<TFutures extends Future<any, any>[]> = TFutures extends [
-  ...FutureTuple<infer Values, any>
+type TaskValuesTuple<TasksArr extends Task<any, any>[]> = TasksArr extends [
+  ...TaskTuple<infer Values, any>
 ]
   ? Values
   : never;
 
-type FutureErrorUnion<
-  TFutures extends Future<any, any>[]
-> = TFutures extends Future<any, infer Err>[] ? Err : never;
+type TaskErrorUnion<TTasks extends Task<any, any>[]> = TTasks extends Task<
+  any,
+  infer Err
+>[]
+  ? Err
+  : never;
 
 const isPromise = (val: unknown): val is Promise<unknown> =>
   val != null && typeof (val as any).then === "function";

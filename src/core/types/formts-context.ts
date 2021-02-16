@@ -1,6 +1,6 @@
 import { ChangeEvent } from "react";
 
-import { Future } from "../../utils/future";
+import { Task } from "../../utils/task";
 import type {
   FieldStateAtomCache,
   FieldDependenciesAtomCache,
@@ -16,20 +16,20 @@ export type InternalFormtsMethods<Values extends object, Err> = {
   validateField: <T>(
     field: FieldDescriptor<T, Err>,
     trigger?: ValidationTrigger
-  ) => Future<void>;
-  validateForm: () => Future<ValidationResult<Err>>;
-  setFieldValue: <T>(field: FieldDescriptor<T, Err>, value: T) => Future<void>;
+  ) => Task<void>;
+  validateForm: () => Task<ValidationResult<Err>>;
+  setFieldValue: <T>(field: FieldDescriptor<T, Err>, value: T) => Task<void>;
   setFieldValueFromEvent: <T>(
     field: FieldDescriptor<T, Err>,
     event: ChangeEvent<unknown>
-  ) => Future<void>;
-  touchField: <T>(field: FieldDescriptor<T, Err>) => Future<void>;
-  setFieldErrors: (...fields: ValidationResult<Err>) => Future<void>;
-  resetForm: () => Future<void>;
+  ) => Task<void>;
+  touchField: <T>(field: FieldDescriptor<T, Err>) => Task<void>;
+  setFieldErrors: (...fields: ValidationResult<Err>) => Task<void>;
+  resetForm: () => Task<void>;
   submitForm: (
-    onSuccess: (values: Values) => Future<void>,
-    onFailure: (errors: Array<FieldError<Err>>) => Future<void>
-  ) => Future<void>;
+    onSuccess: (values: Values) => Task<void>,
+    onFailure: (errors: Array<FieldError<Err>>) => Task<void>
+  ) => Task<void>;
 };
 
 // internal context consumed by hooks

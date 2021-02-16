@@ -1,10 +1,10 @@
-import { Future } from "../../utils/future";
+import { Task } from "../../utils/task";
 import { FieldDescriptor } from "../types/field-descriptor";
 
 import { makeValidationHandlers } from "./make-validation-handlers";
 
-const enqueueTask = (task: () => void) => {
-  setTimeout(task, 0);
+const enqueueEffect = (effect: () => void) => {
+  setTimeout(effect, 0);
 };
 
 describe("makeValidationHandlers", () => {
@@ -19,14 +19,14 @@ describe("makeValidationHandlers", () => {
     } = makeValidationHandlers(dispatch);
 
     // onFieldValidationEnd is called before flushValidationHandlers
-    const syncValidationFlow = Future.all(
-      Future.from(() => {
+    const syncValidationFlow = Task.all(
+      Task.from(() => {
         onFieldValidationStart(field);
       }),
-      Future.from(() => {
+      Task.from(() => {
         onFieldValidationEnd(field);
       }),
-      Future.from(() => {
+      Task.from(() => {
         flushValidationHandlers();
       })
     );
@@ -47,17 +47,17 @@ describe("makeValidationHandlers", () => {
     } = makeValidationHandlers(dispatch);
 
     // onFieldValidationEnd is called after flushValidationHandlers
-    const asyncValidationFlow = Future.all(
-      Future.from(() => {
+    const asyncValidationFlow = Task.all(
+      Task.from(() => {
         onFieldValidationStart(field);
       }),
-      Future.make<void>(({ resolve }) => {
-        enqueueTask(() => {
+      Task.make<void>(({ resolve }) => {
+        enqueueEffect(() => {
           onFieldValidationEnd(field);
           resolve();
         });
       }),
-      Future.from(() => {
+      Task.from(() => {
         flushValidationHandlers();
       })
     );
