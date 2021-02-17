@@ -2,6 +2,7 @@ import { useMemo } from "react";
 
 import { keys, values } from "../../../utils";
 import { Atom } from "../../../utils/atoms";
+import { Task } from "../../../utils/task";
 import { useSubscription } from "../../../utils/use-subscription";
 import { useFormtsContext } from "../../context";
 import { resolveTouched } from "../../helpers";
@@ -65,26 +66,22 @@ export const useFormHandle = <Values extends object, Err>(
 
     isValidating: stateAtom.val.isValidating,
 
-    validate: methods.validateForm,
+    reset: () => methods.resetForm().runPromise(),
 
-    reset: methods.resetForm,
+    validate: () => methods.validateForm().runPromise(),
 
-    submit: (onSuccess, onFailure) => {
-      return methods.submitForm().then(resp => {
-        if (resp.ok) {
-          return onSuccess(resp.values);
-        } else {
-          return onFailure?.(resp.errors);
-        }
-      });
-    },
+    submit: (onSuccess, onFailure) =>
+      methods
+        .submitForm(
+          values => Task.from(() => onSuccess(values)).map(() => {}),
+          errors => Task.from(() => onFailure?.(errors))
+        )
+        .runPromise(),
 
-    setFieldValue: (field, value) => {
-      return methods.setFieldValue(field, value);
-    },
+    setFieldValue: (field, value) =>
+      methods.setFieldValue(field, value).runPromise(),
 
-    setFieldError: (field, error) => {
-      methods.setFieldErrors({ field, error });
-    },
+    setFieldError: (field, error) =>
+      methods.setFieldErrors({ field, error }).runPromise(),
   };
 };

@@ -1,5 +1,6 @@
 import { isFalsy } from "../../utils";
-import { flatMap, uniqBy } from "../../utils/array";
+import { compact, flatMap, uniqBy } from "../../utils/array";
+import { Task } from "../../utils/task";
 import {
   FieldDescriptor,
   getArrayDescriptorChildren,
@@ -19,8 +20,9 @@ import {
   ValidateFn,
   ValidationTrigger,
   Validator,
+  _FormValidatorImpl,
 } from "../types/form-validator";
-import { impl } from "../types/type-mapper-util";
+import { impl, opaque } from "../types/type-mapper-util";
 
 /**
  * Create form validator based on provided set of validation rules.
@@ -59,6 +61,11 @@ export const createFormValidator = <Values extends object, Err>(
   const allValidators = builder(validate);
   const dependenciesDict = buildDependenciesDict(allValidators);
 
+  const ongoingValidationTimestamps: Record<
+    FieldValidationKey,
+    Timestamp | undefined
+  > = {};
+
   const getValidatorsForField = (
     descriptor: FieldDescriptor<unknown, Err>,
     trigger?: ValidationTrigger
@@ -70,7 +77,7 @@ export const createFormValidator = <Values extends object, Err>(
     });
   };
 
-  const formValidator: FormValidator<Values, Err> = {
+  const formValidator: _FormValidatorImpl<Values, Err> = {
     validate: ({
       fields,
       trigger,
@@ -78,49 +85,74 @@ export const createFormValidator = <Values extends object, Err>(
       onFieldValidationStart,
       onFieldValidationEnd,
     }) => {
-      const allFields = flatMap(fields, x =>
-        getChildrenDescriptors(x, getValue)
-      );
-      const dependents = flatMap(fields, x =>
-        getDependents(x, dependenciesDict, getValue)
-      );
-      const uniqueFields = uniqBy(
-        [...allFields, ...dependents],
-        x => impl(x).__path
-      );
+      const timestamp = Timestamp.make();
 
-      const fieldsToValidate = uniqueFields
-        .map(field => ({
-          field,
-          validators: getValidatorsForField(field, trigger),
-        }))
-        .filter(x => x.validators.length > 0);
+      const resolveFieldsToValidate = () => {
+        const allFields = flatMap(fields, x =>
+          getChildrenDescriptors(x, getValue)
+        );
+        const dependents = flatMap(fields, x =>
+          getDependents(x, dependenciesDict, getValue)
+        );
+        const uniqueFields = uniqBy(
+          [...allFields, ...dependents],
+          x => impl(x).__path
+        );
 
-      return Promise.all(
-        fieldsToValidate.map(({ field, validators }) => {
-          const value = getValue(field);
+        return uniqueFields
+          .map(field => ({
+            field,
+            validators: getValidatorsForField(field, trigger),
+          }))
+          .filter(x => x.validators.length > 0);
+      };
 
-          onFieldValidationStart?.(field);
-          return firstNonNullPromise(validators, v =>
-            runValidationForField(v, value, getValue)
-          )
-            .catch(err => {
-              if (err === true) {
-                return null; // optional validator edge-case
-              }
-              onFieldValidationEnd?.(field);
-              throw err;
+      return Task.from(resolveFieldsToValidate)
+        .flatMap(fieldsToValidate =>
+          Task.all(
+            ...fieldsToValidate.map(({ field, validators }) => {
+              const validationKey = FieldValidationKey.make(field, trigger);
+
+              return Task.from(() => {
+                onFieldValidationStart?.(field);
+                ongoingValidationTimestamps[validationKey] = timestamp;
+                return getValue(field);
+              })
+                .flatMap(value =>
+                  firstNonNullTaskResult(
+                    validators.map(v =>
+                      runValidationForField(v, value, getValue)
+                    )
+                  )
+                )
+                .flatMapErr(err => {
+                  if (err === true) {
+                    return Task.success(null); // optional validator edge-case
+                  }
+                  onFieldValidationEnd?.(field);
+                  return Task.failure(err);
+                })
+                .map(validationError => {
+                  onFieldValidationEnd?.(field);
+
+                  if (
+                    ongoingValidationTimestamps[validationKey] === timestamp
+                  ) {
+                    delete ongoingValidationTimestamps[validationKey];
+                    return { field, error: validationError };
+                  }
+
+                  // primitive cancellation of outdated validation results
+                  return null;
+                });
             })
-            .then(error => {
-              onFieldValidationEnd?.(field);
-              return { field, error };
-            });
-        })
-      );
+          )
+        )
+        .map(compact);
     },
   };
 
-  return formValidator;
+  return opaque(formValidator);
 };
 
 const validate: ValidateFn = <T, Err, Deps extends any[]>(
@@ -144,7 +176,7 @@ const runValidationForField = <Value, Err, Dependencies extends any[]>(
   validator: FieldValidator<Value, Err, Dependencies>,
   value: Value,
   getValue: GetValue
-): Promise<Err | null> => {
+): Task<Err | null, unknown> => {
   const dependenciesValues = !!validator.dependencies
     ? getDependenciesValues(validator.dependencies, getValue)
     : (([] as unknown) as Dependencies);
@@ -153,33 +185,28 @@ const runValidationForField = <Value, Err, Dependencies extends any[]>(
     .validators(...dependenciesValues)
     .filter(x => !isFalsy(x)) as Validator<Value, Err>[];
 
-  return firstNonNullPromise(rules, rule => {
-    try {
-      return Promise.resolve(rule(value));
-    } catch (err) {
-      return Promise.reject(err);
-    }
-  });
-};
-
-const firstNonNullPromise = <T, V>(
-  list: T[],
-  provider: (x: T) => Promise<V | null>
-): Promise<V | null> => {
-  if (list.length === 0) {
-    return Promise.resolve(null);
-  }
-
-  const [el, ...rest] = list;
-  return provider(el).then(result =>
-    result != null ? result : firstNonNullPromise(rest, provider)
+  return firstNonNullTaskResult(
+    rules.map(rule => Task.from(() => rule(value)))
   );
 };
 
-const getChildrenDescriptors = (
-  descriptor: FieldDescriptor<unknown, unknown>,
-  getValue: (field: FieldDescriptor<unknown, unknown>) => unknown
-): Array<FieldDescriptor<unknown, unknown>> => {
+const firstNonNullTaskResult = <T, E>(
+  tasks: Array<Task<T | null, E>>
+): Task<T | null, E> => {
+  if (tasks.length === 0) {
+    return Task.success(null);
+  }
+
+  const [first, ...rest] = tasks;
+  return first.flatMap(result =>
+    result != null ? Task.success(result) : firstNonNullTaskResult(rest)
+  );
+};
+
+const getChildrenDescriptors = <Err>(
+  descriptor: FieldDescriptor<unknown, Err>,
+  getValue: (field: FieldDescriptor<unknown, Err>) => unknown
+): Array<FieldDescriptor<unknown, Err>> => {
   const root = [descriptor];
 
   if (isObjectDescriptor(descriptor)) {
@@ -222,11 +249,11 @@ const buildDependenciesDict = (
   return dict;
 };
 
-const getDependents = (
-  desc: FieldDescriptor<any>,
+const getDependents = <Err>(
+  desc: FieldDescriptor<any, Err>,
   dependenciesDict: DependenciesDict,
   getValue: GetValue
-): FieldDescriptor<any>[] => {
+): FieldDescriptor<any, Err>[] => {
   return flatMap(dependenciesDict[impl(desc).__path] ?? [], x => {
     if (isNth(x)) {
       const rootPath = impl(x).__rootPath;
@@ -267,3 +294,17 @@ const getRootArrayPath = (path: string): string | undefined => {
     return path.slice(0, indexStart);
   }
 };
+
+type FieldValidationKey = string;
+namespace FieldValidationKey {
+  export const make = (
+    field: FieldDescriptor<unknown>,
+    trigger?: ValidationTrigger
+  ): FieldValidationKey =>
+    `${impl(field).__path}:t-${trigger ?? "none"}` as any;
+}
+
+type Timestamp = number;
+namespace Timestamp {
+  export const make = () => Date.now();
+}

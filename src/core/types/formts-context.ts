@@ -1,5 +1,6 @@
 import { ChangeEvent } from "react";
 
+import { Task } from "../../utils/task";
 import type {
   FieldStateAtomCache,
   FieldDependenciesAtomCache,
@@ -11,25 +12,24 @@ import { ValidationResult, ValidationTrigger } from "./form-validator";
 import { FormtsOptions } from "./formts-options";
 import { FormtsAtomState } from "./formts-state";
 
-export type FormSubmissionResult<Values extends object, Err> =
-  | { ok: true; values: Values }
-  | { ok: false; errors: Array<FieldError<Err>> };
-
 export type InternalFormtsMethods<Values extends object, Err> = {
   validateField: <T>(
     field: FieldDescriptor<T, Err>,
     trigger?: ValidationTrigger
-  ) => Promise<void>;
-  validateForm: () => Promise<ValidationResult<Err>>;
-  setFieldValue: <T>(field: FieldDescriptor<T, Err>, value: T) => Promise<void>;
+  ) => Task<void>;
+  validateForm: () => Task<ValidationResult<Err>>;
+  setFieldValue: <T>(field: FieldDescriptor<T, Err>, value: T) => Task<void>;
   setFieldValueFromEvent: <T>(
     field: FieldDescriptor<T, Err>,
     event: ChangeEvent<unknown>
-  ) => Promise<void>;
-  touchField: <T>(field: FieldDescriptor<T, Err>) => void;
-  setFieldErrors: (...fields: ValidationResult<Err>) => void;
-  resetForm: () => void;
-  submitForm: () => Promise<FormSubmissionResult<Values, Err>>;
+  ) => Task<void>;
+  touchField: <T>(field: FieldDescriptor<T, Err>) => Task<void>;
+  setFieldErrors: (...fields: ValidationResult<Err>) => Task<void>;
+  resetForm: () => Task<void>;
+  submitForm: (
+    onSuccess: (values: Values) => Task<void>,
+    onFailure: (errors: Array<FieldError<Err>>) => Task<void>
+  ) => Task<void>;
 };
 
 // internal context consumed by hooks

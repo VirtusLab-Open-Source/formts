@@ -1,4 +1,5 @@
-import { Falsy, NoInfer } from "../../utils";
+import { Falsy, NoInfer, Nominal } from "../../utils";
+import { Task } from "../../utils/task";
 
 import {
   ArrayFieldDescriptor,
@@ -44,8 +45,12 @@ export type GetValue = {
 };
 
 // @ts-ignore
-export type FormValidator<Values extends object, Err> = {
-  validate: (input: ValidateIn<Err>) => Promise<ValidationResult<Err>>;
+export interface FormValidator<Values extends object, Err>
+  extends Nominal<"FormValidator"> {}
+
+// @ts-ignore
+export type _FormValidatorImpl<Values extends object, Err> = {
+  validate: (input: ValidateIn<Err>) => Task<ValidationResult<Err>, unknown>;
 };
 
 export type FieldValidator<T, Err, Dependencies extends any[]> = {

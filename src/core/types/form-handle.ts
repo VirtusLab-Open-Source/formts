@@ -35,7 +35,8 @@ export type FormHandle<Values extends object, Err> = {
 
   /**
    * Runs form validation with 'submit' trigger and invokes `onSuccess` or `onFailure` callback.
-   * Sets `isSubmitting` flag to true when validation and `onSuccess` callback are running.
+   * Sets `isSubmitting` flag to true when validation or `onSuccess` callback promise are running.
+   * Freezes changes to form values during submission process.
    *
    * @param onSuccess - callback invoked after successful submit validation.
    * Receives form values. Can return Promise which will affect `isSubmitting` flag.

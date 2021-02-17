@@ -1,5 +1,6 @@
 import { keys, toIdentityDict } from "../../../utils";
 import { Atom } from "../../../utils/atoms";
+import { Task } from "../../../utils/task";
 import { useSubscription } from "../../../utils/use-subscription";
 import { useFormtsContext } from "../../context";
 import * as Helpers from "../../helpers";
@@ -147,44 +148,39 @@ const createFieldHandle = <T, Err>(
         : undefined;
     },
 
-    handleBlur: () => {
-      methods.touchField(descriptor);
-      return methods.validateField(descriptor, "blur");
-    },
+    handleBlur: () =>
+      Task.all(
+        methods.touchField(descriptor),
+        methods.validateField(descriptor, "blur")
+      ).runPromise(),
 
-    setValue: val => {
-      return methods.setFieldValue(descriptor, val);
-    },
+    setValue: val => methods.setFieldValue(descriptor, val).runPromise(),
 
-    handleChange: event => {
-      return methods.setFieldValueFromEvent(descriptor, event);
-    },
+    handleChange: event =>
+      methods.setFieldValueFromEvent(descriptor, event).runPromise(),
 
-    setError: error => {
-      methods.setFieldErrors({ field: descriptor, error });
-    },
+    setError: error =>
+      methods.setFieldErrors({ field: descriptor, error }).runPromise(),
 
     addItem: item => {
       if (isArrayDescriptor(descriptor)) {
         const array = (fieldState.val.value as unknown) as unknown[];
         const updatedArray = [...array, item];
-        return methods.setFieldValue(descriptor, updatedArray);
+        return methods.setFieldValue(descriptor, updatedArray).runPromise();
       }
 
-      return undefined;
+      return Promise.resolve();
     },
 
     removeItem: index => {
       if (isArrayDescriptor(descriptor)) {
         const array = (fieldState.val.value as unknown) as unknown[];
         const updatedArray = array.filter((_, i) => i !== index);
-        return methods.setFieldValue(descriptor, updatedArray);
+        return methods.setFieldValue(descriptor, updatedArray).runPromise();
       }
 
-      return undefined;
+      return Promise.resolve();
     },
 
-    validate: () => {
-      return methods.validateField(descriptor);
-    },
+    validate: () => methods.validateField(descriptor).runPromise(),
   });
