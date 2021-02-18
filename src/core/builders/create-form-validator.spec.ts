@@ -1095,3 +1095,51 @@ describe("createFormValidator", () => {
     expect(validation).toEqual([{ field: Schema.string, error: null }]);
   });
 });
+
+it("debounced", async done => {
+  const Schema = createFormSchema(
+    fields => ({
+      string: fields.string(),
+    }),
+    error => error<"REQUIRED" | "TOO_SHORT" | "INVALID_VALUE">()
+  );
+  const createFormValidatorImpl = (
+    ...args: Parameters<typeof createFormValidator>
+  ) => impl(createFormValidator(...args));
+
+  const stringRequiredValidator = jest.fn((x: string) =>
+    x ? null : "REQUIRED"
+  );
+  const { validate } = createFormValidatorImpl(Schema, validate => [
+    validate({
+      field: Schema.string,
+      rules: () => [stringRequiredValidator],
+      debounce: 3000,
+    }),
+  ]);
+  const getValue = () => "" as any;
+
+  validate({
+    fields: [Schema.string],
+    getValue,
+  })
+    .runPromise()
+    .then(x => expect(x).toEqual([]));
+  validate({
+    fields: [Schema.string],
+    getValue,
+  })
+    .runPromise()
+    .then(x => expect(x).toEqual([]));
+
+  validate({
+    fields: [Schema.string],
+    getValue,
+  })
+    .runPromise()
+    .then(x => {
+      expect(x).toEqual([{ field: Schema.string, error: "REQUIRED" }]);
+      expect(stringRequiredValidator).toHaveBeenCalledTimes(1);
+      done();
+    });
+});

@@ -58,13 +58,15 @@ export const createFormValidator = <Values extends object, Err>(
     validate: ValidateFn
   ) => Array<FieldValidator<any, Err, any | unknown>>
 ): FormValidator<Values, Err> => {
-  const allValidators = builder(validate);
+  const allValidators = builder(validate());
   const dependenciesDict = buildDependenciesDict(allValidators);
 
   const ongoingValidationTimestamps: Record<
     FieldValidationKey,
     Timestamp | undefined
   > = {};
+
+  const debouncedValidators: Record<FieldValidationKey, () => void> = {};
 
   const getValidatorsForField = (
     descriptor: FieldDescriptor<unknown, Err>,
@@ -120,9 +122,28 @@ export const createFormValidator = <Values extends object, Err>(
               })
                 .flatMap(value =>
                   firstNonNullTaskResult(
-                    validators.map(v =>
-                      runValidationForField(v, value, getValue)
-                    )
+                    validators.map(v => {
+                      const id = `${v.id}-${impl(field).__path}`;
+                      return Task.make<void>(({ resolve, reject }) => {
+                        if (v.debounce) {
+                          debouncedValidators[id]?.();
+
+                          const timeout = setTimeout(() => {
+                            delete debouncedValidators[id];
+                            resolve();
+                          }, v.debounce);
+
+                          debouncedValidators[id] = () => {
+                            clearTimeout(timeout);
+                            reject("cancel");
+                          };
+                        } else {
+                          resolve();
+                        }
+                      }).flatMap(() =>
+                        runValidationForField(v, value, getValue)
+                      );
+                    })
                   )
                 )
                 .flatMapErr(err => {
@@ -144,6 +165,14 @@ export const createFormValidator = <Values extends object, Err>(
 
                   // primitive cancellation of outdated validation results
                   return null;
+                })
+                .flatMapErr(err => {
+                  if (err === "cancel") {
+                    console.log("CATCH CANCELLED VALIDATION");
+                    return Task.success(null);
+                  } else {
+                    return Task.failure(err);
+                  }
                 });
             })
           )
@@ -155,20 +184,26 @@ export const createFormValidator = <Values extends object, Err>(
   return opaque(formValidator);
 };
 
-const validate: ValidateFn = <T, Err, Deps extends any[]>(
-  x: ValidateConfig<T, Err, Deps> | ValidateField<T, Err>,
-  ...rules: Array<Validator<T, Err>>
-): FieldValidator<T, Err, Deps> => {
-  const config: ValidateConfig<T, Err, Deps> =
-    (x as any)["field"] != null
-      ? { ...(x as ValidateConfig<T, Err, Deps>) }
-      : { field: x as ValidateField<T, Err>, rules: () => rules };
+const validate = (): ValidateFn => {
+  let index = 0;
 
-  return {
-    field: config.field,
-    triggers: config.triggers,
-    validators: config.rules,
-    dependencies: config.dependencies,
+  return <T, Err, Deps extends any[]>(
+    x: ValidateConfig<T, Err, Deps> | ValidateField<T, Err>,
+    ...rules: Array<Validator<T, Err>>
+  ): FieldValidator<T, Err, Deps> => {
+    const config: ValidateConfig<T, Err, Deps> =
+      (x as any)["field"] != null
+        ? { ...(x as ValidateConfig<T, Err, Deps>) }
+        : { field: x as ValidateField<T, Err>, rules: () => rules };
+
+    return {
+      id: (index++).toString(),
+      field: config.field,
+      triggers: config.triggers,
+      validators: config.rules,
+      dependencies: config.dependencies,
+      debounce: config.debounce,
+    };
   };
 };
 
