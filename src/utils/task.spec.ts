@@ -6,6 +6,9 @@ const enqueueEffect = (effect: () => void) => {
   setTimeout(effect, 0);
 };
 
+const isPromise = (val: unknown): val is Promise<unknown> =>
+  val != null && typeof (val as any).then === "function";
+
 describe("Task", () => {
   describe("creators", () => {
     describe("success", () => {
@@ -511,6 +514,92 @@ describe("Task", () => {
           expect(err).toBe("ERR");
         }
 
+        expect.assertions(3);
+      });
+    });
+
+    describe("runPromiseOrGet", () => {
+      it("runs effect and returns resolving Promise for successful async Task", async () => {
+        const effect = jest.fn();
+
+        const task = Task.make<number>(({ resolve }) => {
+          effect();
+          enqueueEffect(() => {
+            resolve(42);
+          });
+        });
+
+        expect(effect).not.toHaveBeenCalled();
+
+        const result = task.runPromiseOrGet();
+
+        expect(effect).toHaveBeenCalled();
+        expect(isPromise(result)).toBeTruthy();
+
+        const value = await result;
+        expect(value).toBe(42);
+      });
+
+      it("runs effect and returns rejecting Promise for failing async Task", async () => {
+        const effect = jest.fn();
+
+        const task = Task.make<number>(({ reject }) => {
+          effect();
+          enqueueEffect(() => {
+            reject("ERR");
+          });
+        });
+
+        expect(effect).not.toHaveBeenCalled();
+
+        const result = task.runPromiseOrGet();
+
+        expect(effect).toHaveBeenCalled();
+        expect(isPromise(result)).toBeTruthy();
+
+        try {
+          await result;
+        } catch (err) {
+          expect(err).toBe("ERR");
+        }
+
+        expect.assertions(4);
+      });
+
+      it("runs effect and returns value for successful sync Task", () => {
+        const effect = jest.fn();
+
+        const task = Task.make<number>(({ resolve }) => {
+          effect();
+          resolve(42);
+        });
+
+        expect(effect).not.toHaveBeenCalled();
+
+        const result = task.runPromiseOrGet();
+
+        expect(effect).toHaveBeenCalled();
+        expect(isPromise(result)).toBeFalsy();
+        expect(result).toBe(42);
+      });
+
+      it("runs effect and throws error for failing sync Task", () => {
+        const effect = jest.fn();
+
+        const task = Task.make<number>(({ reject }) => {
+          effect();
+          reject("ERR");
+        });
+
+        expect(effect).not.toHaveBeenCalled();
+
+        try {
+          task.runPromiseOrGet();
+        } catch (err) {
+          expect(err).toBe("ERR");
+        }
+
+        expect(effect).toHaveBeenCalled();
         expect.assertions(3);
       });
     });
