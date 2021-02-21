@@ -66,7 +66,7 @@ export const createFormValidator = <Values extends object, Err>(
     Timestamp | undefined
   > = {};
 
-  const debouncedValidators: Record<FieldValidationKey, () => void> = {};
+  const debouncedValidations: Record<FieldValidationKey, () => void> = {};
 
   const getValidatorsForField = (
     descriptor: FieldDescriptor<unknown, Err>,
@@ -122,28 +122,13 @@ export const createFormValidator = <Values extends object, Err>(
               })
                 .flatMap(value =>
                   firstNonNullTaskResult(
-                    validators.map(v => {
-                      const id = `${v.id}-${impl(field).__path}`;
-                      return Task.make<void>(({ resolve, reject }) => {
-                        if (v.debounce) {
-                          debouncedValidators[id]?.();
-
-                          const timeout = setTimeout(() => {
-                            delete debouncedValidators[id];
-                            resolve();
-                          }, v.debounce);
-
-                          debouncedValidators[id] = () => {
-                            clearTimeout(timeout);
-                            reject("cancel");
-                          };
-                        } else {
-                          resolve();
-                        }
-                      }).flatMap(() =>
-                        runValidationForField(v, value, getValue)
-                      );
-                    })
+                    validators.map(v =>
+                      DebouncedValidation.debounceStep(
+                        v,
+                        field,
+                        debouncedValidations
+                      ).flatMap(() => runValidationForField(v, value, getValue))
+                    )
                   )
                 )
                 .flatMapErr(err => {
@@ -166,13 +151,7 @@ export const createFormValidator = <Values extends object, Err>(
                   // primitive cancellation of outdated validation results
                   return null;
                 })
-                .flatMapErr(err => {
-                  if (err === "cancel") {
-                    return Task.success(null);
-                  } else {
-                    return Task.failure(err);
-                  }
-                });
+                .flatMapErr(DebouncedValidation.flatMapCancel);
             })
           )
         )
@@ -341,4 +320,42 @@ namespace FieldValidationKey {
 type Timestamp = number;
 namespace Timestamp {
   export const make = () => Date.now();
+}
+
+namespace DebouncedValidation {
+  type Cancel = () => void;
+  type Dict = Record<FieldValidationKey, Cancel>;
+
+  export const debounceStep = (
+    v: FieldValidator<unknown, unknown, unknown[]>,
+    field: FieldDescriptor<unknown, unknown>,
+    debouncedValidations: Dict
+  ) => {
+    return Task.make<void>(({ resolve, reject }) => {
+      const id = `${v.id}-${impl(field).__path}`;
+      if (v.debounce) {
+        debouncedValidations[id]?.();
+
+        const timeout = setTimeout(() => {
+          delete debouncedValidations[id];
+          resolve();
+        }, v.debounce);
+
+        debouncedValidations[id] = () => {
+          clearTimeout(timeout);
+          reject("cancel");
+        };
+      } else {
+        resolve();
+      }
+    });
+  };
+
+  export const flatMapCancel = (err: unknown) => {
+    if (err === "cancel") {
+      return Task.success(null);
+    } else {
+      return Task.failure(err);
+    }
+  };
 }
