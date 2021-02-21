@@ -168,7 +168,6 @@ export const createFormValidator = <Values extends object, Err>(
                 })
                 .flatMapErr(err => {
                   if (err === "cancel") {
-                    console.log("CATCH CANCELLED VALIDATION");
                     return Task.success(null);
                   } else {
                     return Task.failure(err);
