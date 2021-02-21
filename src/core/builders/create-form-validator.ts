@@ -66,7 +66,7 @@ export const createFormValidator = <Values extends object, Err>(
     Timestamp | undefined
   > = {};
 
-  const debouncedValidations: Record<FieldValidationKey, () => void> = {};
+  const debounceStepHandler = DebouncedValidation.createDebounceStepHandler();
 
   const getValidatorsForField = (
     descriptor: FieldDescriptor<unknown, Err>,
@@ -123,11 +123,9 @@ export const createFormValidator = <Values extends object, Err>(
                 .flatMap(value =>
                   firstNonNullTaskResult(
                     validators.map(v =>
-                      DebouncedValidation.debounceStep(
-                        v,
-                        field,
-                        debouncedValidations
-                      ).flatMap(() => runValidationForField(v, value, getValue))
+                      debounceStepHandler(v, field).flatMap(() =>
+                        runValidationForField(v, value, getValue)
+                      )
                     )
                   )
                 )
@@ -324,31 +322,34 @@ namespace Timestamp {
 
 namespace DebouncedValidation {
   type Cancel = () => void;
-  type Dict = Record<FieldValidationKey, Cancel>;
+  type DebouncedValidationsDict = Record<FieldValidationKey, Cancel>;
 
-  export const debounceStep = (
-    v: FieldValidator<unknown, unknown, unknown[]>,
-    field: FieldDescriptor<unknown, unknown>,
-    debouncedValidations: Dict
-  ) => {
-    return Task.make<void>(({ resolve, reject }) => {
-      const id = `${v.id}-${impl(field).__path}`;
-      if (v.debounce) {
-        debouncedValidations[id]?.();
+  export const createDebounceStepHandler = () => {
+    const debouncedValidations: DebouncedValidationsDict = {};
 
-        const timeout = setTimeout(() => {
-          delete debouncedValidations[id];
+    return (
+      v: FieldValidator<unknown, unknown, unknown[]>,
+      field: FieldDescriptor<unknown, unknown>
+    ) => {
+      return Task.make<void>(({ resolve, reject }) => {
+        const id = `${v.id}-${impl(field).__path}`;
+        if (v.debounce) {
+          debouncedValidations[id]?.();
+
+          const timeout = setTimeout(() => {
+            delete debouncedValidations[id];
+            resolve();
+          }, v.debounce);
+
+          debouncedValidations[id] = () => {
+            clearTimeout(timeout);
+            reject("cancel");
+          };
+        } else {
           resolve();
-        }, v.debounce);
-
-        debouncedValidations[id] = () => {
-          clearTimeout(timeout);
-          reject("cancel");
-        };
-      } else {
-        resolve();
-      }
-    });
+        }
+      });
+    };
   };
 
   export const flatMapCancel = (err: unknown) => {
