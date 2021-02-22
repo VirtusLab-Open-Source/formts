@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.20](https://github.com/VirtusLab/formts/compare/v0.1.19...v0.1.20) (2021-02-22)
+
+
+### Features
+
+* debounced validation ([#68](https://github.com/VirtusLab/formts/issues/68)) ([3a04328](https://github.com/VirtusLab/formts/commit/3a043287e805a6496612603176b2a402a0705786))
+* validation optimisations and fixes ([#67](https://github.com/VirtusLab/formts/issues/67)) ([a4c2581](https://github.com/VirtusLab/formts/commit/a4c25812ded1fb6bc35d9b066ec0cd3c7036009c))
+
 ### [0.1.19](https://github.com/VirtusLab/formts/compare/v0.1.18...v0.1.19) (2021-02-15)
 
 ### [0.1.18](https://github.com/VirtusLab/formts/compare/v0.1.17...v0.1.18) (2021-02-09)
