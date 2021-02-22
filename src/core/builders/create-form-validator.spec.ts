@@ -1,5 +1,6 @@
 import { assert, IsExact } from "conditional-type-checks";
 
+import { Task } from "../../utils/task";
 import { validators } from "../../validators";
 import { FieldDescriptor } from "../types/field-descriptor";
 import { FormValidator } from "../types/form-validator";
@@ -1093,5 +1094,221 @@ describe("createFormValidator", () => {
     }).runPromise();
 
     expect(validation).toEqual([{ field: Schema.string, error: null }]);
+  });
+});
+
+describe("debounced validation", () => {
+  const Schema = createFormSchema(
+    fields => ({
+      string: fields.string(),
+      number: fields.number(),
+    }),
+    error => error<"REQUIRED" | "TOO_SHORT" | "INVALID_VALUE">()
+  );
+  const createFormValidatorImpl = (
+    ...args: Parameters<typeof createFormValidator>
+  ) => impl(createFormValidator(...args));
+
+  it("should debounce when single-rule debounced validator called >1 times", async () => {
+    const stringRequiredValidator = jest.fn((x: string) =>
+      x ? null : "REQUIRED"
+    );
+
+    const { validate } = createFormValidatorImpl(Schema, validate => [
+      validate({
+        field: Schema.string,
+        rules: () => [stringRequiredValidator],
+        debounce: 100,
+      }),
+    ]);
+
+    const getValue = () => "" as any;
+
+    expect(
+      await Task.all(
+        validate({ fields: [Schema.string], getValue }),
+        validate({ fields: [Schema.string], getValue }),
+        validate({ fields: [Schema.string], getValue })
+      ).runPromise()
+    ).toEqual([[], [], [{ field: Schema.string, error: "REQUIRED" }]]);
+    expect(stringRequiredValidator).toHaveBeenCalledTimes(1);
+  });
+
+  it("should debounce when multi-rule debounced validator called >1 times", async () => {
+    const stringRequiredValidator = jest.fn((x: string) =>
+      x ? null : "REQUIRED"
+    );
+    const stringLengthValidator = jest.fn((x: string) =>
+      x.length > 3 ? null : "TOO_SHORT"
+    );
+
+    const { validate } = createFormValidatorImpl(Schema, validate => [
+      validate({
+        field: Schema.string,
+        rules: () => [stringRequiredValidator, stringLengthValidator],
+        debounce: 100,
+      }),
+    ]);
+
+    const getValue = () => "ab" as any;
+
+    expect(
+      await Task.all(
+        validate({ fields: [Schema.string], getValue }),
+        validate({ fields: [Schema.string], getValue }),
+        validate({ fields: [Schema.string], getValue })
+      ).runPromise()
+    ).toEqual([[], [], [{ field: Schema.string, error: "TOO_SHORT" }]]);
+    expect(stringRequiredValidator).toHaveBeenCalledTimes(1);
+    expect(stringLengthValidator).toHaveBeenCalledTimes(1);
+  });
+
+  it("should not debounce when called after debounce timeout", async () => {
+    const stringRequiredValidator = jest.fn((x: string) =>
+      x ? null : "REQUIRED"
+    );
+
+    const { validate } = createFormValidatorImpl(Schema, validate => [
+      validate({
+        field: Schema.string,
+        rules: () => [stringRequiredValidator],
+        debounce: 100,
+      }),
+    ]);
+
+    const getValue = () => "ab" as any;
+
+    expect(
+      await Task.all(
+        validate({ fields: [Schema.string], getValue }),
+        Task.make(({ resolve, reject }) => {
+          setTimeout(
+            () =>
+              validate({ fields: [Schema.string], getValue })
+                .runPromise()
+                .then(resolve)
+                .catch(reject),
+            200
+          );
+        })
+      ).runPromise()
+    ).toEqual([
+      [{ field: Schema.string, error: null }],
+      [{ field: Schema.string, error: null }],
+    ]);
+
+    expect(stringRequiredValidator).toHaveBeenCalledTimes(2);
+  });
+
+  it("should not interfere with non-debounced fields", async () => {
+    const stringRequiredValidator = jest.fn((x: string) =>
+      x ? null : "REQUIRED"
+    );
+    const numberLengthValidator = jest.fn((x: number | "") =>
+      x ? null : "REQUIRED"
+    );
+
+    const { validate } = createFormValidatorImpl(Schema, validate => [
+      validate({
+        field: Schema.string,
+        rules: () => [stringRequiredValidator],
+        debounce: 100,
+      }),
+      validate(Schema.number, numberLengthValidator),
+    ]);
+
+    const getValue = () => "" as any;
+
+    expect(
+      await Task.all(
+        validate({ fields: [Schema.string], getValue }),
+        validate({ fields: [Schema.number], getValue }),
+        validate({ fields: [Schema.string], getValue }),
+        validate({ fields: [Schema.number], getValue })
+      ).runPromise()
+    ).toEqual([
+      [],
+      [{ field: Schema.number, error: "REQUIRED" }],
+      [{ field: Schema.string, error: "REQUIRED" }],
+      [{ field: Schema.number, error: "REQUIRED" }],
+    ]);
+
+    expect(stringRequiredValidator).toHaveBeenCalledTimes(1);
+    expect(numberLengthValidator).toHaveBeenCalledTimes(2);
+  });
+
+  it("should properly debounce multiple debounced validators for the same field", async () => {
+    const stringRequiredValidator = jest.fn((x: string) =>
+      x ? null : "REQUIRED"
+    );
+    const stringLengthValidator = jest.fn((x: string) =>
+      x.length > 3 ? null : "TOO_SHORT"
+    );
+
+    const { validate } = createFormValidatorImpl(Schema, validate => [
+      validate({
+        field: Schema.string,
+        rules: () => [stringRequiredValidator],
+        debounce: 100,
+      }),
+      validate({
+        field: Schema.string,
+        rules: () => [stringLengthValidator],
+        debounce: 100,
+      }),
+    ]);
+
+    const getValue = () => "ab" as any;
+
+    expect(
+      await Task.all(
+        validate({ fields: [Schema.string], getValue }),
+        validate({ fields: [Schema.string], getValue }),
+        validate({ fields: [Schema.string], getValue })
+      ).runPromise()
+    ).toEqual([[], [], [{ field: Schema.string, error: "TOO_SHORT" }]]);
+
+    expect(stringRequiredValidator).toHaveBeenCalledTimes(1);
+    expect(stringLengthValidator).toHaveBeenCalledTimes(1);
+  });
+
+  it("should properly debounce multiple debounced and non-debounced validators for the same field", async () => {
+    const stringRequiredValidator = jest.fn((x: string) =>
+      x ? null : "REQUIRED"
+    );
+    const stringLengthValidator = jest.fn((x: string) =>
+      x.length > 3 ? null : "TOO_SHORT"
+    );
+    const stringValueValidator = jest.fn((x: string) =>
+      x === "value" ? null : "INVALID_VALUE"
+    );
+
+    const { validate } = createFormValidatorImpl(Schema, validate => [
+      validate({
+        field: Schema.string,
+        rules: () => [stringRequiredValidator],
+        debounce: 100,
+      }),
+      validate(Schema.string, stringValueValidator),
+      validate({
+        field: Schema.string,
+        rules: () => [stringLengthValidator],
+        debounce: 100,
+      }),
+    ]);
+
+    const getValue = () => "not-value" as any;
+
+    expect(
+      await Task.all(
+        validate({ fields: [Schema.string], getValue }),
+        validate({ fields: [Schema.string], getValue }),
+        validate({ fields: [Schema.string], getValue })
+      ).runPromise()
+    ).toEqual([[], [], [{ field: Schema.string, error: "INVALID_VALUE" }]]);
+
+    expect(stringRequiredValidator).toHaveBeenCalledTimes(1);
+    expect(stringValueValidator).toHaveBeenCalledTimes(1);
+    expect(stringLengthValidator).toHaveBeenCalledTimes(0);
   });
 });

@@ -58,13 +58,15 @@ export const createFormValidator = <Values extends object, Err>(
     validate: ValidateFn
   ) => Array<FieldValidator<any, Err, any | unknown>>
 ): FormValidator<Values, Err> => {
-  const allValidators = builder(validate);
+  const allValidators = builder(validate());
   const dependenciesDict = buildDependenciesDict(allValidators);
 
   const ongoingValidationTimestamps: Record<
     FieldValidationKey,
     Timestamp | undefined
   > = {};
+
+  const debounceStepHandler = DebouncedValidation.createDebounceStepHandler();
 
   const getValidatorsForField = (
     descriptor: FieldDescriptor<unknown, Err>,
@@ -121,7 +123,9 @@ export const createFormValidator = <Values extends object, Err>(
                 .flatMap(value =>
                   firstNonNullTaskResult(
                     validators.map(v =>
-                      runValidationForField(v, value, getValue)
+                      debounceStepHandler(v, field).flatMap(() =>
+                        runValidationForField(v, value, getValue)
+                      )
                     )
                   )
                 )
@@ -144,7 +148,8 @@ export const createFormValidator = <Values extends object, Err>(
 
                   // primitive cancellation of outdated validation results
                   return null;
-                });
+                })
+                .flatMapErr(DebouncedValidation.flatMapCancel);
             })
           )
         )
@@ -155,20 +160,26 @@ export const createFormValidator = <Values extends object, Err>(
   return opaque(formValidator);
 };
 
-const validate: ValidateFn = <T, Err, Deps extends any[]>(
-  x: ValidateConfig<T, Err, Deps> | ValidateField<T, Err>,
-  ...rules: Array<Validator<T, Err>>
-): FieldValidator<T, Err, Deps> => {
-  const config: ValidateConfig<T, Err, Deps> =
-    (x as any)["field"] != null
-      ? { ...(x as ValidateConfig<T, Err, Deps>) }
-      : { field: x as ValidateField<T, Err>, rules: () => rules };
+const validate = (): ValidateFn => {
+  let index = 0;
 
-  return {
-    field: config.field,
-    triggers: config.triggers,
-    validators: config.rules,
-    dependencies: config.dependencies,
+  return <T, Err, Deps extends any[]>(
+    x: ValidateConfig<T, Err, Deps> | ValidateField<T, Err>,
+    ...rules: Array<Validator<T, Err>>
+  ): FieldValidator<T, Err, Deps> => {
+    const config: ValidateConfig<T, Err, Deps> =
+      (x as any)["field"] != null
+        ? { ...(x as ValidateConfig<T, Err, Deps>) }
+        : { field: x as ValidateField<T, Err>, rules: () => rules };
+
+    return {
+      id: (index++).toString(),
+      field: config.field,
+      triggers: config.triggers,
+      validators: config.rules,
+      dependencies: config.dependencies,
+      debounce: config.debounce,
+    };
   };
 };
 
@@ -307,4 +318,47 @@ namespace FieldValidationKey {
 type Timestamp = number;
 namespace Timestamp {
   export const make = () => Date.now();
+}
+
+namespace DebouncedValidation {
+  type Cancel = () => void;
+  type DebouncedValidationsDict = Record<FieldValidationKey, Cancel>;
+  type DebounceStepHandler = (
+    validator: FieldValidator<unknown, unknown, unknown[]>,
+    field: FieldDescriptor<unknown, unknown>
+  ) => Task<void>;
+
+  const CANCEL_ERR = "__CANCEL__";
+
+  export const createDebounceStepHandler = (): DebounceStepHandler => {
+    const debouncedValidations: DebouncedValidationsDict = {};
+
+    return (v, field) =>
+      Task.make(({ resolve, reject }) => {
+        const id = `${v.id}-${impl(field).__path}`;
+        if (v.debounce) {
+          debouncedValidations[id]?.();
+
+          const timeout = setTimeout(() => {
+            delete debouncedValidations[id];
+            resolve();
+          }, v.debounce);
+
+          debouncedValidations[id] = () => {
+            clearTimeout(timeout);
+            reject(CANCEL_ERR);
+          };
+        } else {
+          resolve();
+        }
+      });
+  };
+
+  export const flatMapCancel = (err: unknown) => {
+    if (err === CANCEL_ERR) {
+      return Task.success(null);
+    } else {
+      return Task.failure(err);
+    }
+  };
 }

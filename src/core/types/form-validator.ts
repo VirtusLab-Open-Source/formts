@@ -54,10 +54,12 @@ export type _FormValidatorImpl<Values extends object, Err> = {
 };
 
 export type FieldValidator<T, Err, Dependencies extends any[]> = {
+  id: string;
   field: ValidateField<T, Err>;
   triggers?: Array<ValidationTrigger>;
   validators: (...deps: [...Dependencies]) => Array<Falsy | Validator<T, Err>>;
   dependencies?: readonly [...FieldDescTuple<Dependencies>];
+  debounce?: number;
 };
 
 export type ValidateFn = {
@@ -75,6 +77,7 @@ export type ValidateConfig<T, Err, Dependencies extends any[]> = {
   field: ValidateField<T, Err>;
   triggers?: ValidationTrigger[];
   dependencies?: readonly [...FieldDescTuple<Dependencies>];
+  debounce?: number;
   rules: (
     ...deps: [...Dependencies]
   ) => Array<Falsy | Validator<T, NoInfer<Err>>>;
