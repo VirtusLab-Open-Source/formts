@@ -323,15 +323,18 @@ namespace Timestamp {
 namespace DebouncedValidation {
   type Cancel = () => void;
   type DebouncedValidationsDict = Record<FieldValidationKey, Cancel>;
+  type DebounceStepHandler = (
+    validator: FieldValidator<unknown, unknown, unknown[]>,
+    field: FieldDescriptor<unknown, unknown>
+  ) => Task<void>;
 
-  export const createDebounceStepHandler = () => {
+  const CANCEL_ERR = "__CANCEL__";
+
+  export const createDebounceStepHandler = (): DebounceStepHandler => {
     const debouncedValidations: DebouncedValidationsDict = {};
 
-    return (
-      v: FieldValidator<unknown, unknown, unknown[]>,
-      field: FieldDescriptor<unknown, unknown>
-    ) => {
-      return Task.make<void>(({ resolve, reject }) => {
+    return (v, field) =>
+      Task.make(({ resolve, reject }) => {
         const id = `${v.id}-${impl(field).__path}`;
         if (v.debounce) {
           debouncedValidations[id]?.();
@@ -343,17 +346,16 @@ namespace DebouncedValidation {
 
           debouncedValidations[id] = () => {
             clearTimeout(timeout);
-            reject("cancel");
+            reject(CANCEL_ERR);
           };
         } else {
           resolve();
         }
       });
-    };
   };
 
   export const flatMapCancel = (err: unknown) => {
-    if (err === "cancel") {
+    if (err === CANCEL_ERR) {
       return Task.success(null);
     } else {
       return Task.failure(err);

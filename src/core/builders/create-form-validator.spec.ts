@@ -1118,7 +1118,7 @@ describe("debounced validation", () => {
       validate({
         field: Schema.string,
         rules: () => [stringRequiredValidator],
-        debounce: 1000,
+        debounce: 100,
       }),
     ]);
 
@@ -1146,7 +1146,7 @@ describe("debounced validation", () => {
       validate({
         field: Schema.string,
         rules: () => [stringRequiredValidator, stringLengthValidator],
-        debounce: 1000,
+        debounce: 100,
       }),
     ]);
 
@@ -1172,7 +1172,7 @@ describe("debounced validation", () => {
       validate({
         field: Schema.string,
         rules: () => [stringRequiredValidator],
-        debounce: 1000,
+        debounce: 100,
       }),
     ]);
 
@@ -1188,7 +1188,7 @@ describe("debounced validation", () => {
                 .runPromise()
                 .then(resolve)
                 .catch(reject),
-            1200
+            200
           );
         })
       ).runPromise()
@@ -1212,7 +1212,7 @@ describe("debounced validation", () => {
       validate({
         field: Schema.string,
         rules: () => [stringRequiredValidator],
-        debounce: 1000,
+        debounce: 100,
       }),
       validate(Schema.number, numberLengthValidator),
     ]);
@@ -1249,12 +1249,12 @@ describe("debounced validation", () => {
       validate({
         field: Schema.string,
         rules: () => [stringRequiredValidator],
-        debounce: 1000,
+        debounce: 100,
       }),
       validate({
         field: Schema.string,
         rules: () => [stringLengthValidator],
-        debounce: 1000,
+        debounce: 100,
       }),
     ]);
 
@@ -1287,13 +1287,13 @@ describe("debounced validation", () => {
       validate({
         field: Schema.string,
         rules: () => [stringRequiredValidator],
-        debounce: 1000,
+        debounce: 100,
       }),
       validate(Schema.string, stringValueValidator),
       validate({
         field: Schema.string,
         rules: () => [stringLengthValidator],
-        debounce: 1000,
+        debounce: 100,
       }),
     ]);
 
