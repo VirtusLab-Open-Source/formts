@@ -124,8 +124,9 @@ type Combine = {
 };
 
 /**
- * Creates validator that runs all provided validators at the same time
- * and if one ore more fails, returns error created using `combinator` function.
+ * Composes provided validators using `combinator` fn. 
+ * Created validator will run all inner validators in parallel, 
+ * and if one or more fails, it will return an error.
  *
  * Tip: use `ErrorType` type to infer type of combined error out of the validator
  * 
