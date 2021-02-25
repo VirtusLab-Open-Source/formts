@@ -1,6 +1,7 @@
 [![build status](https://circleci.com/gh/VirtusLab/formts.svg?style=shield)](https://app.circleci.com/pipelines/github/VirtusLab/formts)
 [![GitHub license](https://img.shields.io/github/license/VirtusLab/formts)](https://github.com/VirtusLab/formts/blob/master/LICENSE)
 [![npm](https://img.shields.io/npm/v/@virtuslab/formts)](https://www.npmjs.com/package/@virtuslab/formts)
+[![npm bundle size](https://img.shields.io/bundlephobia/minzip/@virtuslab/formts)](https://bundlephobia.com/result?p=@virtuslab/formts)
 [![examples](https://img.shields.io/badge/examples-codesandbox-blue)](https://github.com/VirtusLab/formts/tree/master/examples)
 
 # Formts
@@ -13,17 +14,19 @@
   type-inference
 - Declarative definition of form shape and validation rules
 - Runtime type-checking of form values against the schema
-- **[TODO]** Convenient hooks & context based API allowing for isolated
-  re-renders
+- Convenient hooks & context based API allowing for isolated re-renders
 - Plain react-typescript, 0 dependencies
 - View layer agnostic - no components are provided, works with any 3rd-party
   components
+- `handleChange` function for dealing with change events automatically
 - Advanced validation API which enables:
-  - **[TODO]** specifying dependencies on other fields
+  - specifying dependencies on other fields
   - specifying validation triggers for individual rules
   - selective validation of just the affected fields on value changes
   - separation of error messages from error codes (optional)
+  - async validation rules with debounce option
   - easy mixing of built-in rules with custom functions
+  - combining multiple validation rules into composite validators
 - **[TODO]** Transformation API for declarative mapping and filtering of field
   values
 - Good scalability for very large and complex forms
@@ -94,7 +97,7 @@ const AnswerField: React.FC = () => {
       <input
         id={field.id}
         value={field.value}
-        onChange={e => field.setValue(e.target.value)}
+        onChange={field.handleChange}
         onBlur={field.handleBlur}
       />
       <div className="error">{field.error}</div>
