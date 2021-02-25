@@ -1,21 +1,18 @@
 {
   "version": "0.1.20",
   "name": "@virtuslab/formts",
-  "description": "TType-safe, declarative and performant React form & validation library",
+  "description": "Type-safe, declarative and performant React form & validation library",
   "repository": "git@github.com:VirtusLab/formts.git",
   "author": "Mikołaj Klaman <mklaman@virtuslab.com>",
   "license": "MIT",
   "private": false,
-  "main": "dist/main/index.js",
-  "module": "dist/module/index.js",
-  "esnext": "dist/esnext/index.js",
-  "typings": "dist/main/index.d.ts",
-  "engines": {
-    "node": "12.18.x",
-    "yarn": "1.22.x"
-  },
+  "main": "dist/index.js",
+  "module": "dist/formts.esm.js",
+  "typings": "dist/index.d.ts",
+  "side-effects": false,
   "files": [
-    "dist"
+    "dist",
+    "src"
   ],
   "keywords": [
     "react",
@@ -24,14 +21,13 @@
     "validation"
   ],
   "scripts": {
-    "clean": "rm -rf ./dist",
-    "clean:all": "yarn clean && rm -rf ./node_modules",
-    "build": "yarn build:commonjs && yarn build:module && yarn build:esnext",
-    "build:commonjs": "tsc -p ./tsconfig.commonjs.json",
-    "build:module": "tsc -p ./tsconfig.module.json",
-    "build:esnext": "tsc -p ./tsconfig.esnext.json",
-    "lint": "eslint 'src/**/*.{ts,tsx}' --fix",
-    "test": "jest",
+    "start": "tsdx watch",
+    "build": "tsdx build",
+    "test": "tsdx test",
+    "lint": "tsdx lint",
+    "prepare": "tsdx build",
+    "size": "size-limit",
+    "analyze": "size-limit --why",
     "release": "standard-version --releaseCommitMessageFormat \"chore(release): {{currentTag}} [ci skip]\""
   },
   "husky": {
@@ -50,30 +46,50 @@
       "prettier --write"
     ]
   },
+  "size-limit": [
+    {
+      "path": "dist/tsdx-example.cjs.production.min.js",
+      "limit": "10 KB"
+    },
+    {
+      "path": "dist/tsdx-example.esm.js",
+      "limit": "10 KB"
+    }
+  ],
   "devDependencies": {
     "@commitlint/cli": "^11.0.0",
     "@commitlint/config-conventional": "^11.0.0",
+    "@size-limit/preset-small-lib": "^4.9.2",
     "@testing-library/react-hooks": "^3.4.2",
     "@types/jest": "~26.0.14",
     "@types/react": "^16.9.50",
-    "@typescript-eslint/eslint-plugin": "^4.1.1",
-    "@typescript-eslint/parser": "^4.1.1",
+    "@typescript-eslint/eslint-plugin": "^4.6.1",
+    "@typescript-eslint/parser": "^4.6.1",
+    "babel-jest": "26.6.3",
     "conditional-type-checks": "^1.0.5",
     "eslint": "^7.9.0",
     "eslint-config-prettier": "^6.11.0",
     "eslint-plugin-import": "^2.22.0",
-    "husky": ">=4",
+    "husky": "4.0.0",
     "jest": "~26.4.2",
     "lint-staged": ">=10",
     "prettier": "^2.1.2",
     "react": "^16.13.1",
     "react-test-renderer": "^16.13.1",
+    "size-limit": "^4.9.2",
     "standard-version": "^9.0.0",
     "ts-jest": "~26.3.0",
-    "typescript": "^4.0.2",
+    "tsdx": "^0.14.1",
+    "tslib": "^2.1.0",
+    "typescript": "^4.0.5",
     "yarn": "^1.22.5"
   },
   "peerDependencies": {
     "react": "^16.8.0"
+  },
+  "resolutions": {
+    "**/typescript": "^4.0.5",
+    "**/@typescript-eslint/eslint-plugin": "^4.6.1",
+    "**/@typescript-eslint/parser": "^4.6.1"
   }
 }
