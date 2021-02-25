@@ -105,8 +105,13 @@ describe("createInitialValues", () => {
       ),
     }));
 
-    expect(createInitialValues(schema, { arr: [{ two: [10] }] })).toEqual({
-      arr: [{ two: [10] }],
+    // @ts-expect-error
+    createInitialValues(schema, { arr: [{ two: [10] }] });
+
+    expect(
+      createInitialValues(schema, { arr: [{ one: "foo", two: [10] }] })
+    ).toEqual({
+      arr: [{ one: "foo", two: [10] }],
     });
   });
 
