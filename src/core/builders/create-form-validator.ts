@@ -226,7 +226,10 @@ const getChildrenDescriptors = <Err>(
       flatMap(children, x => getChildrenDescriptors(x, getValue))
     );
   } else if (isArrayDescriptor(descriptor)) {
-    const numberOfChildren = (getValue(descriptor) as any[]).length;
+    const numberOfChildren = (getValue(descriptor) as any[])?.length;
+    if (numberOfChildren === 0) {
+      return root
+    }
     const children = getArrayDescriptorChildren(descriptor, numberOfChildren);
     return root.concat(
       flatMap(children, x => getChildrenDescriptors(x, getValue))
