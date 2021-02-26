@@ -32,10 +32,7 @@ import { impl, opaque } from "../types/type-mapper-util";
  * @example
  * ```
  * const validator = createFormValidator(Schema, validate => [
- *   validate({
- *     field: Schema.password,
- *     rules: () => [required(), minLength(6)]
- *   }),
+ *   validate(Schema.password, required(), minLength(6)),
  *   validate({
  *     field: Schema.passwordConfirm,
  *     dependencies: [Schema.password],
@@ -45,10 +42,7 @@ import { impl, opaque } from "../types/type-mapper-util";
  *       val => val === password ? null : { code: "passwordMismatch" },
  *     ]
  *   }),
- *   validate.each({
- *     field: Schema.promoCodes,
- *     rules: () => [optional(), exactLength(6)],
- *   })
+ *   validate(Schema.promoCodes.nth, optional(), exactLength(6))
  * ])
  * ```
  */
@@ -226,7 +220,10 @@ const getChildrenDescriptors = <Err>(
       flatMap(children, x => getChildrenDescriptors(x, getValue))
     );
   } else if (isArrayDescriptor(descriptor)) {
-    const numberOfChildren = (getValue(descriptor) as any[]).length;
+    const numberOfChildren = (getValue(descriptor) as any[])?.length;
+    if (numberOfChildren === 0) {
+      return root
+    }
     const children = getArrayDescriptorChildren(descriptor, numberOfChildren);
     return root.concat(
       flatMap(children, x => getChildrenDescriptors(x, getValue))

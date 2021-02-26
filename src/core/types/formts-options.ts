@@ -1,5 +1,3 @@
-import { DeepPartial } from "../../utils";
-
 import { FormSchema } from "./form-schema";
 import { FormValidator } from "./form-validator";
 
@@ -12,8 +10,18 @@ export type FormtsOptions<Values extends object, Err> = {
    * after the component is mounted or after form reset (optional).
    * The defaults depend on field type (defined in the Schema).
    */
-  initialValues?: DeepPartial<Values>;
+  initialValues?: InitialValues<Values>;
 
   /** Form validator created using `createFormValidator` function (optional). */
   validator?: FormValidator<Values, Err>;
 };
+
+/** DeepPartial, except for objects inside arrays */
+// prettier-ignore
+export type InitialValues<T> = T extends Function
+  ? T
+  : T extends Array<any>
+    ? T
+    : T extends object
+      ? { [P in keyof T]?: InitialValues<T[P]> }
+      : T | undefined;
