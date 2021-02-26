@@ -17,6 +17,31 @@ describe("validators", () => {
     });
   });
 
+  describe("combine", () => {
+    it("creates validator which returns null when all inner validators return null", () => {
+      const combined = validators.combine(
+        [() => null, () => null, () => null, () => null],
+        it => it
+      );
+
+      expect(combined(42)).toBeNull();
+    });
+
+    it("creates validator which returns result of calling combinator fn with errors from inner validators", () => {
+      const combined = validators.combine(
+        [() => null, () => "E1", () => null, () => "E2"],
+        errors => ({ code: "combinedErr", errors })
+      );
+
+      const result = combined(42);
+
+      expect(result).toEqual({
+        code: "combinedErr",
+        errors: [null, "E1", null, "E2"],
+      });
+    });
+  });
+
   describe("required", () => {
     [
       { value: null, ok: false },

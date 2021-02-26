@@ -1,3 +1,5 @@
+import { Atom } from "./atoms";
+
 /**
  * Alternative Promise implementation:
  *  - allows for keeping code synchronous until async is actually needed
@@ -107,6 +109,32 @@ export class Task<T, Err = unknown> {
     });
   }
 
+  runPromiseOrGet(): T | Promise<T> {
+    const valueA = Atom.of<Maybe<T>>({ is: "none" });
+    const errorA = Atom.of<Maybe<Err>>({ is: "none" });
+
+    this.run({
+      onSuccess: val => valueA.set({ is: "some", val }),
+      onFailure: err => errorA.set({ is: "some", val: err }),
+    });
+
+    if (valueA.val.is == "some") {
+      return valueA.val.val;
+    }
+    if (errorA.val.is == "some") {
+      throw errorA.val.val;
+    }
+
+    return new Promise((resolve, reject) => {
+      valueA.subscribe(maybeVal => {
+        maybeVal.is == "some" && resolve(maybeVal.val);
+      });
+      errorA.subscribe(maybeErr => {
+        maybeErr.is == "some" && reject(maybeErr.val);
+      });
+    });
+  }
+
   map<Q>(fn: (val: T) => Q): Task<Q, Err> {
     return Task.make(({ resolve, reject }) => {
       this.run({
@@ -182,3 +210,5 @@ type TaskErrorUnion<TTasks extends Task<any, any>[]> = TTasks extends Task<
 
 const isPromise = (val: unknown): val is Promise<unknown> =>
   val != null && typeof (val as any).then === "function";
+
+type Maybe<T> = { is: "some"; val: T } | { is: "none" };
