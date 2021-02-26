@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.23](https://github.com/VirtusLab/formts/compare/v0.1.22...v0.1.23) (2021-02-26)
+
+
+### Features
+
+* **examples:** complex form ([#77](https://github.com/VirtusLab/formts/issues/77)) ([8f3f8eb](https://github.com/VirtusLab/formts/commit/8f3f8eb71a569f66ff18a122f91304945aba7e71))
+* **validators:**  combine util ([#71](https://github.com/VirtusLab/formts/issues/71)) ([15a7aee](https://github.com/VirtusLab/formts/commit/15a7aeee18a6caffaa622cb33bb94160da22dcb3))
+
+
+### Bug Fixes
+
+* initial values can lead to illeagl state ([#74](https://github.com/VirtusLab/formts/issues/74)) ([6c02400](https://github.com/VirtusLab/formts/commit/6c02400ddc9bf8c586c7ec91c5869b9207600815))
+
 ### [0.1.22](https://github.com/VirtusLab/formts/compare/v0.1.21...v0.1.22) (2021-02-25)
 
 ### [0.1.21](https://github.com/VirtusLab/formts/compare/v0.1.20...v0.1.21) (2021-02-25)
