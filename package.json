@@ -25,6 +25,7 @@
     "typecheck": "tsc -p ./tsconfig.json",
     "build": "yarn typecheck && tsdx build",
     "test": "tsdx test",
+    "test:ci": "tsdx test --ci --runInBand",
     "lint": "tsdx lint",
     "prepare": "tsdx build",
     "size": "size-limit",
