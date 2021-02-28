@@ -18,37 +18,42 @@ describe("FormHandle type", () => {
     });
 
     it("only works for fields with matching Err type parameter", () => {
-      const handle: FormHandle<{}, "ERR1"> = {} as any;
-      const field: GenericFieldDescriptor<string, "ERR2"> = {} as any;
+      const handle: FormHandle<{}, "ERR_1"> = {} as any;
+      const field1: GenericFieldDescriptor<string, "ERR_1"> = {} as any;
+      const field2: GenericFieldDescriptor<string, "ERR_2"> = {} as any;
 
       () => {
-        // @ts-expect-error
-        handle.setFieldValue(field, "A");
+        handle.setFieldValue(field1, "A");
 
         // @ts-expect-error
-        handle.setFieldValue(field, "B");
+        handle.setFieldValue(field2, "A");
       };
     });
   });
 
   describe(".setFieldError", () => {
     it("only works for fields with matching Err type parameter", () => {
-      const handle: FormHandle<{}, "ERR1"> = {} as any;
-      const field: GenericFieldDescriptor<string, "ERR2"> = {} as any;
+      const handle: FormHandle<{}, "ERR_1"> = {} as any;
+      const field1: GenericFieldDescriptor<string, "ERR_1"> = {} as any;
+      const field2: GenericFieldDescriptor<string, "ERR_2"> = {} as any;
 
       () => {
+        handle.setFieldError(field1, "ERR_1");
+
         // @ts-expect-error
-        handle.setFieldError(field, "ERR1");
+        handle.setFieldError(field2, "ERR_1");
       };
     });
 
     it("only works for errors matching Err type parameter", () => {
-      const handle: FormHandle<{}, "ERR1"> = {} as any;
-      const field: GenericFieldDescriptor<string, "ERR1"> = {} as any;
+      const handle: FormHandle<{}, "ERR_1"> = {} as any;
+      const field: GenericFieldDescriptor<string, "ERR_1"> = {} as any;
 
       () => {
+        handle.setFieldError(field, "ERR_1");
+
         // @ts-expect-error
-        handle.setFieldError(field, "ERR2");
+        handle.setFieldError(field, "ERR_2");
       };
     });
   });
