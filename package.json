@@ -22,7 +22,8 @@
   ],
   "scripts": {
     "start": "tsdx watch",
-    "build": "tsdx build",
+    "typecheck": "tsc -p ./tsconfig.json",
+    "build": "yarn typecheck && tsdx build",
     "test": "tsdx test",
     "lint": "tsdx lint",
     "prepare": "tsdx build",

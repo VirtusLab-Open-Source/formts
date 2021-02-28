@@ -1,6 +1,15 @@
-export class Nominal<Tag> {
+export class Nominal<Tag, P1 = void, P2 = void, P3 = void> {
   // @ts-ignore
   private __tag!: Tag;
+
+  // @ts-ignore
+  private __p1!: P1;
+
+  // @ts-ignore
+  private __p2!: P2;
+
+  // @ts-ignore
+  private __p2!: P3;
 }
 
 export type UnionToIntersection<U> = (
