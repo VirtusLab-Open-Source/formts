@@ -9,8 +9,8 @@ import {
   useField,
   useFormValues,
   FormProvider,
-  validators,
 } from "@virtuslab/formts";
+import { withError, required, minValue } from "@virtuslab/formts/validators";
 import React from "react";
 import ReactDOM from "react-dom";
 
@@ -28,13 +28,13 @@ const validator = createFormValidator(Schema, validate => [
   validate(
     Schema.name,
     // you can mix built-in validators with custom functions
-    validators.withError(validators.required(), "Required"),
+    withError(required(), "Required"),
     val => (val.length > 10 ? "Name must be max 10 characters long" : null)
   ),
   validate(
     Schema.age,
-    validators.withError(validators.required(), "Required"),
-    validators.withError(validators.minValue(18), "Age must be at least 18")
+    withError(required(), "Required"),
+    withError(minValue(18), "Age must be at least 18")
   ),
 ]);
 
