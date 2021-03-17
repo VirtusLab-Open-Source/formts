@@ -9,6 +9,7 @@ export type _FieldDescriptorImpl<T> = {
   __path: string;
   __decoder: _FieldDecoderImpl<T>;
   __lens: Lens<any, T>; // TODO maybe add root typing Lens<Root, T>
+  __parent: _FieldDescriptorImpl<unknown>;
 };
 
 export type _NTHHandler<T> = {

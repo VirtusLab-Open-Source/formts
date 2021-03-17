@@ -10,6 +10,7 @@ const primitiveDescriptor = (path: string): FieldDescriptor<unknown> =>
     __path: path,
     __decoder: { fieldType: "string" } as any,
     __lens: Lens.prop(path), // not used,
+    __parent: undefined as any,
   });
 
 const complexDescriptor = (path: string): FieldDescriptor<unknown> =>
@@ -17,6 +18,7 @@ const complexDescriptor = (path: string): FieldDescriptor<unknown> =>
     __path: path,
     __decoder: { fieldType: "object" } as any,
     __lens: Lens.prop(path), // not used,
+    __parent: undefined as any,
   });
 
 describe("resolveIsValidating", () => {
