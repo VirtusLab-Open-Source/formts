@@ -1095,6 +1095,46 @@ describe("createFormValidator", () => {
 
     expect(validation).toEqual([{ field: Schema.string, error: null }]);
   });
+
+  it("should trigger parent validation when child is validating", async () => {
+    const { validate } = createFormValidatorImpl(Schema, validate => [
+      validate({
+        field: Schema.objectArray.arrayString.nth,
+        rules: () => [x => (x === "" ? "INVALID_VALUE" : null)],
+      }),
+      validate({
+        field: Schema.objectArray.arrayString,
+        rules: () => [x => (x.length < 2 ? "TOO_SHORT" : null)],
+      }),
+      validate({
+        field: Schema.objectArray,
+        rules: () => [x => (x.arrayString.length < 2 ? "TOO_SHORT" : null)],
+      }),
+    ]);
+
+    const getValue = (field: FieldDescriptor<any> | string): any => {
+      const path = typeof field === "string" ? field : impl(field).__path;
+      switch (path) {
+        case "objectArray":
+          return { arrayString: [""] };
+        case "objectArray.arrayString":
+          return [""];
+        case "objectArray.arrayString[0]":
+          return "";
+      }
+    };
+
+    const validation = await validate({
+      fields: [Schema.objectArray.arrayString.nth(0)],
+      getValue,
+    }).runPromise();
+
+    expect(validation).toEqual([
+      { field: Schema.objectArray.arrayString.nth(0), error: "INVALID_VALUE" },
+      { field: Schema.objectArray.arrayString, error: "TOO_SHORT" },
+      { field: Schema.objectArray, error: "TOO_SHORT" },
+    ]);
+  });
 });
 
 describe("debounced validation", () => {

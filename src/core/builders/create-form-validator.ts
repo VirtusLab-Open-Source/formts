@@ -90,8 +90,10 @@ export const createFormValidator = <Values extends object, Err>(
         const dependents = flatMap(fields, x =>
           getDependents(x, dependenciesDict, getValue)
         );
+        const parents = flatMap([...allFields, ...dependents], getParentsChain);
+
         const uniqueFields = uniqBy(
-          [...allFields, ...dependents],
+          [...allFields, ...dependents, ...parents],
           x => impl(x).__path
         );
 
@@ -272,6 +274,20 @@ const getDependents = <Err>(
       return [x];
     }
   });
+
+const getParentsChain = <Err>(
+  desc: FieldDescriptor<any, Err>,
+  chain: FieldDescriptor<any, Err>[] = []
+): FieldDescriptor<any, Err>[] => {
+  const parent = impl(desc).__parent;
+
+  if (parent) {
+    chain.push(opaque(parent));
+    return getParentsChain(opaque(parent), chain);
+  } else {
+    return chain;
+  }
+};
 
 const getDependenciesValues = <Values extends readonly any[], Err>(
   deps: readonly [...FieldDescTuple<Values, Err>],
