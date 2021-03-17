@@ -1,5 +1,5 @@
 {
-  "version": "0.1.23",
+  "version": "0.1.24",
   "name": "@virtuslab/formts",
   "description": "Type-safe, declarative and performant React form & validation library",
   "repository": "git@github.com:VirtusLab/formts.git",
@@ -23,8 +23,10 @@
   ],
   "scripts": {
     "start": "tsdx watch",
-    "build": "tsdx build && sh ./scripts/postbuild.sh",
+    "typecheck": "tsc -p ./tsconfig.json",
+    "build": "yarn typecheck && tsdx build && sh ./scripts/postbuild.sh",
     "test": "tsdx test",
+    "test:ci": "tsdx test --ci --runInBand",
     "lint": "tsdx lint",
     "prepare": "yarn build",
     "size": "size-limit",

@@ -1,73 +1,91 @@
 # Changelog
 
-All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
+All notable changes to this project will be documented in this file. See
+[standard-version](https://github.com/conventional-changelog/standard-version)
+for commit guidelines.
 
-### [0.1.23](https://github.com/VirtusLab/formts/compare/v0.1.22...v0.1.23) (2021-02-26)
-
-
-### Features
-
-* **examples:** complex form ([#77](https://github.com/VirtusLab/formts/issues/77)) ([8f3f8eb](https://github.com/VirtusLab/formts/commit/8f3f8eb71a569f66ff18a122f91304945aba7e71))
-* **validators:**  combine util ([#71](https://github.com/VirtusLab/formts/issues/71)) ([15a7aee](https://github.com/VirtusLab/formts/commit/15a7aeee18a6caffaa622cb33bb94160da22dcb3))
-
+### [0.1.24](https://github.com/VirtusLab/formts/compare/v0.1.23...v0.1.24) (2021-03-17)
 
 ### Bug Fixes
 
-* initial values can lead to illeagl state ([#74](https://github.com/VirtusLab/formts/issues/74)) ([6c02400](https://github.com/VirtusLab/formts/commit/6c02400ddc9bf8c586c7ec91c5869b9207600815))
+- typing improvements ([#81](https://github.com/VirtusLab/formts/issues/81))
+  ([a9ce089](https://github.com/VirtusLab/formts/commit/a9ce0891dc27a09c8061ec5c7dbb0615e1ddc75e))
+
+### [0.1.23](https://github.com/VirtusLab/formts/compare/v0.1.22...v0.1.23) (2021-02-26)
+
+### Features
+
+- **examples:** complex form
+  ([#77](https://github.com/VirtusLab/formts/issues/77))
+  ([8f3f8eb](https://github.com/VirtusLab/formts/commit/8f3f8eb71a569f66ff18a122f91304945aba7e71))
+- **validators:** combine util
+  ([#71](https://github.com/VirtusLab/formts/issues/71))
+  ([15a7aee](https://github.com/VirtusLab/formts/commit/15a7aeee18a6caffaa622cb33bb94160da22dcb3))
+
+### Bug Fixes
+
+- initial values can lead to illeagl state
+  ([#74](https://github.com/VirtusLab/formts/issues/74))
+  ([6c02400](https://github.com/VirtusLab/formts/commit/6c02400ddc9bf8c586c7ec91c5869b9207600815))
 
 ### [0.1.22](https://github.com/VirtusLab/formts/compare/v0.1.21...v0.1.22) (2021-02-25)
 
 ### [0.1.21](https://github.com/VirtusLab/formts/compare/v0.1.20...v0.1.21) (2021-02-25)
 
-
 ### Bug Fixes
 
-* build ([#70](https://github.com/VirtusLab/formts/issues/70)) ([6899305](https://github.com/VirtusLab/formts/commit/6899305b362a6a027d637725b4bfd4ab2a686116))
+- build ([#70](https://github.com/VirtusLab/formts/issues/70))
+  ([6899305](https://github.com/VirtusLab/formts/commit/6899305b362a6a027d637725b4bfd4ab2a686116))
 
 ### [0.1.20](https://github.com/VirtusLab/formts/compare/v0.1.19...v0.1.20) (2021-02-22)
 
-
 ### Features
 
-* debounced validation ([#68](https://github.com/VirtusLab/formts/issues/68)) ([3a04328](https://github.com/VirtusLab/formts/commit/3a043287e805a6496612603176b2a402a0705786))
-* validation optimisations and fixes ([#67](https://github.com/VirtusLab/formts/issues/67)) ([a4c2581](https://github.com/VirtusLab/formts/commit/a4c25812ded1fb6bc35d9b066ec0cd3c7036009c))
+- debounced validation ([#68](https://github.com/VirtusLab/formts/issues/68))
+  ([3a04328](https://github.com/VirtusLab/formts/commit/3a043287e805a6496612603176b2a402a0705786))
+- validation optimisations and fixes
+  ([#67](https://github.com/VirtusLab/formts/issues/67))
+  ([a4c2581](https://github.com/VirtusLab/formts/commit/a4c25812ded1fb6bc35d9b066ec0cd3c7036009c))
 
 ### [0.1.19](https://github.com/VirtusLab/formts/compare/v0.1.18...v0.1.19) (2021-02-15)
 
 ### [0.1.18](https://github.com/VirtusLab/formts/compare/v0.1.17...v0.1.18) (2021-02-09)
 
-
 ### Features
 
-* atom-based form state ([#63](https://github.com/VirtusLab/formts/issues/63)) ([b2b90b2](https://github.com/VirtusLab/formts/commit/b2b90b28c495422f30830a0be8664755e119b518))
+- atom-based form state ([#63](https://github.com/VirtusLab/formts/issues/63))
+  ([b2b90b2](https://github.com/VirtusLab/formts/commit/b2b90b28c495422f30830a0be8664755e119b518))
 
 ### [0.1.17](https://github.com/VirtusLab/formts/compare/v0.1.16...v0.1.17) (2021-01-21)
 
-
 ### Bug Fixes
 
-* **core:** parsing date instance initial value ([#61](https://github.com/VirtusLab/formts/issues/61)) ([34b7818](https://github.com/VirtusLab/formts/commit/34b7818a4ae72fd9b44544b510ada81b87bb6998))
+- **core:** parsing date instance initial value
+  ([#61](https://github.com/VirtusLab/formts/issues/61))
+  ([34b7818](https://github.com/VirtusLab/formts/commit/34b7818a4ae72fd9b44544b510ada81b87bb6998))
 
 ### [0.1.16](https://github.com/VirtusLab/formts/compare/v0.1.15...v0.1.16) (2021-01-18)
 
-
 ### Features
 
-* **utils:** lenses & atoms ([#60](https://github.com/VirtusLab/formts/issues/60)) ([d70c61b](https://github.com/VirtusLab/formts/commit/d70c61b531ffc92dfc35106871a31ff9e8f91519))
+- **utils:** lenses & atoms
+  ([#60](https://github.com/VirtusLab/formts/issues/60))
+  ([d70c61b](https://github.com/VirtusLab/formts/commit/d70c61b531ffc92dfc35106871a31ff9e8f91519))
 
 ### [0.1.15](https://github.com/VirtusLab/formts/compare/v0.1.14...v0.1.15) (2021-01-18)
 
-
 ### Features
 
-* handle change method ([#58](https://github.com/VirtusLab/formts/issues/58)) ([a013729](https://github.com/VirtusLab/formts/commit/a0137297d112c4ac7626a666e3c57cbfa9e29fb7))
+- handle change method ([#58](https://github.com/VirtusLab/formts/issues/58))
+  ([a013729](https://github.com/VirtusLab/formts/commit/a0137297d112c4ac7626a666e3c57cbfa9e29fb7))
 
 ### [0.1.14](https://github.com/VirtusLab/formts/compare/v0.1.13...v0.1.14) (2021-01-11)
 
-
 ### Features
 
-* validation dependencies support ([#57](https://github.com/VirtusLab/formts/issues/57)) ([22bbb6a](https://github.com/VirtusLab/formts/commit/22bbb6a2f9c505c02bf75122f599b16cbaa055d9))
+- validation dependencies support
+  ([#57](https://github.com/VirtusLab/formts/issues/57))
+  ([22bbb6a](https://github.com/VirtusLab/formts/commit/22bbb6a2f9c505c02bf75122f599b16cbaa055d9))
 
 ### [0.1.13](https://github.com/VirtusLab/formts/compare/v0.1.12...v0.1.13) (2020-11-29)
 

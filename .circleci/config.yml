@@ -13,8 +13,8 @@ jobs:
 
       - restore_cache:
           keys:
-          - v1-dependencies-{{ checksum "package.json" }}
-          - v1-dependencies-
+            - v1-dependencies-{{ checksum "package.json" }}
+            - v1-dependencies-
 
       - run: yarn install
 
@@ -24,7 +24,7 @@ jobs:
 
       - run:
           name: Run tests
-          command: yarn test
+          command: yarn test:ci
 
       - save_cache:
           paths:
@@ -43,7 +43,9 @@ jobs:
 
       - run:
           name: Avoid hosts unknown for github
-          command: mkdir ~/.ssh/ && echo -e "Host github.com\n\tStrictHostKeyChecking no\n" > ~/.ssh/config
+          command:
+            mkdir ~/.ssh/ && echo -e "Host github.com\n\tStrictHostKeyChecking
+            no\n" > ~/.ssh/config
 
       - add_ssh_keys:
           fingerprints:
@@ -53,7 +55,7 @@ jobs:
           name: Set GH user name&email
           command: |
             git config user.name "CircleCI Release Job"
-            git config user.email "circle@ci.com"     
+            git config user.email "circle@ci.com"
 
       - run:
           name: Create release
@@ -65,7 +67,8 @@ jobs:
 
       - run:
           name: Authenticate with registry
-          command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/repo/.npmrc
+          command:
+            echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/repo/.npmrc
 
       - run:
           name: Publish package
@@ -82,4 +85,4 @@ workflows:
           filters:
             branches:
               only:
-              - master
+                - master

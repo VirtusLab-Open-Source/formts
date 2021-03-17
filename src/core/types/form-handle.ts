@@ -1,3 +1,5 @@
+import { NoInfer } from "../../utils";
+
 import { GenericFieldDescriptor } from "./field-descriptor";
 
 export type FieldError<Err> = {
@@ -53,7 +55,10 @@ export type FormHandle<Values extends object, Err> = {
    * Will cause field validation to run with the `change` trigger.
    * Will set `isTouched` flag for the field to `true`.
    */
-  setFieldValue: <T>(field: GenericFieldDescriptor<T, Err>, value: T) => void;
+  setFieldValue: <T>(
+    field: GenericFieldDescriptor<T, Err>,
+    value: NoInfer<T>
+  ) => void;
 
   /** Sets error for given field, affecting it's `isValid` flag */
   setFieldError: <T>(

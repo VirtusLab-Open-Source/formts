@@ -180,7 +180,7 @@ const validate = (): ValidateFn => {
 const runValidationForField = <Value, Err, Dependencies extends any[]>(
   validator: FieldValidator<Value, Err, Dependencies>,
   value: Value,
-  getValue: GetValue
+  getValue: GetValue<Err>
 ): Task<Err | null, unknown> => {
   const dependenciesValues = !!validator.dependencies
     ? getDependenciesValues(validator.dependencies, getValue)
@@ -222,25 +222,27 @@ const getChildrenDescriptors = <Err>(
   } else if (isArrayDescriptor(descriptor)) {
     const numberOfChildren = (getValue(descriptor) as any[])?.length;
     if (numberOfChildren === 0) {
-      return root
+      return root;
     }
     const children = getArrayDescriptorChildren(descriptor, numberOfChildren);
     return root.concat(
-      flatMap(children, x => getChildrenDescriptors(x, getValue))
+      flatMap(children, x =>
+        getChildrenDescriptors(x as FieldDescriptor<unknown, Err>, getValue)
+      )
     );
   } else {
     return root;
   }
 };
 
-type DependenciesDict = {
-  [path: string]: ValidateField<unknown, unknown>[];
+type DependenciesDict<Err> = {
+  [path: string]: ValidateField<unknown, Err>[];
 };
 
-const buildDependenciesDict = (
-  validators: FieldValidator<any, any, any>[]
-): DependenciesDict => {
-  let dict: DependenciesDict = {};
+const buildDependenciesDict = <Err>(
+  validators: FieldValidator<any, Err, any>[]
+): DependenciesDict<Err> => {
+  let dict: DependenciesDict<Err> = {};
 
   for (const validator of validators) {
     for (const dependency of validator.dependencies ?? []) {
@@ -259,10 +261,10 @@ const buildDependenciesDict = (
 
 const getDependents = <Err>(
   desc: FieldDescriptor<any, Err>,
-  dependenciesDict: DependenciesDict,
-  getValue: GetValue
-): FieldDescriptor<any, Err>[] => {
-  return flatMap(dependenciesDict[impl(desc).__path] ?? [], x => {
+  dependenciesDict: DependenciesDict<Err>,
+  getValue: GetValue<Err>
+): FieldDescriptor<any, Err>[] =>
+  flatMap(dependenciesDict[impl(desc).__path] ?? [], x => {
     if (isNth(x)) {
       const rootPath = impl(x).__rootPath;
       return getValue<any[]>(rootPath).map((_, i) => x(i));
@@ -270,11 +272,10 @@ const getDependents = <Err>(
       return [x];
     }
   });
-};
 
-const getDependenciesValues = <Values extends readonly any[]>(
-  deps: readonly [...FieldDescTuple<Values>],
-  getValue: GetValue
+const getDependenciesValues = <Values extends readonly any[], Err>(
+  deps: readonly [...FieldDescTuple<Values, Err>],
+  getValue: GetValue<Err>
 ): Values => {
   return deps.map(x => getValue(x)) as any;
 };
