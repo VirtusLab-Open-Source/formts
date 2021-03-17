@@ -34,19 +34,18 @@ export type ValidationResult<Err> = Array<{
 export type ValidateIn<Err> = {
   fields: Array<FieldDescriptor<unknown, Err>>;
   trigger?: ValidationTrigger;
-  getValue: GetValue;
+  getValue: GetValue<Err>;
   onFieldValidationStart?: (field: FieldDescriptor<unknown, Err>) => void;
   onFieldValidationEnd?: (field: FieldDescriptor<unknown, Err>) => void;
 };
 
-export type GetValue = {
-  <P>(field: FieldDescriptor<P, unknown>): P;
+export type GetValue<Err> = {
+  <P>(field: FieldDescriptor<P, Err>): P;
   <P>(path: string): P;
 };
 
-// @ts-ignore
 export interface FormValidator<Values extends object, Err>
-  extends Nominal<"FormValidator"> {}
+  extends Nominal<"FormValidator", Values, Err> {}
 
 // @ts-ignore
 export type _FormValidatorImpl<Values extends object, Err> = {
@@ -58,7 +57,7 @@ export type FieldValidator<T, Err, Dependencies extends any[]> = {
   field: ValidateField<T, Err>;
   triggers?: Array<ValidationTrigger>;
   validators: (...deps: [...Dependencies]) => Array<Falsy | Validator<T, Err>>;
-  dependencies?: readonly [...FieldDescTuple<Dependencies>];
+  dependencies?: readonly [...FieldDescTuple<Dependencies, Err>];
   debounce?: number;
 };
 
@@ -123,7 +122,7 @@ export type ValidateConfig<T, Err, Dependencies extends any[]> = {
       ]);
    * ```
    */
-  dependencies?: readonly [...FieldDescTuple<Dependencies>];
+  dependencies?: readonly [...FieldDescTuple<Dependencies, Err>];
 
   /**
    * If specified, will wait provided amount of milliseconds before running validation rules.
@@ -159,8 +158,8 @@ export type ValidateField<T, Err> =
   | GenericFieldDescriptor<T, Err>
   | ArrayFieldDescriptor<T[], Err>["nth"];
 
-export type FieldDescTuple<ValuesTuple extends readonly any[]> = {
-  [Index in keyof ValuesTuple]: GenericFieldDescriptor<ValuesTuple[Index]>;
+export type FieldDescTuple<ValuesTuple extends readonly any[], Err> = {
+  [Index in keyof ValuesTuple]: GenericFieldDescriptor<ValuesTuple[Index], Err>;
 };
 
 export const isNth = <T, Err>(

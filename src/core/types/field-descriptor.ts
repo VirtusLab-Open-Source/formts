@@ -22,7 +22,7 @@ export type _NTHHandler<T> = {
  */
 // @ts-ignore
 export interface FieldDescriptor<T, Err = unknown>
-  extends Nominal<"FieldDescriptor"> {}
+  extends Nominal<"FieldDescriptor", Err> {}
 
 // prettier-ignore
 export type GenericFieldDescriptor<T, Err = unknown> =
