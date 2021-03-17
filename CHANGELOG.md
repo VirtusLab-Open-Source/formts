@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.24](https://github.com/VirtusLab/formts/compare/v0.1.23...v0.1.24) (2021-03-17)
+
+
+### Bug Fixes
+
+* typing improvements ([#81](https://github.com/VirtusLab/formts/issues/81)) ([a9ce089](https://github.com/VirtusLab/formts/commit/a9ce0891dc27a09c8061ec5c7dbb0615e1ddc75e))
+
 ### [0.1.23](https://github.com/VirtusLab/formts/compare/v0.1.22...v0.1.23) (2021-02-26)
 
 
