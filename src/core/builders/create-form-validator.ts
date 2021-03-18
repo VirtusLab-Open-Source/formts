@@ -90,7 +90,7 @@ export const createFormValidator = <Values extends object, Err>(
         const dependents = flatMap(fields, x =>
           getDependents(x, dependenciesDict, getValue)
         );
-        const parents = flatMap([...allFields, ...dependents], getParentsChain);
+        const parents = flatMap(fields, getParentsChain);
 
         const uniqueFields = uniqBy(
           [...allFields, ...dependents, ...parents],
@@ -276,16 +276,14 @@ const getDependents = <Err>(
   });
 
 const getParentsChain = <Err>(
-  desc: FieldDescriptor<any, Err>,
-  chain: FieldDescriptor<any, Err>[] = []
+  desc: FieldDescriptor<any, Err>
 ): FieldDescriptor<any, Err>[] => {
   const parent = impl(desc).__parent;
-
-  if (parent) {
-    chain.push(opaque(parent));
-    return getParentsChain(opaque(parent), chain);
+  if (!parent) {
+    return [];
   } else {
-    return chain;
+    const opaqueParent = opaque(parent) as FieldDescriptor<any, Err>;
+    return [opaqueParent, ...getParentsChain(opaqueParent)];
   }
 };
 
@@ -302,21 +300,10 @@ const validatorMatchesField = (
 ): boolean => {
   if (isNth(validator.field)) {
     const validatorRootPath = impl(validator.field).__rootPath;
-    const fieldRootPath = getRootArrayPath(impl(field).__path);
+    const fieldRootPath = impl(field).__parent?.__path;
     return validatorRootPath === fieldRootPath;
   } else {
     return impl(validator.field).__path === impl(field).__path;
-  }
-};
-
-// TODO rethink
-const getRootArrayPath = (path: string): string | undefined => {
-  const isArrayElement = path.lastIndexOf("]") === path.length - 1;
-  if (!isArrayElement) {
-    return undefined;
-  } else {
-    const indexStart = path.lastIndexOf("[");
-    return path.slice(0, indexStart);
   }
 };
 

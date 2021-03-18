@@ -61,6 +61,10 @@ describe("createFormValidator", () => {
           array: fields.array(fields.object({ str: fields.string() })),
         }),
       }),
+      objectTwoArrays: fields.object({
+        arrayString: fields.array(fields.string()),
+        arrayNumber: fields.array(fields.number()),
+      }),
     }),
     error => error<"REQUIRED" | "TOO_SHORT" | "INVALID_VALUE">()
   );
@@ -1134,6 +1138,73 @@ describe("createFormValidator", () => {
       { field: Schema.objectArray.arrayString, error: "TOO_SHORT" },
       { field: Schema.objectArray, error: "TOO_SHORT" },
     ]);
+  });
+
+  it("should trigger parent validation when child is validating and not trigger another parents branches", async () => {
+    const stringValidator = jest.fn((x: string) =>
+      x === "" ? "INVALID_VALUE" : null
+    );
+    const numberValidator = jest.fn((x: number | "") =>
+      x === "" ? "INVALID_VALUE" : null
+    );
+
+    const arrayNumberValidator = jest.fn((_: number[]) => null);
+
+    const { validate } = createFormValidatorImpl(Schema, validate => [
+      validate({
+        field: Schema.objectTwoArrays.arrayString.nth,
+        rules: () => [stringValidator],
+      }),
+      validate({
+        field: Schema.objectTwoArrays.arrayNumber.nth,
+        rules: () => [numberValidator],
+      }),
+      validate({
+        field: Schema.objectTwoArrays.arrayString,
+        rules: () => [x => (x.length < 2 ? "TOO_SHORT" : null)],
+      }),
+      validate({
+        field: Schema.objectTwoArrays.arrayNumber,
+        rules: () => [arrayNumberValidator],
+      }),
+      validate({
+        field: Schema.objectTwoArrays,
+        rules: () => [x => (x.arrayString.length < 2 ? "TOO_SHORT" : null)],
+      }),
+    ]);
+
+    const getValue = (field: FieldDescriptor<any> | string): any => {
+      const path = typeof field === "string" ? field : impl(field).__path;
+      switch (path) {
+        case "objectTwoArrays":
+          return { arrayString: [""], arrayNumber: [1] };
+        case "objectTwoArrays.arrayString":
+          return [""];
+        case "objectTwoArrays.arrayNumber":
+          return [1];
+        case "objectTwoArrays.arrayString[0]":
+          return "";
+        case "objectTwoArrays.arrayNumber[0]":
+          return 1;
+      }
+    };
+
+    const validation = await validate({
+      fields: [Schema.objectTwoArrays.arrayString.nth(0)],
+      getValue,
+    }).runPromise();
+
+    expect(validation).toEqual([
+      {
+        field: Schema.objectTwoArrays.arrayString.nth(0),
+        error: "INVALID_VALUE",
+      },
+      { field: Schema.objectTwoArrays.arrayString, error: "TOO_SHORT" },
+      { field: Schema.objectTwoArrays, error: "TOO_SHORT" },
+    ]);
+    expect(stringValidator).toBeCalledTimes(1);
+    expect(numberValidator).not.toHaveBeenCalled();
+    expect(arrayNumberValidator).not.toHaveBeenCalled();
   });
 });
 
