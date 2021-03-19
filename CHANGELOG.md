@@ -1,8 +1,8 @@
 # Changelog
 
-All notable changes to this project will be documented in this file. See
-[standard-version](https://github.com/conventional-changelog/standard-version)
-for commit guidelines.
+All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
+
+### [0.1.26](https://github.com/VirtusLab/formts/compare/v0.1.25...v0.1.26) (2021-03-19)
 
 ### [0.1.25](https://github.com/VirtusLab/formts/compare/v0.1.24...v0.1.25) (2021-03-19)
 
