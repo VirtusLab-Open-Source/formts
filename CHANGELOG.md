@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.25](https://github.com/VirtusLab/formts/compare/v0.1.24...v0.1.25) (2021-03-19)
+
+
+### Bug Fixes
+
+* **core:** child validation triggers parent validation ([#84](https://github.com/VirtusLab/formts/issues/84)) ([8eaab1f](https://github.com/VirtusLab/formts/commit/8eaab1ffdde52ba38bfe8d3adb311cec1365122d))
+
 ### [0.1.24](https://github.com/VirtusLab/formts/compare/v0.1.23...v0.1.24) (2021-03-17)
 
 
