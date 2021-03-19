@@ -1,5 +1,4 @@
 import {
-  BaseErrors,
   createFormSchema,
   createFormValidator,
   FormProvider,
@@ -7,8 +6,8 @@ import {
   useFormController,
   useFormHandle,
   useFormValues,
-  validators as v,
 } from "@virtuslab/formts";
+import * as V from "@virtuslab/formts/validators";
 import React from "react";
 import ReactDOM from "react-dom";
 
@@ -26,16 +25,16 @@ const Schema = createFormSchema(
 );
 
 type FormError =
-  | BaseErrors.Required
-  | v.ErrorType<typeof passwordMultiValidator>
+  | V.Errors.Required
+  | V.ErrorType<typeof passwordMultiValidator>
   | { code: "confirmPassMismatch" }
   | { code: "invalidCurrentPass" };
 
-const passwordMultiValidator = v.combine(
+const passwordMultiValidator = V.combine(
   [
-    v.minLength(MIN_PASS_LEN),
-    v.hasLowerCaseChar(),
-    v.hasUpperCaseChar(),
+    V.minLength(MIN_PASS_LEN),
+    V.hasLowerCaseChar(),
+    V.hasUpperCaseChar(),
     val => (val.includes("42") ? null : ({ code: "hasTheAnswer" } as const)),
   ],
   ([minLen, lowerChar, upperChar, hasTheAnswer]) => ({
@@ -50,11 +49,11 @@ const passwordMultiValidator = v.combine(
 );
 
 const validator = createFormValidator(Schema, validate => [
-  validate(Schema.currentPass, v.required()),
+  validate(Schema.currentPass, V.required()),
 
   validate(Schema.newPass, passwordMultiValidator),
 
-  validate(Schema.newPassConfirm, v.required()),
+  validate(Schema.newPassConfirm, V.required()),
   validate({
     field: Schema.newPassConfirm,
     dependencies: [Schema.newPass],
@@ -103,7 +102,7 @@ const NewPassInput: React.FC = () => {
   const field = useField(Schema.newPass);
 
   const renderRequirement = (
-    rule: keyof v.ErrorType<typeof passwordMultiValidator>["rules"],
+    rule: keyof V.ErrorType<typeof passwordMultiValidator>["rules"],
     label: string
   ) => {
     const ruleError =

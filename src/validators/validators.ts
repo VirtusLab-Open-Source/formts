@@ -4,7 +4,7 @@ import { Validator } from "../core";
 import { Task } from "../utils/task";
 import { Primitive, WidenType } from "../utils/utility-types";
 
-import * as BaseErrors from "./base-errors";
+import { Errors } from "./base-errors";
 
 // utils
 
@@ -165,10 +165,7 @@ export const combine: Combine = <T, E>(
 // general
 
 /** Checks if field value is present */
-export const required = (): Validator.Sync<
-  unknown,
-  BaseErrors.Required
-> => val =>
+export const required = (): Validator.Sync<unknown, Errors.Required> => val =>
   val == null || val === "" || val === false ? { code: "required" } : null;
 
 /**
@@ -187,39 +184,37 @@ export const optional = () => (val: unknown): null => {
 /** checks if value is one of provided values */
 export const oneOf = <V extends Primitive>(
   ...allowedValues: V[]
-): Validator.Sync<WidenType<V>, BaseErrors.OneOf> => val =>
+): Validator.Sync<WidenType<V>, Errors.OneOf> => val =>
   allowedValues.includes(val as V) ? null : { code: "oneOf", allowedValues };
 
 // numbers
 
 /** checks if value is integer number */
-export const integer = (): Validator.Sync<
-  number | "",
-  BaseErrors.Integer
-> => num => (Number.isInteger(num) ? null : { code: "integer" });
+export const integer = (): Validator.Sync<number | "", Errors.Integer> => num =>
+  Number.isInteger(num) ? null : { code: "integer" };
 
 /** checks number value against provided minimum */
 export const minValue = (
   min: number
-): Validator.Sync<number | "", BaseErrors.MinValue> => num =>
+): Validator.Sync<number | "", Errors.MinValue> => num =>
   num === "" || num < min ? { code: "minValue", min } : null;
 
 /** checks number value against provided maximum */
 export const maxValue = (
   max: number
-): Validator.Sync<number | "", BaseErrors.MaxValue> => num =>
+): Validator.Sync<number | "", Errors.MaxValue> => num =>
   num === "" || num > max ? { code: "maxValue", max } : null;
 
 /** checks if value is a number greater than provided value */
 export const greaterThan = (
   threshold: number
-): Validator.Sync<number | "", BaseErrors.GreaterThan> => num =>
+): Validator.Sync<number | "", Errors.GreaterThan> => num =>
   num === "" || num <= threshold ? { code: "greaterThan", threshold } : null;
 
 /** checks if value is a number smaller than provided value */
 export const lesserThan = (
   threshold: number
-): Validator.Sync<number | "", BaseErrors.LesserThan> => num =>
+): Validator.Sync<number | "", Errors.LesserThan> => num =>
   num === "" || num >= threshold ? { code: "lesserThan", threshold } : null;
 
 // strings
@@ -227,20 +222,20 @@ export const lesserThan = (
 /** checks pattern exists in string value using `RegExp.test` function */
 export const pattern = (
   regex: RegExp
-): Validator.Sync<string, BaseErrors.Pattern> => string =>
+): Validator.Sync<string, Errors.Pattern> => string =>
   regex.test(string) ? null : { code: "pattern", regex };
 
 /** checks if string value contains an uppercase character */
 export const hasUpperCaseChar = (): Validator.Sync<
   string,
-  BaseErrors.HasUpperCaseChar
+  Errors.HasUpperCaseChar
 > => (val: string) =>
   /[A-Z]/.test(val) ? null : { code: "hasUpperCaseChar" as const };
 
 /** checks if string value contains an lowercase character */
 export const hasLowerCaseChar = (): Validator.Sync<
   string,
-  BaseErrors.HasLowerCaseChar
+  Errors.HasLowerCaseChar
 > => (val: string) =>
   /[a-z]/.test(val) ? null : { code: "hasLowerCaseChar" as const };
 
@@ -249,19 +244,19 @@ export const hasLowerCaseChar = (): Validator.Sync<
 /** checks length of string or array value against provided minimum */
 export const minLength = (
   min: number
-): Validator.Sync<{ length: number }, BaseErrors.MinLength> => val =>
+): Validator.Sync<{ length: number }, Errors.MinLength> => val =>
   val.length < min ? { code: "minLength", min } : null;
 
 /** checks length of string or array value against provided maximum */
 export const maxLength = (
   max: number
-): Validator.Sync<{ length: number }, BaseErrors.MaxLength> => val =>
+): Validator.Sync<{ length: number }, Errors.MaxLength> => val =>
   val.length > max ? { code: "maxLength", max } : null;
 
 /** checks if length of string or array value is equal to expected */
 export const exactLength = (
   expected: number
-): Validator.Sync<{ length: number }, BaseErrors.ExactLength> => val =>
+): Validator.Sync<{ length: number }, Errors.ExactLength> => val =>
   val.length !== expected ? { code: "exactLength", expected } : null;
 
 // dates
@@ -269,7 +264,7 @@ export const exactLength = (
 /** compares date value against provided minimum */
 export const minDate = (
   min: Date
-): Validator.Sync<Date | null, BaseErrors.MinDate> => date =>
+): Validator.Sync<Date | null, Errors.MinDate> => date =>
   date == null || Number.isNaN(date.valueOf()) || date.valueOf() < min.valueOf()
     ? { code: "minDate", min }
     : null;
@@ -277,7 +272,7 @@ export const minDate = (
 /** compares date value against provided maximum */
 export const maxDate = (
   max: Date
-): Validator.Sync<Date | null, BaseErrors.MaxDate> => date =>
+): Validator.Sync<Date | null, Errors.MaxDate> => date =>
   date == null || Number.isNaN(date.valueOf()) || date.valueOf() > max.valueOf()
     ? { code: "maxDate", max }
     : null;
