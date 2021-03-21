@@ -35,7 +35,8 @@ const passwordMultiValidator = V.combine(
     V.minLength(MIN_PASS_LEN),
     V.hasLowerCaseChar(),
     V.hasUpperCaseChar(),
-    val => (val.includes("42") ? null : ({ code: "hasTheAnswer" } as const)),
+    (val: string) =>
+      val.includes("42") ? null : ({ code: "hasTheAnswer" } as const),
   ],
   ([minLen, lowerChar, upperChar, hasTheAnswer]) => ({
     code: "passwordFormat" as const,
