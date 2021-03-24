@@ -303,7 +303,26 @@ const validatorMatchesField = (
     const fieldRootPath = impl(field).__parent?.__path;
     return validatorRootPath === fieldRootPath;
   } else {
-    return impl(validator.field).__path === impl(field).__path;
+    const validatorPath = impl(validator.field).__path;
+    const fieldPath = impl(field).__path;
+    return (
+      validatorPath === fieldPath ||
+      pathMatchesTemplatePath(fieldPath, validatorPath)
+    );
+  }
+};
+
+const pathMatchesTemplatePath = (path: string, template: string) => {
+  if (!template.includes("[-ANY-]")) {
+    return false;
+  } else {
+    const templateRegex = template
+      .replace(new RegExp("\\.", "g"), "\\.")
+      .replace(new RegExp("\\[", "g"), "\\[")
+      .replace(new RegExp("\\]", "g"), "\\]")
+      .replace(new RegExp("-ANY-", "g"), "(\\d+)");
+
+    return !!path.match(new RegExp(templateRegex));
   }
 };
 

@@ -36,7 +36,7 @@ export type GenericFieldDescriptor<T, Err = unknown> =
 // prettier-ignore
 export type ArrayFieldDescriptor<T extends Array<unknown>, Err> =
   & FieldDescriptor<T, Err>
-  & { readonly nth: (index: number) => GenericFieldDescriptor<T[number], Err>; };
+  & { readonly nth: (index?: number) => GenericFieldDescriptor<T[number], Err>; };
 
 // prettier-ignore
 export type ObjectFieldDescriptor<T extends object, Err> =

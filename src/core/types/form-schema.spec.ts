@@ -74,7 +74,7 @@ describe("FormSchema type", () => {
     type Actual = Schema["arrayString"];
 
     type Expected = FieldDescriptor<string[], SomeErr> & {
-      nth: (index: number) => FieldDescriptor<string, SomeErr>;
+      nth: (index?: number) => FieldDescriptor<string, SomeErr>;
     };
 
     assert<IsExact<Actual, Expected>>(true);
@@ -85,9 +85,9 @@ describe("FormSchema type", () => {
 
     type Expected = FieldDescriptor<string[][], SomeErr> & {
       nth: (
-        index: number
+        index?: number
       ) => FieldDescriptor<string[], SomeErr> & {
-        nth: (index: number) => FieldDescriptor<string, SomeErr>;
+        nth: (index?: number) => FieldDescriptor<string, SomeErr>;
       };
     };
 
@@ -128,7 +128,7 @@ describe("FormSchema type", () => {
     > & {
       nested: FieldDescriptor<{ arrayString: string[] }, SomeErr> & {
         arrayString: FieldDescriptor<string[], SomeErr> & {
-          nth: (index: number) => FieldDescriptor<string, SomeErr>;
+          nth: (index?: number) => FieldDescriptor<string, SomeErr>;
         };
       };
     };
@@ -141,7 +141,7 @@ describe("FormSchema type", () => {
 
     type Expected = FieldDescriptor<Array<{ string: string }>, SomeErr> & {
       nth: (
-        index: number
+        index?: number
       ) => FieldDescriptor<{ string: string }, SomeErr> & {
         string: FieldDescriptor<string, SomeErr>;
       };

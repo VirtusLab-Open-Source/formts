@@ -101,11 +101,11 @@ const createFieldDescriptor = (
       return rootDescriptor;
 
     case "array": {
-      const nthHandler = (i: number) =>
+      const nthHandler = (i?: number) =>
         createFieldDescriptor(
           decoder.inner as _FieldDecoderImpl<any>,
-          Lens.compose(lens, Lens.index(i)),
-          `${path}[${i}]`,
+          Lens.compose(lens, Lens.index(i ?? -1)),
+          `${path}[${i ?? "-ANY-"}]`,
           rootDescriptor
         );
 

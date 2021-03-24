@@ -65,6 +65,9 @@ describe("createFormValidator", () => {
         arrayString: fields.array(fields.string()),
         arrayNumber: fields.array(fields.number()),
       }),
+      arrayNestedArrays: fields.array(
+        fields.object({ array: fields.array(fields.string()) })
+      ),
     }),
     error => error<"REQUIRED" | "TOO_SHORT" | "INVALID_VALUE">()
   );
@@ -1205,6 +1208,114 @@ describe("createFormValidator", () => {
     expect(stringValidator).toBeCalledTimes(1);
     expect(numberValidator).not.toHaveBeenCalled();
     expect(arrayNumberValidator).not.toHaveBeenCalled();
+  });
+
+  it("should work with array.nth()...", async () => {
+    const { validate } = createFormValidatorImpl(Schema, validate => [
+      validate(Schema.arrayObjectString.nth().str, x =>
+        wait(x === "invalid" ? "INVALID_VALUE" : null)
+      ),
+    ]);
+
+    const getValue = (field: FieldDescriptor<any> | string): any => {
+      const path = typeof field === "string" ? field : impl(field).__path;
+      switch (path) {
+        case "arrayObjectString[0].str":
+          return "";
+        case "arrayObjectString[1].str":
+          return "invalid";
+        case "arrayObjectString[2].str":
+          return "valid";
+      }
+    };
+
+    const validation = await validate({
+      fields: [
+        Schema.arrayObjectString.nth(0).str,
+        Schema.arrayObjectString.nth(1).str,
+        Schema.arrayObjectString.nth(2).str,
+      ],
+      getValue,
+    }).runPromise();
+
+    expect(validation).toEqual([
+      { field: Schema.arrayObjectString.nth(0).str, error: null },
+      { field: Schema.arrayObjectString.nth(1).str, error: "INVALID_VALUE" },
+      { field: Schema.arrayObjectString.nth(2).str, error: null },
+    ]);
+  });
+
+  it("should work with array.nth().nth()", async () => {
+    const { validate } = createFormValidatorImpl(Schema, validate => [
+      validate(Schema.arrayArrayString.nth().nth(), x =>
+        wait(x === "invalid" ? "INVALID_VALUE" : null)
+      ),
+    ]);
+
+    const getValue = (field: FieldDescriptor<any> | string): any => {
+      const path = typeof field === "string" ? field : impl(field).__path;
+      switch (path) {
+        case "arrayArrayString[0][0]":
+          return "";
+        case "arrayArrayString[0][1]":
+          return "invalid";
+        case "arrayArrayString[1][0]":
+          return "valid";
+      }
+    };
+
+    const validation = await validate({
+      fields: [
+        Schema.arrayArrayString.nth(0).nth(0),
+        Schema.arrayArrayString.nth(0).nth(1),
+        Schema.arrayArrayString.nth(1).nth(0),
+      ],
+      getValue,
+    }).runPromise();
+
+    expect(validation).toEqual([
+      { field: Schema.arrayArrayString.nth(0).nth(0), error: null },
+      { field: Schema.arrayArrayString.nth(0).nth(1), error: "INVALID_VALUE" },
+      { field: Schema.arrayArrayString.nth(1).nth(0), error: null },
+    ]);
+  });
+
+  it("should work with array.nth()...nth()", async () => {
+    const { validate } = createFormValidatorImpl(Schema, validate => [
+      validate(Schema.arrayNestedArrays.nth().array.nth(), x =>
+        wait(x === "invalid" ? "INVALID_VALUE" : null)
+      ),
+    ]);
+
+    const getValue = (field: FieldDescriptor<any> | string): any => {
+      const path = typeof field === "string" ? field : impl(field).__path;
+      switch (path) {
+        case "arrayNestedArrays[0].array[0]":
+          return "";
+        case "arrayNestedArrays[0].array[1]":
+          return "invalid";
+        case "arrayNestedArrays[1].array[0]":
+          return "valid";
+      }
+    };
+
+    const validation = await validate({
+      fields: [
+        Schema.arrayNestedArrays.nth(0).array.nth(0),
+        Schema.arrayNestedArrays.nth(0).array.nth(1),
+        Schema.arrayNestedArrays.nth(1).array.nth(0),
+      ],
+      getValue,
+    }).runPromise();
+
+    expect(validation).toEqual([
+      { field: Schema.arrayNestedArrays.nth(0).array.nth(0), error: null },
+      {
+        field: Schema.arrayNestedArrays.nth(0).array.nth(1),
+        error: "INVALID_VALUE",
+      },
+      { field: Schema.arrayNestedArrays.nth(1).array.nth(0), error: null },
+    ]);
   });
 });
 
