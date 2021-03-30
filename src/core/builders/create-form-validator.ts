@@ -8,13 +8,13 @@ import {
   isArrayDescriptor,
   isObjectDescriptor,
 } from "../types/field-descriptor";
+import { isFieldTemplate } from "../types/field-template";
 import { FormSchema } from "../types/form-schema";
 import {
   FieldDescTuple,
   FieldValidator,
   FormValidator,
   GetValue,
-  isNth,
   ValidateConfig,
   ValidateField,
   ValidateFn,
@@ -264,12 +264,13 @@ const buildDependenciesDict = <Err>(
 const getDependents = <Err>(
   desc: FieldDescriptor<any, Err>,
   dependenciesDict: DependenciesDict<Err>,
-  getValue: GetValue<Err>
+  _getValue: GetValue<Err>
 ): FieldDescriptor<any, Err>[] =>
   flatMap(dependenciesDict[impl(desc).__path] ?? [], x => {
-    if (isNth(x)) {
-      const rootPath = impl(x).__rootPath;
-      return getValue<any[]>(rootPath).map((_, i) => x(i));
+    if (isFieldTemplate(x)) {
+      // const rootPath = impl(x).__rootPath;
+      // return getValue<any[]>(rootPath).map((_, i) => x(i));
+      return [] // FIXME
     } else {
       return [x];
     }
@@ -298,31 +299,26 @@ const validatorMatchesField = (
   validator: FieldValidator<any, any, any[]>,
   field: FieldDescriptor<any>
 ): boolean => {
-  if (isNth(validator.field)) {
-    const validatorRootPath = impl(validator.field).__rootPath;
-    const fieldRootPath = impl(field).__parent?.__path;
-    return validatorRootPath === fieldRootPath;
+  const validatorPath = impl(validator.field).__path;
+  const fieldPath = impl(field).__path;
+  if (isFieldTemplate(validator.field)) {
+    return pathMatchesTemplatePath(fieldPath, validatorPath)
   } else {
-    const validatorPath = impl(validator.field).__path;
-    const fieldPath = impl(field).__path;
-    return (
-      validatorPath === fieldPath ||
-      pathMatchesTemplatePath(fieldPath, validatorPath)
-    );
+    return validatorPath === fieldPath
   }
 };
 
 const pathMatchesTemplatePath = (path: string, template: string) => {
-  if (!template.includes("[-ANY-]")) {
+  if (!template.includes("[*]")) {
     return false;
   } else {
     const templateRegex = template
       .replace(new RegExp("\\.", "g"), "\\.")
       .replace(new RegExp("\\[", "g"), "\\[")
       .replace(new RegExp("\\]", "g"), "\\]")
-      .replace(new RegExp("-ANY-", "g"), "(\\d+)");
+      .replace(new RegExp("\\*", "g"), "(\\d+)");
 
-    return !!path.match(new RegExp(templateRegex));
+    return !!path.match(new RegExp(`\^${templateRegex}\$`));
   }
 };
 

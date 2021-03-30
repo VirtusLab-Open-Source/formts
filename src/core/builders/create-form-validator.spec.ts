@@ -323,10 +323,10 @@ describe("createFormValidator", () => {
     expect(validation).toEqual([{ field: Schema.object, error: null }]);
   });
 
-  it("validate.each should run for each element of list", async () => {
+  it("validate.every() should run for each element of list", async () => {
     const { validate } = createFormValidatorImpl(Schema, validate => [
       validate({
-        field: Schema.arrayObjectString.nth,
+        field: Schema.arrayObjectString.every(),
         rules: () => [
           x => wait(x.str === "invalid" ? "INVALID_VALUE" : null),
           x => (x.str === "" ? "REQUIRED" : null),
@@ -367,14 +367,14 @@ describe("createFormValidator", () => {
     ]);
   });
 
-  it("validate.each for multiple arrays should run for each element of corresponding list", async () => {
+  it("validate.every() for multiple arrays should run for each element of corresponding list", async () => {
     const { validate } = createFormValidatorImpl(Schema, validate => [
       validate({
-        field: Schema.arrayObjectString.nth,
+        field: Schema.arrayObjectString.every(),
         rules: () => [x => wait(x.str?.length < 3 ? "TOO_SHORT" : null)],
       }),
       validate({
-        field: Schema.arrayChoice.nth,
+        field: Schema.arrayChoice.every(),
         rules: () => [x => wait(x === "c" ? "INVALID_VALUE" : null)],
       }),
     ]);
@@ -536,7 +536,7 @@ describe("createFormValidator", () => {
         rules: () => [x => (x.length < 3 ? "TOO_SHORT" : null)],
       }),
       validate({
-        field: Schema.arrayString.nth,
+        field: Schema.arrayString.every(),
         rules: () => [x => wait(x.length < 3 ? "TOO_SHORT" : null)],
       }),
       validate({
@@ -589,7 +589,7 @@ describe("createFormValidator", () => {
         rules: () => [pass],
       }),
       validate({
-        field: Schema.arrayString.nth,
+        field: Schema.arrayString.every(),
         rules: () => [pass],
       }),
       validate({
@@ -728,7 +728,7 @@ describe("createFormValidator", () => {
         rules: () => [x => (x.length < 3 ? "TOO_SHORT" : null)],
       }),
       validate({
-        field: Schema.arrayObjectString.nth,
+        field: Schema.arrayObjectString.every(),
         rules: () => [x => (x.str === "" ? "REQUIRED" : null)],
       }),
     ]);
@@ -805,7 +805,7 @@ describe("createFormValidator", () => {
         rules: () => [arrayValidator],
       }),
       validate({
-        field: Schema.objectObjectArrayObjectString.obj.array.nth,
+        field: Schema.objectObjectArrayObjectString.obj.array.every(),
         rules: () => [arrayItemValidator],
       }),
       validate({
@@ -872,10 +872,10 @@ describe("createFormValidator", () => {
     expect(validation).toEqual([{ field: Schema.string, error: "REQUIRED" }]);
   });
 
-  it("should work with simple signature with array.nth", async () => {
+  it("should work with simple signature with array.every()", async () => {
     const { validate } = createFormValidatorImpl(Schema, validate => [
       validate(
-        Schema.arrayObjectString.nth,
+        Schema.arrayObjectString.every(),
         x => wait(x.str === "invalid" ? "INVALID_VALUE" : null),
         x => (x.str === "" ? "REQUIRED" : null),
         x => wait(x.str?.length < 3 ? "TOO_SHORT" : null)
@@ -942,10 +942,10 @@ describe("createFormValidator", () => {
     ]);
   });
 
-  it("dependency change should trigger validation run for with array.nth", async () => {
+  it("dependency change should trigger validation run for with array.every()", async () => {
     const { validate } = createFormValidatorImpl(Schema, validate => [
       validate({
-        field: Schema.arrayObjectString.nth,
+        field: Schema.arrayObjectString.every(),
         rules: _ => [x => (x.str === "" ? "REQUIRED" : null)],
         dependencies: [Schema.choice],
       }),
@@ -1106,7 +1106,7 @@ describe("createFormValidator", () => {
   it("should trigger parent validation when child is validating", async () => {
     const { validate } = createFormValidatorImpl(Schema, validate => [
       validate({
-        field: Schema.objectArray.arrayString.nth,
+        field: Schema.objectArray.arrayString.every(),
         rules: () => [x => (x === "" ? "INVALID_VALUE" : null)],
       }),
       validate({
@@ -1155,11 +1155,11 @@ describe("createFormValidator", () => {
 
     const { validate } = createFormValidatorImpl(Schema, validate => [
       validate({
-        field: Schema.objectTwoArrays.arrayString.nth,
+        field: Schema.objectTwoArrays.arrayString.every(),
         rules: () => [stringValidator],
       }),
       validate({
-        field: Schema.objectTwoArrays.arrayNumber.nth,
+        field: Schema.objectTwoArrays.arrayNumber.every(),
         rules: () => [numberValidator],
       }),
       validate({
@@ -1210,9 +1210,9 @@ describe("createFormValidator", () => {
     expect(arrayNumberValidator).not.toHaveBeenCalled();
   });
 
-  it("should work with array.nth()...", async () => {
+  it("should work with array.every()...", async () => {
     const { validate } = createFormValidatorImpl(Schema, validate => [
-      validate(Schema.arrayObjectString.nth().str, x =>
+      validate(Schema.arrayObjectString.every().str, x =>
         wait(x === "invalid" ? "INVALID_VALUE" : null)
       ),
     ]);
@@ -1245,9 +1245,9 @@ describe("createFormValidator", () => {
     ]);
   });
 
-  it("should work with array.nth().nth()", async () => {
+  it("should work with array.every().every()", async () => {
     const { validate } = createFormValidatorImpl(Schema, validate => [
-      validate(Schema.arrayArrayString.nth().nth(), x =>
+      validate(Schema.arrayArrayString.every().every(), x =>
         wait(x === "invalid" ? "INVALID_VALUE" : null)
       ),
     ]);
@@ -1280,9 +1280,9 @@ describe("createFormValidator", () => {
     ]);
   });
 
-  it("should work with array.nth()...nth()", async () => {
+  it("should work with array.every()...every()", async () => {
     const { validate } = createFormValidatorImpl(Schema, validate => [
-      validate(Schema.arrayNestedArrays.nth().array.nth(), x =>
+      validate(Schema.arrayNestedArrays.every().array.every(), x =>
         wait(x === "invalid" ? "INVALID_VALUE" : null)
       ),
     ]);

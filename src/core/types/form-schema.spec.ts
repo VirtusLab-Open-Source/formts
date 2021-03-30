@@ -1,6 +1,7 @@
 import { IsExact, assert } from "conditional-type-checks";
 
 import { FieldDescriptor } from "./field-descriptor";
+import { ArrayFieldTemplate, FieldTemplate } from "./field-template";
 import { FormSchema, ExtractFormValues } from "./form-schema";
 
 type SomeValues = {
@@ -74,7 +75,8 @@ describe("FormSchema type", () => {
     type Actual = Schema["arrayString"];
 
     type Expected = FieldDescriptor<string[], SomeErr> & {
-      nth: (index?: number) => FieldDescriptor<string, SomeErr>;
+      nth: (index: number) => FieldDescriptor<string, SomeErr>;
+      every: () => FieldTemplate<string, SomeErr>;
     };
 
     assert<IsExact<Actual, Expected>>(true);
@@ -85,10 +87,12 @@ describe("FormSchema type", () => {
 
     type Expected = FieldDescriptor<string[][], SomeErr> & {
       nth: (
-        index?: number
+        index: number
       ) => FieldDescriptor<string[], SomeErr> & {
-        nth: (index?: number) => FieldDescriptor<string, SomeErr>;
+          nth: (index: number) => FieldDescriptor<string, SomeErr>;
+          every: () => FieldTemplate<string, SomeErr>;
       };
+      every: () => ArrayFieldTemplate<string[], SomeErr>;
     };
 
     assert<IsExact<Actual, Expected>>(true);
@@ -128,7 +132,8 @@ describe("FormSchema type", () => {
     > & {
       nested: FieldDescriptor<{ arrayString: string[] }, SomeErr> & {
         arrayString: FieldDescriptor<string[], SomeErr> & {
-          nth: (index?: number) => FieldDescriptor<string, SomeErr>;
+          nth: (index: number) => FieldDescriptor<string, SomeErr>;
+          every: () => FieldTemplate<string, SomeErr>;
         };
       };
     };
@@ -141,10 +146,13 @@ describe("FormSchema type", () => {
 
     type Expected = FieldDescriptor<Array<{ string: string }>, SomeErr> & {
       nth: (
-        index?: number
+        index: number
       ) => FieldDescriptor<{ string: string }, SomeErr> & {
         string: FieldDescriptor<string, SomeErr>;
       };
+      every: () => FieldTemplate<{ string: string }, SomeErr> & {
+        string: FieldTemplate<string, SomeErr>;
+      }
     };
 
     assert<IsExact<Actual, Expected>>(true);

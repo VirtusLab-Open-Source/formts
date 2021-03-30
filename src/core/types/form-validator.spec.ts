@@ -10,7 +10,7 @@ describe("validateFn", () => {
   const fd1: GenericFieldDescriptor<string, Err> = {} as any;
   const fd2: GenericFieldDescriptor<number, Err> = {} as any;
   const fd3: GenericFieldDescriptor<"a" | "b" | "c", Err> = {} as any;
-  const fd4: GenericFieldDescriptor<Date[], Err> = {} as any;
+  const fd4: GenericFieldDescriptor<Date[], Err> = { every: () => { } } as any;
   const fd5: GenericFieldDescriptor<
     { parent: { child: string[] } },
     Err
@@ -61,7 +61,7 @@ describe("validateFn", () => {
 
   it("resolves properly for array nth", () => {
     const arrayFieldValidator = validator({
-      field: fd4.nth,
+      field: fd4.every(),
       dependencies: [fd1, fd2, fd3, fd5],
       rules: (_string, _number, _choice, _obj) => [false],
     });
@@ -124,7 +124,7 @@ describe("validateFn", () => {
   });
 
   it("resolves properly for simple signature for array.nth", () => {
-    const stringFieldValidator = validator(fd4.nth, () => null);
+    const stringFieldValidator = validator(fd4.every(), () => null);
 
     type Actual = typeof stringFieldValidator;
     type Expected = FieldValidator<Date, Err, []>;

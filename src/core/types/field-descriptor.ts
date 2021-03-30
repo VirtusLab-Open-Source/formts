@@ -2,6 +2,7 @@ import { Nominal, range, values } from "../../utils";
 import { Lens } from "../../utils/lenses";
 
 import { _FieldDecoderImpl } from "./field-decoder";
+import { GenericFieldTemplate } from "./field-template";
 import { impl } from "./type-mapper-util";
 
 // actual type, encapsulated away from public API
@@ -15,6 +16,11 @@ export type _FieldDescriptorImpl<T> = {
 export type _NTHHandler<T> = {
   __rootPath: string;
   (n: number): _FieldDecoderImpl<T>;
+};
+
+//@ts-ignore
+export type _FieldTemplateImpl<T> = {
+  __path: string;
 };
 
 /**
@@ -36,7 +42,10 @@ export type GenericFieldDescriptor<T, Err = unknown> =
 // prettier-ignore
 export type ArrayFieldDescriptor<T extends Array<unknown>, Err> =
   & FieldDescriptor<T, Err>
-  & { readonly nth: (index?: number) => GenericFieldDescriptor<T[number], Err>; };
+  & {
+    readonly nth: (index: number) => GenericFieldDescriptor<T[number], Err>;
+    readonly every: () => GenericFieldTemplate<T[number], Err>;
+  };
 
 // prettier-ignore
 export type ObjectFieldDescriptor<T extends object, Err> =

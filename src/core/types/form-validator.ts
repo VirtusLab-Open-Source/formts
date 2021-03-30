@@ -2,10 +2,10 @@ import { Falsy, NoInfer, Nominal } from "../../utils";
 import { Task } from "../../utils/task";
 
 import {
-  ArrayFieldDescriptor,
   FieldDescriptor,
   GenericFieldDescriptor,
 } from "./field-descriptor";
+import { GenericFieldTemplate } from "./field-template";
 
 /**
  * Function responsible for validating single field.
@@ -156,12 +156,8 @@ export type ValidateConfig<T, Err, Dependencies extends any[]> = {
 
 export type ValidateField<T, Err> =
   | GenericFieldDescriptor<T, Err>
-  | ArrayFieldDescriptor<T[], Err>["nth"];
+  | GenericFieldTemplate<T, Err>
 
 export type FieldDescTuple<ValuesTuple extends readonly any[], Err> = {
   [Index in keyof ValuesTuple]: GenericFieldDescriptor<ValuesTuple[Index], Err>;
 };
-
-export const isNth = <T, Err>(
-  x: ValidateField<T, Err>
-): x is ArrayFieldDescriptor<T[], Err>["nth"] => typeof x === "function";

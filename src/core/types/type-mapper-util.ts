@@ -5,7 +5,9 @@ import {
   ObjectFieldDescriptor,
   _FieldDescriptorImpl,
   _NTHHandler,
+  _FieldTemplateImpl,
 } from "./field-descriptor";
+import { FieldTemplate } from "./field-template";
 import { FormController, _FormControllerImpl } from "./form-controller";
 import { FormValidator, _FormValidatorImpl } from "./form-validator";
 
@@ -23,9 +25,16 @@ type GetImplFn = {
     T
   >;
 
-  <T, Err>(it: FieldDescriptor<T, Err>): _FieldDescriptorImpl<T>;
-
   <T>(it: FieldDecoder<T>): _FieldDecoderImpl<T>;
+
+  <V extends object, Err>(it: FormValidator<V, Err>): _FormValidatorImpl<
+    V,
+    Err
+  >;
+
+  <T, Err>(it: FieldDescriptor<T, Err>): _FieldDescriptorImpl<T>;
+  <T, Err>(it: FieldTemplate<T, Err> | FieldDescriptor<T, Err>): _FieldTemplateImpl<T>;
+
 
   <V extends object, Err>(it: FormController): _FormControllerImpl<V, Err>;
 
@@ -33,10 +42,6 @@ type GetImplFn = {
     T
   >;
 
-  <V extends object, Err>(it: FormValidator<V, Err>): _FormValidatorImpl<
-    V,
-    Err
-  >;
 };
 
 /**
