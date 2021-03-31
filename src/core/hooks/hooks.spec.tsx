@@ -740,10 +740,10 @@ describe("formts hooks API", () => {
       validate: jest
         .fn()
         .mockReturnValueOnce(
-          Task.success([{ field: Schema.theNum, error: "ERR_1" }])
+          Task.success([{ path: "theNum", error: "ERR_1" }])
         )
         .mockReturnValueOnce(
-          Task.success([{ field: Schema.theNum, error: null }])
+          Task.success([{ path: "theNum", error: null }])
         ),
     });
 
@@ -807,10 +807,10 @@ describe("formts hooks API", () => {
       validate: jest
         .fn()
         .mockReturnValueOnce(
-          Task.success([{ field: Schema.theNum, error: "ERR_1" }])
+          Task.success([{ path: "theNum", error: "ERR_1" }])
         )
         .mockReturnValueOnce(
-          Task.success([{ field: Schema.theNum, error: null }])
+          Task.success([{ path: "theNum", error: null }])
         ),
     });
 
@@ -876,7 +876,7 @@ describe("formts hooks API", () => {
         .mockImplementation(({ fields, getValue }: ValidateIn<any>) =>
           Task.success(
             fields.map(field => ({
-              field,
+              path: impl(field).__path,
               error: getValue(field) === "" ? "REQUIRED" : null,
             }))
           )
@@ -943,7 +943,7 @@ describe("formts hooks API", () => {
       validate: jest
         .fn()
         .mockImplementation(({ fields }: ValidateIn<any>) =>
-          Task.success(fields.map(field => ({ field, error: "ERROR" })))
+          Task.success(fields.map(field => ({ path: impl(field).__path, error: "ERROR" })))
         ),
     });
 
@@ -993,7 +993,7 @@ describe("formts hooks API", () => {
       validate: jest
         .fn()
         .mockImplementationOnce(({ fields }: ValidateIn<any>) =>
-          Task.success(fields.map(field => ({ field, error: "ERROR" })))
+          Task.success(fields.map(field => ({ path: impl(field).__path, error: "ERROR" })))
         )
         .mockReturnValueOnce(Task.success([])),
     });

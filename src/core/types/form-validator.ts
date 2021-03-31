@@ -27,7 +27,7 @@ export namespace Validator {
 export type ValidationTrigger = "change" | "blur" | "submit";
 
 export type ValidationResult<Err> = Array<{
-  field: FieldDescriptor<unknown, Err>;
+  path: FieldPath
   error: Err | null;
 }>;
 
@@ -35,8 +35,8 @@ export type ValidateIn<Err> = {
   fields: Array<FieldDescriptor<unknown, Err>>;
   trigger?: ValidationTrigger;
   getValue: GetValue<Err>;
-  onFieldValidationStart?: (field: FieldDescriptor<unknown, Err>) => void;
-  onFieldValidationEnd?: (field: FieldDescriptor<unknown, Err>) => void;
+  onFieldValidationStart?: (fieldPath: FieldPath) => void;
+  onFieldValidationEnd?: (fieldPath: FieldPath) => void;
 };
 
 export type GetValue<Err> = {
@@ -54,7 +54,7 @@ export type _FormValidatorImpl<Values extends object, Err> = {
 
 export type FieldValidator<T, Err, Dependencies extends any[]> = {
   id: string;
-  field: ValidateField<T, Err>;
+  path: FieldPath;
   triggers?: Array<ValidationTrigger>;
   validators: (...deps: [...Dependencies]) => Array<Falsy | Validator<T, Err>>;
   dependencies?: readonly [...FieldDescTuple<Dependencies, Err>];
@@ -161,3 +161,5 @@ export type ValidateField<T, Err> =
 export type FieldDescTuple<ValuesTuple extends readonly any[], Err> = {
   [Index in keyof ValuesTuple]: GenericFieldDescriptor<ValuesTuple[Index], Err>;
 };
+
+export type FieldPath = string

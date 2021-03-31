@@ -8,10 +8,11 @@ import {
   isArrayDescriptor,
   isObjectDescriptor,
 } from "../types/field-descriptor";
-import { isFieldTemplate } from "../types/field-template";
+import { pathIsTemplate } from "../types/field-template";
 import { FormSchema } from "../types/form-schema";
 import {
   FieldDescTuple,
+  FieldPath,
   FieldValidator,
   FormValidator,
   GetValue,
@@ -63,13 +64,13 @@ export const createFormValidator = <Values extends object, Err>(
   const debounceStepHandler = DebouncedValidation.createDebounceStepHandler();
 
   const getValidatorsForField = (
-    descriptor: FieldDescriptor<unknown, Err>,
+    fieldPath: FieldPath,
     trigger?: ValidationTrigger
   ): FieldValidator<any, Err, any[]>[] => {
     return allValidators.filter(x => {
       const triggerMatches =
         trigger && x.triggers ? x.triggers.includes(trigger) : true;
-      return triggerMatches && validatorMatchesField(x, descriptor);
+      return triggerMatches && validatorMatchesField(x, fieldPath);
     });
   };
 
@@ -94,13 +95,13 @@ export const createFormValidator = <Values extends object, Err>(
 
         const uniqueFields = uniqBy(
           [...allFields, ...dependents, ...parents],
-          x => impl(x).__path
+          x => x
         );
 
         return uniqueFields
-          .map(field => ({
-            field,
-            validators: getValidatorsForField(field, trigger),
+          .map(fieldPath => ({
+            fieldPath,
+            validators: getValidatorsForField(fieldPath, trigger),
           }))
           .filter(x => x.validators.length > 0);
       };
@@ -108,18 +109,18 @@ export const createFormValidator = <Values extends object, Err>(
       return Task.from(resolveFieldsToValidate)
         .flatMap(fieldsToValidate =>
           Task.all(
-            ...fieldsToValidate.map(({ field, validators }) => {
-              const validationKey = FieldValidationKey.make(field, trigger);
+            ...fieldsToValidate.map(({ fieldPath, validators }) => {
+              const validationKey = FieldValidationKey.make(fieldPath, trigger);
 
               return Task.from(() => {
-                onFieldValidationStart?.(field);
+                onFieldValidationStart?.(fieldPath);
                 ongoingValidationTimestamps[validationKey] = timestamp;
-                return getValue(field);
+                return getValue(fieldPath);
               })
                 .flatMap(value =>
                   firstNonNullTaskResult(
                     validators.map(v =>
-                      debounceStepHandler(v, field).flatMap(() =>
+                      debounceStepHandler(v, fieldPath).flatMap(() =>
                         runValidationForField(v, value, getValue)
                       )
                     )
@@ -129,17 +130,17 @@ export const createFormValidator = <Values extends object, Err>(
                   if (err === true) {
                     return Task.success(null); // optional validator edge-case
                   }
-                  onFieldValidationEnd?.(field);
+                  onFieldValidationEnd?.(fieldPath);
                   return Task.failure(err);
                 })
                 .map(validationError => {
-                  onFieldValidationEnd?.(field);
+                  onFieldValidationEnd?.(fieldPath);
 
                   if (
                     ongoingValidationTimestamps[validationKey] === timestamp
                   ) {
                     delete ongoingValidationTimestamps[validationKey];
-                    return { field, error: validationError };
+                    return { path: fieldPath, error: validationError };
                   }
 
                   // primitive cancellation of outdated validation results
@@ -170,7 +171,7 @@ const validate = (): ValidateFn => {
 
     return {
       id: (index++).toString(),
-      field: config.field,
+      path: impl(config.field).__path,
       triggers: config.triggers,
       validators: config.rules,
       dependencies: config.dependencies,
@@ -213,8 +214,8 @@ const firstNonNullTaskResult = <T, E>(
 const getChildrenDescriptors = <Err>(
   descriptor: FieldDescriptor<unknown, Err>,
   getValue: (field: FieldDescriptor<unknown, Err>) => unknown
-): Array<FieldDescriptor<unknown, Err>> => {
-  const root = [descriptor];
+): Array<FieldPath> => {
+  const root = [impl(descriptor).__path];
 
   if (isObjectDescriptor(descriptor)) {
     const children = getObjectDescriptorChildren(descriptor);
@@ -237,23 +238,23 @@ const getChildrenDescriptors = <Err>(
   }
 };
 
-type DependenciesDict<Err> = {
-  [path: string]: ValidateField<unknown, Err>[];
+type DependenciesDict = {
+  [path: string]: FieldPath[];
 };
 
 const buildDependenciesDict = <Err>(
   validators: FieldValidator<any, Err, any>[]
-): DependenciesDict<Err> => {
-  let dict: DependenciesDict<Err> = {};
+): DependenciesDict => {
+  let dict: DependenciesDict = {};
 
   for (const validator of validators) {
     for (const dependency of validator.dependencies ?? []) {
       const path = impl(dependency).__path;
 
       if (!dict[path]) {
-        dict[path] = [validator.field];
+        dict[path] = [validator.path];
       } else {
-        dict[path].push(validator.field);
+        dict[path].push(validator.path);
       }
     }
   }
@@ -263,11 +264,11 @@ const buildDependenciesDict = <Err>(
 
 const getDependents = <Err>(
   desc: FieldDescriptor<any, Err>,
-  dependenciesDict: DependenciesDict<Err>,
+  dependenciesDict: DependenciesDict,
   _getValue: GetValue<Err>
-): FieldDescriptor<any, Err>[] =>
+): FieldPath[] =>
   flatMap(dependenciesDict[impl(desc).__path] ?? [], x => {
-    if (isFieldTemplate(x)) {
+    if (pathIsTemplate(x)) {
       // const rootPath = impl(x).__rootPath;
       // return getValue<any[]>(rootPath).map((_, i) => x(i));
       return [] // FIXME
@@ -278,13 +279,13 @@ const getDependents = <Err>(
 
 const getParentsChain = <Err>(
   desc: FieldDescriptor<any, Err>
-): FieldDescriptor<any, Err>[] => {
+): FieldPath[] => {
   const parent = impl(desc).__parent;
   if (!parent) {
     return [];
   } else {
     const opaqueParent = opaque(parent) as FieldDescriptor<any, Err>;
-    return [opaqueParent, ...getParentsChain(opaqueParent)];
+    return [parent.__path, ...getParentsChain(opaqueParent)];
   }
 };
 
@@ -297,14 +298,12 @@ const getDependenciesValues = <Values extends readonly any[], Err>(
 
 const validatorMatchesField = (
   validator: FieldValidator<any, any, any[]>,
-  field: FieldDescriptor<any>
+  fieldPath: FieldPath
 ): boolean => {
-  const validatorPath = impl(validator.field).__path;
-  const fieldPath = impl(field).__path;
-  if (isFieldTemplate(validator.field)) {
-    return pathMatchesTemplatePath(fieldPath, validatorPath)
+  if (pathIsTemplate(validator.path)) {
+    return pathMatchesTemplatePath(fieldPath, validator.path)
   } else {
-    return validatorPath === fieldPath
+    return validator.path === fieldPath
   }
 };
 
@@ -325,10 +324,10 @@ const pathMatchesTemplatePath = (path: string, template: string) => {
 type FieldValidationKey = string;
 namespace FieldValidationKey {
   export const make = (
-    field: FieldDescriptor<unknown>,
+    fieldPath: FieldPath,
     trigger?: ValidationTrigger
   ): FieldValidationKey =>
-    `${impl(field).__path}:t-${trigger ?? "none"}` as any;
+    `${fieldPath}:t-${trigger ?? "none"}` as any;
 }
 
 type Timestamp = number;
@@ -341,7 +340,7 @@ namespace DebouncedValidation {
   type DebouncedValidationsDict = Record<FieldValidationKey, Cancel>;
   type DebounceStepHandler = (
     validator: FieldValidator<unknown, unknown, unknown[]>,
-    field: FieldDescriptor<unknown, unknown>
+    fieldPath: FieldPath
   ) => Task<void>;
 
   const CANCEL_ERR = "__CANCEL__";
@@ -349,9 +348,9 @@ namespace DebouncedValidation {
   export const createDebounceStepHandler = (): DebounceStepHandler => {
     const debouncedValidations: DebouncedValidationsDict = {};
 
-    return (v, field) =>
+    return (v, fieldPath) =>
       Task.make(({ resolve, reject }) => {
-        const id = `${v.id}-${impl(field).__path}`;
+        const id = `${v.id}-${fieldPath}`;
         if (v.debounce) {
           debouncedValidations[id]?.();
 

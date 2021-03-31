@@ -1,9 +1,7 @@
 import type { Dispatch } from "react";
 
 import { keys } from "../../utils";
-import { FieldDescriptor } from "../types/field-descriptor";
 import { FormtsAction } from "../types/formts-state";
-import { impl } from "../types/type-mapper-util";
 
 type FieldPath = string;
 
@@ -15,24 +13,21 @@ export const makeValidationHandlers = <Values extends object, Err>(
 
   return {
     /**  enqueues dispatch of 'validatingStart' action */
-    onFieldValidationStart: (field: FieldDescriptor<unknown, Err>) => {
-      const path = impl(field).__path;
-      pendingValidationStartFields[path] = true;
+    onFieldValidationStart: (fieldPath: FieldPath) => {
+      pendingValidationStartFields[fieldPath] = true;
     },
 
     /**
      * if run before flush (sync validation scenario) - cancels out start action and no action is dispatched
      * if run after flush (async validation scenario) - dispatches 'validatingStop' action
      */
-    onFieldValidationEnd: (field: FieldDescriptor<unknown, Err>) => {
-      const path = impl(field).__path;
-
-      if (pendingValidationStartFields[path]) {
-        delete pendingValidationStartFields[path];
+    onFieldValidationEnd: (fieldPath: FieldPath) => {
+      if (pendingValidationStartFields[fieldPath]) {
+        delete pendingValidationStartFields[fieldPath];
       } else {
         dispatch({
           type: "validatingStop",
-          payload: { path: impl(field).__path, uuid },
+          payload: { path: fieldPath, uuid },
         });
       }
     },

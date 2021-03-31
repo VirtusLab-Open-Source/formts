@@ -91,7 +91,7 @@ describe("createFormValidator", () => {
       getValue,
     }).runPromise();
 
-    expect(validation).toEqual([{ field: Schema.string, error: "REQUIRED" }]);
+    expect(validation).toEqual([{ path: "string", error: "REQUIRED" }]);
   });
 
   it("should return null for passing single-rule on string field", async () => {
@@ -109,7 +109,7 @@ describe("createFormValidator", () => {
       getValue,
     }).runPromise();
 
-    expect(validation).toEqual([{ field: Schema.string, error: null }]);
+    expect(validation).toEqual([{ path: "string", error: null }]);
   });
 
   it("should return ERR for failing all of multiple-rule on string field", async () => {
@@ -130,7 +130,7 @@ describe("createFormValidator", () => {
       getValue,
     }).runPromise();
 
-    expect(validation).toEqual([{ field: Schema.string, error: "REQUIRED" }]);
+    expect(validation).toEqual([{ path: "string", error: "REQUIRED" }]);
   });
 
   it("should return ERR for failing last of multiple-rule on string field", async () => {
@@ -151,7 +151,7 @@ describe("createFormValidator", () => {
       getValue,
     }).runPromise();
 
-    expect(validation).toEqual([{ field: Schema.string, error: "TOO_SHORT" }]);
+    expect(validation).toEqual([{ path: "string", error: "TOO_SHORT" }]);
   });
 
   it("should return null for passing all of multiple-rule on string field", async () => {
@@ -172,7 +172,7 @@ describe("createFormValidator", () => {
       getValue,
     }).runPromise();
 
-    expect(validation).toEqual([{ field: Schema.string, error: null }]);
+    expect(validation).toEqual([{ path: "string", error: null }]);
   });
 
   it("should return ERR for failing single-rule on choice field ", async () => {
@@ -190,7 +190,7 @@ describe("createFormValidator", () => {
     }).runPromise();
 
     expect(validation).toEqual([
-      { field: Schema.choice, error: "INVALID_VALUE" },
+      { path: "choice", error: "INVALID_VALUE" },
     ]);
   });
 
@@ -208,7 +208,7 @@ describe("createFormValidator", () => {
       getValue,
     }).runPromise();
 
-    expect(validation).toEqual([{ field: Schema.choice, error: null }]);
+    expect(validation).toEqual([{ path: "choice", error: null }]);
   });
 
   it("should return ERR for failing single-rule on date field ", async () => {
@@ -225,7 +225,7 @@ describe("createFormValidator", () => {
       getValue,
     }).runPromise();
 
-    expect(validation).toEqual([{ field: Schema.date, error: "REQUIRED" }]);
+    expect(validation).toEqual([{ path: "date", error: "REQUIRED" }]);
   });
 
   it("should return ERR for failing multiple-rule on string array field ", async () => {
@@ -246,7 +246,7 @@ describe("createFormValidator", () => {
     }).runPromise();
 
     expect(validation).toEqual([
-      { field: Schema.arrayString, error: "INVALID_VALUE" },
+      { path: "arrayString", error: "INVALID_VALUE" },
     ]);
   });
 
@@ -266,7 +266,7 @@ describe("createFormValidator", () => {
     }).runPromise();
 
     expect(validation).toEqual([
-      { field: Schema.arrayArrayString, error: null },
+      { path: "arrayArrayString", error: null },
     ]);
   });
 
@@ -285,7 +285,7 @@ describe("createFormValidator", () => {
     }).runPromise();
 
     expect(validation).toEqual([
-      { field: Schema.object, error: "INVALID_VALUE" },
+      { path: "object", error: "INVALID_VALUE" },
     ]);
   });
 
@@ -303,7 +303,7 @@ describe("createFormValidator", () => {
       getValue,
     }).runPromise();
 
-    expect(validation).toEqual([{ field: Schema.object, error: "REQUIRED" }]);
+    expect(validation).toEqual([{ path: "object", error: "REQUIRED" }]);
   });
 
   it("should return null for passing async multi-rule on object field ", async () => {
@@ -320,7 +320,7 @@ describe("createFormValidator", () => {
       getValue,
     }).runPromise();
 
-    expect(validation).toEqual([{ field: Schema.object, error: null }]);
+    expect(validation).toEqual([{ path: "object", error: null }]);
   });
 
   it("validate.every() should run for each element of list", async () => {
@@ -360,10 +360,10 @@ describe("createFormValidator", () => {
     }).runPromise();
 
     expect(validation).toEqual([
-      { field: Schema.arrayObjectString.nth(0), error: "TOO_SHORT" },
-      { field: Schema.arrayObjectString.nth(1), error: "REQUIRED" },
-      { field: Schema.arrayObjectString.nth(2), error: null },
-      { field: Schema.arrayObjectString.nth(3), error: "INVALID_VALUE" },
+      { path: "arrayObjectString[0]", error: "TOO_SHORT" },
+      { path: "arrayObjectString[1]", error: "REQUIRED" },
+      { path: "arrayObjectString[2]", error: null },
+      { path: "arrayObjectString[3]", error: "INVALID_VALUE" },
     ]);
   });
 
@@ -404,10 +404,10 @@ describe("createFormValidator", () => {
     }).runPromise();
 
     expect(validation).toEqual([
-      { field: Schema.arrayChoice.nth(1), error: null },
-      { field: Schema.arrayChoice.nth(0), error: "INVALID_VALUE" },
-      { field: Schema.arrayObjectString.nth(0), error: null },
-      { field: Schema.arrayObjectString.nth(1), error: "TOO_SHORT" },
+      { path: "arrayChoice[1]", error: null },
+      { path: "arrayChoice[0]", error: "INVALID_VALUE" },
+      { path: "arrayObjectString[0]", error: null },
+      { path: "arrayObjectString[1]", error: "TOO_SHORT" },
     ]);
   });
 
@@ -440,7 +440,7 @@ describe("createFormValidator", () => {
       trigger: "change",
     }).runPromise();
 
-    expect(validation).toEqual([{ field: Schema.choice, error: "REQUIRED" }]);
+    expect(validation).toEqual([{ path: "choice", error: "REQUIRED" }]);
   });
 
   it("validation is not making redundant calls", async () => {
@@ -507,8 +507,8 @@ describe("createFormValidator", () => {
     }).runPromise();
 
     expect(validation).toEqual([
-      { field: Schema.string, error: "TOO_SHORT" },
-      { field: Schema.number, error: "REQUIRED" },
+      { path: "string", error: "TOO_SHORT" },
+      { path: "number", error: "REQUIRED" },
     ]);
 
     expect(stringRequired).toHaveBeenCalledTimes(1);
@@ -569,10 +569,10 @@ describe("createFormValidator", () => {
     }).runPromise();
 
     expect(result).toEqual([
-      { field: Schema.arrayString.nth(0), error: "INVALID_VALUE" },
-      { field: Schema.arrayString.nth(1), error: null },
-      { field: Schema.arrayString.nth(2), error: "TOO_SHORT" },
-      { field: Schema.string, error: "TOO_SHORT" },
+      { path: "arrayString[0]", error: "INVALID_VALUE" },
+      { path: "arrayString[1]", error: null },
+      { path: "arrayString[2]", error: "TOO_SHORT" },
+      { path: "string", error: "TOO_SHORT" },
     ]);
   });
 
@@ -616,46 +616,19 @@ describe("createFormValidator", () => {
       onFieldValidationEnd,
     }).runPromise();
 
-    const expectField = (desc: FieldDescriptor<any>) =>
-      expect.objectContaining({ __path: impl(desc).__path });
+    expect(onFieldValidationStart).toHaveBeenCalledWith("arrayString[0]");
+    expect(onFieldValidationStart).toHaveBeenCalledWith("arrayString[1]");
+    expect(onFieldValidationStart).toHaveBeenCalledWith("arrayString[2]");
+    expect(onFieldValidationStart).toHaveBeenCalledWith("string");
+    expect(onFieldValidationStart).not.toHaveBeenCalledWith("number");
+    expect(onFieldValidationStart).not.toHaveBeenCalledWith("arrayString");
 
-    expect(onFieldValidationStart).toHaveBeenCalledWith(
-      expectField(Schema.arrayString.nth(0))
-    );
-    expect(onFieldValidationStart).toHaveBeenCalledWith(
-      expectField(Schema.arrayString.nth(1))
-    );
-    expect(onFieldValidationStart).toHaveBeenCalledWith(
-      expectField(Schema.arrayString.nth(2))
-    );
-    expect(onFieldValidationStart).toHaveBeenCalledWith(
-      expectField(Schema.string)
-    );
-    expect(onFieldValidationStart).not.toHaveBeenCalledWith(
-      expectField(Schema.number)
-    );
-    expect(onFieldValidationStart).not.toHaveBeenCalledWith(
-      expectField(Schema.arrayString)
-    );
-
-    expect(onFieldValidationEnd).toHaveBeenCalledWith(
-      expectField(Schema.arrayString.nth(0))
-    );
-    expect(onFieldValidationEnd).toHaveBeenCalledWith(
-      expectField(Schema.arrayString.nth(1))
-    );
-    expect(onFieldValidationEnd).toHaveBeenCalledWith(
-      expectField(Schema.arrayString.nth(2))
-    );
-    expect(onFieldValidationEnd).toHaveBeenCalledWith(
-      expectField(Schema.string)
-    );
-    expect(onFieldValidationEnd).not.toHaveBeenCalledWith(
-      expectField(Schema.number)
-    );
-    expect(onFieldValidationEnd).not.toHaveBeenCalledWith(
-      expectField(Schema.arrayString)
-    );
+    expect(onFieldValidationEnd).toHaveBeenCalledWith("arrayString[0]");
+    expect(onFieldValidationEnd).toHaveBeenCalledWith("arrayString[1]");
+    expect(onFieldValidationEnd).toHaveBeenCalledWith("arrayString[2]");
+    expect(onFieldValidationEnd).toHaveBeenCalledWith("string");
+    expect(onFieldValidationEnd).not.toHaveBeenCalledWith("number");
+    expect(onFieldValidationEnd).not.toHaveBeenCalledWith("arrayString");
   });
 
   it("should cancel validation when optional rule is used", async () => {
@@ -681,7 +654,7 @@ describe("createFormValidator", () => {
       }).runPromise();
 
       expect(result).toEqual([
-        { field: Schema.arrayString.nth(0), error: null },
+        { path: "string", error: null },
       ]);
       expect(rule1).not.toHaveBeenCalled();
       expect(rule2).not.toHaveBeenCalled();
@@ -694,7 +667,7 @@ describe("createFormValidator", () => {
       }).runPromise();
 
       expect(result).toEqual([
-        { field: Schema.arrayString.nth(0), error: "ERR_1" },
+        { path: "string", error: "ERR_1" },
       ]);
       expect(rule1).toHaveBeenCalled();
       expect(rule2).not.toHaveBeenCalled();
@@ -751,9 +724,9 @@ describe("createFormValidator", () => {
     }).runPromise();
 
     expect(validation).toEqual([
-      { field: Schema.arrayObjectString, error: "TOO_SHORT" },
-      { field: Schema.arrayObjectString.nth(0), error: null },
-      { field: Schema.arrayObjectString.nth(1), error: "REQUIRED" },
+      { path: "arrayObjectString", error: "TOO_SHORT" },
+      { path: "arrayObjectString[0]", error: null },
+      { path: "arrayObjectString[1]", error: "REQUIRED" },
     ]);
   });
 
@@ -787,8 +760,8 @@ describe("createFormValidator", () => {
     }).runPromise();
 
     expect(validation).toEqual([
-      { field: Schema.object.str, error: "REQUIRED" },
-      { field: Schema.object.num, error: null },
+      { path: "object.str", error: "REQUIRED" },
+      { path: "object.num", error: null },
     ]);
   });
 
@@ -837,17 +810,17 @@ describe("createFormValidator", () => {
     }).runPromise();
 
     expect(validation).toEqual([
-      { field: Schema.objectObjectArrayObjectString.obj.array, error: null },
+      { path: "objectObjectArrayObjectString.obj.array", error: null },
       {
-        field: Schema.objectObjectArrayObjectString.obj.array.nth(0),
+        path: "objectObjectArrayObjectString.obj.array[0]",
         error: null,
       },
       {
-        field: Schema.objectObjectArrayObjectString.obj.array.nth(1),
+        path: "objectObjectArrayObjectString.obj.array[1]",
         error: null,
       },
       {
-        field: Schema.objectObjectArrayObjectString.obj.array.nth(1).str,
+        path: "objectObjectArrayObjectString.obj.array[1].str",
         error: "INVALID_VALUE",
       },
     ]);
@@ -869,7 +842,7 @@ describe("createFormValidator", () => {
       getValue,
     }).runPromise();
 
-    expect(validation).toEqual([{ field: Schema.string, error: "REQUIRED" }]);
+    expect(validation).toEqual([{ path: "string", error: "REQUIRED" }]);
   });
 
   it("should work with simple signature with array.every()", async () => {
@@ -907,10 +880,10 @@ describe("createFormValidator", () => {
     }).runPromise();
 
     expect(validation).toEqual([
-      { field: Schema.arrayObjectString.nth(0), error: "TOO_SHORT" },
-      { field: Schema.arrayObjectString.nth(1), error: "REQUIRED" },
-      { field: Schema.arrayObjectString.nth(2), error: null },
-      { field: Schema.arrayObjectString.nth(3), error: "INVALID_VALUE" },
+      { path: "arrayObjectString[0]", error: "TOO_SHORT" },
+      { path: "arrayObjectString[1]", error: "REQUIRED" },
+      { path: "arrayObjectString[2]", error: null },
+      { path: "arrayObjectString[3]", error: "INVALID_VALUE" },
     ]);
   });
 
@@ -937,8 +910,8 @@ describe("createFormValidator", () => {
     }).runPromise();
 
     expect(validation).toEqual([
-      { field: Schema.number, error: "REQUIRED" },
-      { field: Schema.string, error: "REQUIRED" },
+      { path: "number", error: "REQUIRED" },
+      { path: "string", error: "REQUIRED" },
     ]);
   });
 
@@ -974,10 +947,10 @@ describe("createFormValidator", () => {
     }).runPromise();
 
     expect(validation).toEqual([
-      { field: Schema.choice, error: "INVALID_VALUE" },
-      { field: Schema.arrayObjectString.nth(0), error: null },
-      { field: Schema.arrayObjectString.nth(1), error: "REQUIRED" },
-      { field: Schema.arrayObjectString.nth(2), error: null },
+      { path: "choice", error: "INVALID_VALUE" },
+      { path: "arrayObjectString[0]", error: null },
+      { path: "arrayObjectString[1]", error: "REQUIRED" },
+      { path: "arrayObjectString[2]", error: null },
     ]);
   });
 
@@ -1004,8 +977,8 @@ describe("createFormValidator", () => {
     }).runPromise();
 
     expect(validation).toEqual([
-      { field: Schema.number, error: "REQUIRED" },
-      { field: Schema.string, error: "REQUIRED" },
+      { path: "number", error: "REQUIRED" },
+      { path: "string", error: "REQUIRED" },
     ]);
   });
 
@@ -1039,7 +1012,7 @@ describe("createFormValidator", () => {
       trigger: "change",
     }).runPromise();
 
-    expect(validation).toEqual([{ field: Schema.string, error: "REQUIRED" }]);
+    expect(validation).toEqual([{ path: "string", error: "REQUIRED" }]);
   });
 
   it("dependencies values are passed to rules constructor", async () => {
@@ -1079,7 +1052,7 @@ describe("createFormValidator", () => {
       getValue,
     }).runPromise();
 
-    expect(validation).toEqual([{ field: Schema.string, error: null }]);
+    expect(validation).toEqual([{ path: "string", error: null }]);
     expect(rules).toHaveBeenCalledWith(2, "B", []);
   });
 
@@ -1100,7 +1073,7 @@ describe("createFormValidator", () => {
       getValue,
     }).runPromise();
 
-    expect(validation).toEqual([{ field: Schema.string, error: null }]);
+    expect(validation).toEqual([{ path: "string", error: null }]);
   });
 
   it("should trigger parent validation when child is validating", async () => {
@@ -1137,9 +1110,9 @@ describe("createFormValidator", () => {
     }).runPromise();
 
     expect(validation).toEqual([
-      { field: Schema.objectArray.arrayString.nth(0), error: "INVALID_VALUE" },
-      { field: Schema.objectArray.arrayString, error: "TOO_SHORT" },
-      { field: Schema.objectArray, error: "TOO_SHORT" },
+      { path: "objectArray.arrayString[0]", error: "INVALID_VALUE" },
+      { path: "objectArray.arrayString", error: "TOO_SHORT" },
+      { path: "objectArray", error: "TOO_SHORT" },
     ]);
   });
 
@@ -1199,11 +1172,11 @@ describe("createFormValidator", () => {
 
     expect(validation).toEqual([
       {
-        field: Schema.objectTwoArrays.arrayString.nth(0),
+        path: "objectTwoArrays.arrayString[0]",
         error: "INVALID_VALUE",
       },
-      { field: Schema.objectTwoArrays.arrayString, error: "TOO_SHORT" },
-      { field: Schema.objectTwoArrays, error: "TOO_SHORT" },
+      { path: "objectTwoArrays.arrayString", error: "TOO_SHORT" },
+      { path: "objectTwoArrays", error: "TOO_SHORT" },
     ]);
     expect(stringValidator).toBeCalledTimes(1);
     expect(numberValidator).not.toHaveBeenCalled();
@@ -1239,9 +1212,9 @@ describe("createFormValidator", () => {
     }).runPromise();
 
     expect(validation).toEqual([
-      { field: Schema.arrayObjectString.nth(0).str, error: null },
-      { field: Schema.arrayObjectString.nth(1).str, error: "INVALID_VALUE" },
-      { field: Schema.arrayObjectString.nth(2).str, error: null },
+      { path: "arrayObjectString[0].str", error: null },
+      { path: "arrayObjectString[1].str", error: "INVALID_VALUE" },
+      { path: "arrayObjectString[2].str", error: null },
     ]);
   });
 
@@ -1274,9 +1247,9 @@ describe("createFormValidator", () => {
     }).runPromise();
 
     expect(validation).toEqual([
-      { field: Schema.arrayArrayString.nth(0).nth(0), error: null },
-      { field: Schema.arrayArrayString.nth(0).nth(1), error: "INVALID_VALUE" },
-      { field: Schema.arrayArrayString.nth(1).nth(0), error: null },
+      { path: "arrayArrayString[0][0]", error: null },
+      { path: "arrayArrayString[0][1]", error: "INVALID_VALUE" },
+      { path: "arrayArrayString[1][0]", error: null },
     ]);
   });
 
@@ -1309,12 +1282,12 @@ describe("createFormValidator", () => {
     }).runPromise();
 
     expect(validation).toEqual([
-      { field: Schema.arrayNestedArrays.nth(0).array.nth(0), error: null },
+      { path: "arrayNestedArrays[0].array[0]", error: null },
       {
-        field: Schema.arrayNestedArrays.nth(0).array.nth(1),
+        path: "arrayNestedArrays[0].array[1]",
         error: "INVALID_VALUE",
       },
-      { field: Schema.arrayNestedArrays.nth(1).array.nth(0), error: null },
+      { path: "arrayNestedArrays[1].array[0]", error: null },
     ]);
   });
 });
@@ -1352,7 +1325,7 @@ describe("debounced validation", () => {
         validate({ fields: [Schema.string], getValue }),
         validate({ fields: [Schema.string], getValue })
       ).runPromise()
-    ).toEqual([[], [], [{ field: Schema.string, error: "REQUIRED" }]]);
+    ).toEqual([[], [], [{ path: "string", error: "REQUIRED" }]]);
     expect(stringRequiredValidator).toHaveBeenCalledTimes(1);
   });
 
@@ -1380,7 +1353,7 @@ describe("debounced validation", () => {
         validate({ fields: [Schema.string], getValue }),
         validate({ fields: [Schema.string], getValue })
       ).runPromise()
-    ).toEqual([[], [], [{ field: Schema.string, error: "TOO_SHORT" }]]);
+    ).toEqual([[], [], [{ path: "string", error: "TOO_SHORT" }]]);
     expect(stringRequiredValidator).toHaveBeenCalledTimes(1);
     expect(stringLengthValidator).toHaveBeenCalledTimes(1);
   });
@@ -1415,8 +1388,8 @@ describe("debounced validation", () => {
         })
       ).runPromise()
     ).toEqual([
-      [{ field: Schema.string, error: null }],
-      [{ field: Schema.string, error: null }],
+      [{ path: "string", error: null }],
+      [{ path: "string", error: null }],
     ]);
 
     expect(stringRequiredValidator).toHaveBeenCalledTimes(2);
@@ -1450,9 +1423,9 @@ describe("debounced validation", () => {
       ).runPromise()
     ).toEqual([
       [],
-      [{ field: Schema.number, error: "REQUIRED" }],
-      [{ field: Schema.string, error: "REQUIRED" }],
-      [{ field: Schema.number, error: "REQUIRED" }],
+      [{ path: "number", error: "REQUIRED" }],
+      [{ path: "string", error: "REQUIRED" }],
+      [{ path: "number", error: "REQUIRED" }],
     ]);
 
     expect(stringRequiredValidator).toHaveBeenCalledTimes(1);
@@ -1488,7 +1461,7 @@ describe("debounced validation", () => {
         validate({ fields: [Schema.string], getValue }),
         validate({ fields: [Schema.string], getValue })
       ).runPromise()
-    ).toEqual([[], [], [{ field: Schema.string, error: "TOO_SHORT" }]]);
+    ).toEqual([[], [], [{ path: "string", error: "TOO_SHORT" }]]);
 
     expect(stringRequiredValidator).toHaveBeenCalledTimes(1);
     expect(stringLengthValidator).toHaveBeenCalledTimes(1);
@@ -1527,7 +1500,7 @@ describe("debounced validation", () => {
         validate({ fields: [Schema.string], getValue }),
         validate({ fields: [Schema.string], getValue })
       ).runPromise()
-    ).toEqual([[], [], [{ field: Schema.string, error: "INVALID_VALUE" }]]);
+    ).toEqual([[], [], [{ path: "string", error: "INVALID_VALUE" }]]);
 
     expect(stringRequiredValidator).toHaveBeenCalledTimes(1);
     expect(stringValueValidator).toHaveBeenCalledTimes(1);

@@ -1,8 +1,6 @@
 import { Nominal } from "../../utils";
 
 import { _FieldDecoderImpl } from "./field-decoder";
-import { FieldDescriptor } from "./field-descriptor";
-import { impl } from "./type-mapper-util";
 
 //@ts-ignore
 export type _FieldTemplateImpl<T> = {
@@ -38,7 +36,4 @@ export type ObjectFieldTemplate<T extends object, Err> =
   & FieldTemplate<T, Err>
   & { readonly [K in keyof T]: GenericFieldTemplate<T[K], Err> };
 
-export const isFieldTemplate = <T, Err>(x: FieldDescriptor<T, Err> | FieldTemplate<T, Err>):
-  x is FieldTemplate<T, Err> =>
-  //@ts-ignore
-  impl(x).__lens == null
+export const pathIsTemplate = (x: string): boolean => x.includes("[*]")
