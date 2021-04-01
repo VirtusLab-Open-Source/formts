@@ -10,7 +10,7 @@
 
 ### Status
 
-Active development. Expect frequent breaking changes before 1.0.0 is reached ⚠️
+Active development. Expect frequent breaking changes until `1.0.0` is reached ⚠️
 
 ### Features
 
