@@ -2,11 +2,15 @@
 [![GitHub license](https://img.shields.io/github/license/VirtusLab/formts)](https://github.com/VirtusLab/formts/blob/master/LICENSE)
 [![npm](https://img.shields.io/npm/v/@virtuslab/formts)](https://www.npmjs.com/package/@virtuslab/formts)
 [![npm bundle size](https://img.shields.io/bundlephobia/minzip/@virtuslab/formts)](https://bundlephobia.com/result?p=@virtuslab/formts)
-[![examples](https://img.shields.io/badge/examples-codesandbox-blue)](https://github.com/VirtusLab/formts/tree/master/examples)
+[![examples](https://img.shields.io/badge/examples-codesandbox-blue)](https://github.com/VirtusLab/formts#examples)
 
 # Formts
 
 **Type-safe, declarative and performant React form & validation library**
+
+### Status
+
+Active development. Expect frequent breaking changes before 1.0.0 is reached ⚠️
 
 ### Features
 
@@ -132,9 +136,36 @@ const FormActions: React.FC = () => {
 };
 ```
 
-Currently API documentation is available only in form of JSDocs.
-[Explore CodeSandbox examples](https://github.com/VirtusLab/formts/tree/master/examples)
-to learn more.
+### Documentation
+
+Currently API documentation is available in form of exhaustive JSDocs and
+examples
+
+### Examples
+
+Play around with the code on _CodeSandbox_ to learn _Formts_ API and features:
+
+a) Step-by-step introduction:
+
+1. [basic form (naive)](https://codesandbox.io/s/intro-01-basic-form-naive-vplnc?file=/src/example.tsx)
+2. [basic form + optimized re-renders](https://codesandbox.io/s/intro-02-basic-form-optimised-re-renders-r6mrc?file=/src/example.tsx)
+3. [basic form + validation](https://codesandbox.io/s/intro-03-basic-form-validation-nhsg7?file=/src/example.tsx:770-795)
+4. [basic form + improved validation](https://codesandbox.io/s/intro-04-basic-form-advanced-validation-xxybu?file=/src/example.tsx)
+5. [basic form + Material-UI](https://codesandbox.io/s/intro-05-basic-form-material-ui-e0kkl?file=/src/example.tsx)
+
+b) HTML input bindings:
+
+1. [radio group input](https://codesandbox.io/s/inputs-radio-group-4l1pu?file=/src/example.tsx)
+2. [checkbox group input](https://codesandbox.io/s/inputs-checkbox-group-t0mqb?file=/src/example.tsx)
+3. [select input](https://codesandbox.io/s/inputs-select-1twl4?file=/src/example.tsx)
+4. [input array](https://codesandbox.io/s/inputs-field-arrays-005tl?file=/src/example.tsx)
+5. [mui multi-select input](https://codesandbox.io/s/inputs-mui-multi-select-lczxy?file=/src/example.tsx)
+6. [mui date-picker input](https://codesandbox.io/s/inputs-mui-date-picker-x21vz?file=/src/example.tsx)
+
+c) Advanced examples:
+
+1. [change password form](https://codesandbox.io/s/change-password-form-yn1yz?file=/src/example.tsx)
+2. [order pizza form](https://codesandbox.io/s/order-pizza-form-bsrv5?file=/src/example.tsx)
 
 ### Why another form lib?
 
