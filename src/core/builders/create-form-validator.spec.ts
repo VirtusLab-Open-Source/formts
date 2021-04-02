@@ -189,9 +189,7 @@ describe("createFormValidator", () => {
       getValue,
     }).runPromise();
 
-    expect(validation).toEqual([
-      { path: "choice", error: "INVALID_VALUE" },
-    ]);
+    expect(validation).toEqual([{ path: "choice", error: "INVALID_VALUE" }]);
   });
 
   it("should return null for passing single-rule on choice field ", async () => {
@@ -265,9 +263,7 @@ describe("createFormValidator", () => {
       getValue,
     }).runPromise();
 
-    expect(validation).toEqual([
-      { path: "arrayArrayString", error: null },
-    ]);
+    expect(validation).toEqual([{ path: "arrayArrayString", error: null }]);
   });
 
   it("should return ERR for failing async single-rule on object field ", async () => {
@@ -284,9 +280,7 @@ describe("createFormValidator", () => {
       getValue,
     }).runPromise();
 
-    expect(validation).toEqual([
-      { path: "object", error: "INVALID_VALUE" },
-    ]);
+    expect(validation).toEqual([{ path: "object", error: "INVALID_VALUE" }]);
   });
 
   it("should return ERR for failing async multi-rule on object field ", async () => {
@@ -653,9 +647,7 @@ describe("createFormValidator", () => {
         getValue,
       }).runPromise();
 
-      expect(result).toEqual([
-        { path: "string", error: null },
-      ]);
+      expect(result).toEqual([{ path: "string", error: null }]);
       expect(rule1).not.toHaveBeenCalled();
       expect(rule2).not.toHaveBeenCalled();
     }
@@ -666,9 +658,7 @@ describe("createFormValidator", () => {
         getValue,
       }).runPromise();
 
-      expect(result).toEqual([
-        { path: "string", error: "ERR_1" },
-      ]);
+      expect(result).toEqual([{ path: "string", error: "ERR_1" }]);
       expect(rule1).toHaveBeenCalled();
       expect(rule2).not.toHaveBeenCalled();
     }
@@ -951,6 +941,45 @@ describe("createFormValidator", () => {
       { path: "arrayObjectString[0]", error: null },
       { path: "arrayObjectString[1]", error: "REQUIRED" },
       { path: "arrayObjectString[2]", error: null },
+    ]);
+  });
+
+  it("dependency change should trigger validation run for with array.every()...", async () => {
+    const { validate } = createFormValidatorImpl(Schema, validate => [
+      validate({
+        field: Schema.arrayObjectString.every().str,
+        rules: _ => [x => (x === "" ? "REQUIRED" : null)],
+        dependencies: [Schema.choice],
+      }),
+      validate(Schema.choice, x => (x === "A" ? "INVALID_VALUE" : null)),
+    ]);
+
+    const getValue = (field: FieldDescriptor<any> | string): any => {
+      const path = typeof field === "string" ? field : impl(field).__path;
+      switch (path) {
+        case "arrayObjectString":
+          return [{ str: "sm" }, { str: "" }, { str: "valid string" }];
+        case "arrayObjectString[0].str":
+          return "sm";
+        case "arrayObjectString[1].str":
+          return "";
+        case "arrayObjectString[2].str":
+          return "valid string";
+        case "choice":
+          return "A";
+      }
+    };
+
+    const validation = await validate({
+      fields: [Schema.choice],
+      getValue,
+    }).runPromise();
+
+    expect(validation).toEqual([
+      { path: "choice", error: "INVALID_VALUE" },
+      { path: "arrayObjectString[0].str", error: null },
+      { path: "arrayObjectString[1].str", error: "REQUIRED" },
+      { path: "arrayObjectString[2].str", error: null },
     ]);
   });
 

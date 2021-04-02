@@ -1,4 +1,4 @@
-import { Nominal } from "../../utils";
+import { Nominal, range } from "../../utils";
 
 import { _FieldDecoderImpl } from "./field-decoder";
 
@@ -13,7 +13,7 @@ export type _FieldTemplateImpl<T> = {
  */
 // @ts-ignore
 export interface FieldTemplate<T, Err = unknown>
-  extends Nominal<"FieldTemplate", Err> { }
+  extends Nominal<"FieldTemplate", Err> {}
 
 // prettier-ignore
 export type GenericFieldTemplate<T, Err = unknown> =
@@ -36,4 +36,27 @@ export type ObjectFieldTemplate<T extends object, Err> =
   & FieldTemplate<T, Err>
   & { readonly [K in keyof T]: GenericFieldTemplate<T[K], Err> };
 
-export const pathIsTemplate = (x: string): boolean => x.includes("[*]")
+export const pathIsTemplate = (x: string): boolean => x.includes("[*]");
+
+export const generateFieldPathsFromTemplate = (
+  template: string,
+  getValue: (path: string) => unknown
+): string[] => {
+  const templateIndex = template.indexOf("[*]");
+  if (templateIndex === -1) {
+    return [template];
+  } else {
+    const root = template.slice(0, templateIndex);
+    const childPath = template.slice(templateIndex + 3);
+    const value = getValue(root);
+
+    if (!Array.isArray(value) || value.length <= 0) {
+      return [];
+    } else {
+      return range(0, value.length - 1).flatMap(index => {
+        const indexedTemplate = `${root}[${index}]${childPath}`;
+        return generateFieldPathsFromTemplate(indexedTemplate, getValue);
+      });
+    }
+  }
+};

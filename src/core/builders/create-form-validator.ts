@@ -3,12 +3,13 @@ import { compact, flatMap, uniqBy } from "../../utils/array";
 import { Task } from "../../utils/task";
 import {
   FieldDescriptor,
-  getArrayDescriptorChildren,
-  getObjectDescriptorChildren,
-  isArrayDescriptor,
-  isObjectDescriptor,
+  getChildrenDescriptors,
+  getParentsChain,
 } from "../types/field-descriptor";
-import { pathIsTemplate } from "../types/field-template";
+import {
+  generateFieldPathsFromTemplate,
+  pathIsTemplate,
+} from "../types/field-template";
 import { FormSchema } from "../types/form-schema";
 import {
   FieldDescTuple,
@@ -86,12 +87,14 @@ export const createFormValidator = <Values extends object, Err>(
 
       const resolveFieldsToValidate = () => {
         const allFields = flatMap(fields, x =>
-          getChildrenDescriptors(x, getValue)
+          getChildrenDescriptors(x, getValue).map(x => impl(x).__path)
         );
         const dependents = flatMap(fields, x =>
           getDependents(x, dependenciesDict, getValue)
         );
-        const parents = flatMap(fields, getParentsChain);
+        const parents = flatMap(fields, x =>
+          getParentsChain(x).map(x => impl(x).__path)
+        );
 
         const uniqueFields = uniqBy(
           [...allFields, ...dependents, ...parents],
@@ -211,33 +214,6 @@ const firstNonNullTaskResult = <T, E>(
   );
 };
 
-const getChildrenDescriptors = <Err>(
-  descriptor: FieldDescriptor<unknown, Err>,
-  getValue: (field: FieldDescriptor<unknown, Err>) => unknown
-): Array<FieldPath> => {
-  const root = [impl(descriptor).__path];
-
-  if (isObjectDescriptor(descriptor)) {
-    const children = getObjectDescriptorChildren(descriptor);
-    return root.concat(
-      flatMap(children, x => getChildrenDescriptors(x, getValue))
-    );
-  } else if (isArrayDescriptor(descriptor)) {
-    const numberOfChildren = (getValue(descriptor) as any[])?.length;
-    if (numberOfChildren === 0) {
-      return root;
-    }
-    const children = getArrayDescriptorChildren(descriptor, numberOfChildren);
-    return root.concat(
-      flatMap(children, x =>
-        getChildrenDescriptors(x as FieldDescriptor<unknown, Err>, getValue)
-      )
-    );
-  } else {
-    return root;
-  }
-};
-
 type DependenciesDict = {
   [path: string]: FieldPath[];
 };
@@ -265,29 +241,15 @@ const buildDependenciesDict = <Err>(
 const getDependents = <Err>(
   desc: FieldDescriptor<any, Err>,
   dependenciesDict: DependenciesDict,
-  _getValue: GetValue<Err>
+  getValue: GetValue<Err>
 ): FieldPath[] =>
   flatMap(dependenciesDict[impl(desc).__path] ?? [], x => {
     if (pathIsTemplate(x)) {
-      // const rootPath = impl(x).__rootPath;
-      // return getValue<any[]>(rootPath).map((_, i) => x(i));
-      return [] // FIXME
+      return generateFieldPathsFromTemplate(x, getValue);
     } else {
       return [x];
     }
   });
-
-const getParentsChain = <Err>(
-  desc: FieldDescriptor<any, Err>
-): FieldPath[] => {
-  const parent = impl(desc).__parent;
-  if (!parent) {
-    return [];
-  } else {
-    const opaqueParent = opaque(parent) as FieldDescriptor<any, Err>;
-    return [parent.__path, ...getParentsChain(opaqueParent)];
-  }
-};
 
 const getDependenciesValues = <Values extends readonly any[], Err>(
   deps: readonly [...FieldDescTuple<Values, Err>],
@@ -301,9 +263,9 @@ const validatorMatchesField = (
   fieldPath: FieldPath
 ): boolean => {
   if (pathIsTemplate(validator.path)) {
-    return pathMatchesTemplatePath(fieldPath, validator.path)
+    return pathMatchesTemplatePath(fieldPath, validator.path);
   } else {
-    return validator.path === fieldPath
+    return validator.path === fieldPath;
   }
 };
 
@@ -326,8 +288,7 @@ namespace FieldValidationKey {
   export const make = (
     fieldPath: FieldPath,
     trigger?: ValidationTrigger
-  ): FieldValidationKey =>
-    `${fieldPath}:t-${trigger ?? "none"}` as any;
+  ): FieldValidationKey => `${fieldPath}:t-${trigger ?? "none"}` as any;
 }
 
 type Timestamp = number;
