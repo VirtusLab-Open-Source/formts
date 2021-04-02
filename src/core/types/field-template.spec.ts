@@ -1,6 +1,6 @@
 import {
   generateFieldPathsFromTemplate,
-  pathMatchesTemplatePath,
+  createRegexForTemplate,
 } from "./field-template";
 
 describe("generateFieldPathsFromTemplate", () => {
@@ -128,15 +128,49 @@ describe("generateFieldPathsFromTemplate", () => {
   });
 });
 
-it("pathMatchesTemplatePath", () => {
-  expect(pathMatchesTemplatePath("array[0]", "array[*]")).toBeTruthy();
-  expect(
-    pathMatchesTemplatePath("array[1].obj.str", "array[*].obj.str")
-  ).toBeTruthy();
-  expect(
-    pathMatchesTemplatePath("array[1][2][3]", "array[*][2][*]")
-  ).toBeTruthy();
-  expect(
-    pathMatchesTemplatePath("array[1][2][2]", "array[*][2][3]")
-  ).toBeFalsy();
+describe("pathMatchesTemplatePath", () => {
+  it("array[0] match template array[*]", () => {
+    const template = "array[*]";
+    const path = "array[0]";
+
+    const regex = createRegexForTemplate(template);
+
+    expect(!!path.match(regex)).toBeTruthy();
+  });
+
+  it("array[1].obj.str match template array[*].obj.str", () => {
+    const template = "array[*].obj.str";
+    const path = "array[1].obj.str";
+
+    const regex = createRegexForTemplate(template);
+
+    expect(!!path.match(regex)).toBeTruthy();
+  });
+
+  it("array[1][2][3] match template array[*][*][*]", () => {
+    const template = "array[*][*][*]";
+    const path = "array[1][2][3]";
+
+    const regex = createRegexForTemplate(template);
+
+    expect(!!path.match(regex)).toBeTruthy();
+  });
+
+  it("array[1][2][3] match template array[*][2][*]", () => {
+    const template = "array[*][2][*]";
+    const path = "array[1][2][3]";
+
+    const regex = createRegexForTemplate(template);
+
+    expect(!!path.match(regex)).toBeTruthy();
+  });
+
+  it("array[1][2][2] not match template array[*][2][3]", () => {
+    const template = "array[*][2][3]";
+    const path = "array[1][2][2]";
+
+    const regex = createRegexForTemplate(template);
+
+    expect(!!path.match(regex)).toBeFalsy();
+  });
 });

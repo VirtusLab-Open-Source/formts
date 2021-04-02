@@ -1,10 +1,7 @@
 import { Falsy, NoInfer, Nominal } from "../../utils";
 import { Task } from "../../utils/task";
 
-import {
-  FieldDescriptor,
-  GenericFieldDescriptor,
-} from "./field-descriptor";
+import { FieldDescriptor, GenericFieldDescriptor } from "./field-descriptor";
 import { GenericFieldTemplate } from "./field-template";
 
 /**
@@ -27,7 +24,7 @@ export namespace Validator {
 export type ValidationTrigger = "change" | "blur" | "submit";
 
 export type ValidationResult<Err> = Array<{
-  path: FieldPath
+  path: FieldPath;
   error: Err | null;
 }>;
 
@@ -59,6 +56,7 @@ export type FieldValidator<T, Err, Dependencies extends any[]> = {
   validators: (...deps: [...Dependencies]) => Array<Falsy | Validator<T, Err>>;
   dependencies?: readonly [...FieldDescTuple<Dependencies, Err>];
   debounce?: number;
+  regex?: RegExp;
 };
 
 export type ValidateFn = {
@@ -156,10 +154,10 @@ export type ValidateConfig<T, Err, Dependencies extends any[]> = {
 
 export type ValidateField<T, Err> =
   | GenericFieldDescriptor<T, Err>
-  | GenericFieldTemplate<T, Err>
+  | GenericFieldTemplate<T, Err>;
 
 export type FieldDescTuple<ValuesTuple extends readonly any[], Err> = {
   [Index in keyof ValuesTuple]: GenericFieldDescriptor<ValuesTuple[Index], Err>;
 };
 
-export type FieldPath = string
+export type FieldPath = string;

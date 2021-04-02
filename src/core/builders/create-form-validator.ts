@@ -7,9 +7,9 @@ import {
   getParentsChain,
 } from "../types/field-descriptor";
 import {
+  createRegexForTemplate,
   generateFieldPathsFromTemplate,
   pathIsTemplate,
-  pathMatchesTemplatePath,
 } from "../types/field-template";
 import { FormSchema } from "../types/form-schema";
 import {
@@ -173,9 +173,15 @@ const validate = (): ValidateFn => {
         ? { ...(x as ValidateConfig<T, Err, Deps>) }
         : { field: x as ValidateField<T, Err>, rules: () => rules };
 
+    const path = impl(config.field).__path;
+    const regex = pathIsTemplate(path)
+      ? createRegexForTemplate(path)
+      : undefined;
+
     return {
       id: (index++).toString(),
-      path: impl(config.field).__path,
+      path,
+      regex,
       triggers: config.triggers,
       validators: config.rules,
       dependencies: config.dependencies,
@@ -263,8 +269,8 @@ const validatorMatchesField = (
   validator: FieldValidator<any, any, any[]>,
   fieldPath: FieldPath
 ): boolean => {
-  if (pathIsTemplate(validator.path)) {
-    return pathMatchesTemplatePath(fieldPath, validator.path);
+  if (validator.regex != null) {
+    return !!fieldPath.match(validator.regex);
   } else {
     return validator.path === fieldPath;
   }

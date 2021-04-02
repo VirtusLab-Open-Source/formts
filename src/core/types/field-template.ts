@@ -61,16 +61,12 @@ export const generateFieldPathsFromTemplate = (
   }
 };
 
-export const pathMatchesTemplatePath = (path: string, template: string) => {
-  if (!template.includes("[*]")) {
-    return false;
-  } else {
-    const templateRegex = template
-      .replace(new RegExp("\\.", "g"), "\\.")
-      .replace(new RegExp("\\[", "g"), "\\[")
-      .replace(new RegExp("\\]", "g"), "\\]")
-      .replace(new RegExp("\\*", "g"), "(\\d+)");
+export const createRegexForTemplate = (template: string) => {
+  const templateRegex = template
+    .replace(new RegExp("\\.", "g"), "\\.")
+    .replace(new RegExp("\\[", "g"), "\\[")
+    .replace(new RegExp("\\]", "g"), "\\]")
+    .replace(new RegExp("\\*", "g"), "(\\d+)");
 
-    return !!path.match(new RegExp(`\^${templateRegex}\$`));
-  }
+  return new RegExp(`\^${templateRegex}\$`);
 };
