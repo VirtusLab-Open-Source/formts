@@ -9,6 +9,7 @@ import {
 import {
   generateFieldPathsFromTemplate,
   pathIsTemplate,
+  pathMatchesTemplatePath,
 } from "../types/field-template";
 import { FormSchema } from "../types/form-schema";
 import {
@@ -266,20 +267,6 @@ const validatorMatchesField = (
     return pathMatchesTemplatePath(fieldPath, validator.path);
   } else {
     return validator.path === fieldPath;
-  }
-};
-
-const pathMatchesTemplatePath = (path: string, template: string) => {
-  if (!template.includes("[*]")) {
-    return false;
-  } else {
-    const templateRegex = template
-      .replace(new RegExp("\\.", "g"), "\\.")
-      .replace(new RegExp("\\[", "g"), "\\[")
-      .replace(new RegExp("\\]", "g"), "\\]")
-      .replace(new RegExp("\\*", "g"), "(\\d+)");
-
-    return !!path.match(new RegExp(`\^${templateRegex}\$`));
   }
 };
 

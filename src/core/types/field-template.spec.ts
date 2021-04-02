@@ -1,4 +1,7 @@
-import { generateFieldPathsFromTemplate } from "./field-template";
+import {
+  generateFieldPathsFromTemplate,
+  pathMatchesTemplatePath,
+} from "./field-template";
 
 describe("generateFieldPathsFromTemplate", () => {
   it("array[*]", () => {
@@ -123,4 +126,17 @@ describe("generateFieldPathsFromTemplate", () => {
       "array[2].list[0]",
     ]);
   });
+});
+
+it("pathMatchesTemplatePath", () => {
+  expect(pathMatchesTemplatePath("array[0]", "array[*]")).toBeTruthy();
+  expect(
+    pathMatchesTemplatePath("array[1].obj.str", "array[*].obj.str")
+  ).toBeTruthy();
+  expect(
+    pathMatchesTemplatePath("array[1][2][3]", "array[*][2][*]")
+  ).toBeTruthy();
+  expect(
+    pathMatchesTemplatePath("array[1][2][2]", "array[*][2][3]")
+  ).toBeFalsy();
 });

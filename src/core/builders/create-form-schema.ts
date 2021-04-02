@@ -2,10 +2,8 @@ import { assertNever, defineProperties, keys } from "../../utils";
 import { Lens } from "../../utils/lenses";
 import * as Decoders from "../decoders";
 import { FieldDecoder, _FieldDecoderImpl } from "../types/field-decoder";
-import {
-  _FieldDescriptorImpl,
-  _FieldTemplateImpl,
-} from "../types/field-descriptor";
+import { _FieldDescriptorImpl } from "../types/field-descriptor";
+import { _FieldTemplateImpl } from "../types/field-template";
 import { FormSchema } from "../types/form-schema";
 import { impl } from "../types/type-mapper-util";
 
@@ -171,10 +169,10 @@ const createFieldTemplate = (
       return rootDescriptor;
 
     case "array": {
-      const nthHandler = (i?: number) =>
+      const nthHandler = (i: number) =>
         createFieldTemplate(
           decoder.inner as _FieldDecoderImpl<any>,
-          `${path}[${i ?? "*"}]`
+          `${path}[${i}]`
         );
 
       const nth = defineProperties(nthHandler, {
@@ -210,13 +208,13 @@ const createFieldTemplate = (
 
 const createObjectTemplateSchema = <O extends object>(
   decodersMap: DecodersMap<O>,
-  path?: string
+  path: string
 ) => {
   return keys(decodersMap).reduce((schema, key) => {
     const decoder = decodersMap[key];
     (schema as any)[key] = createFieldTemplate(
       impl(decoder) as _FieldDecoderImpl<any>,
-      path ? `${path}.${key}` : `${key}`
+      `${path}.${key}`
     );
     return schema;
   }, {} as { [x in keyof O]: _FieldTemplateImpl<O[x]> });

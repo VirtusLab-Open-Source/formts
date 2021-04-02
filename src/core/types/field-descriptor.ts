@@ -19,11 +19,6 @@ export type _NTHHandler<T> = {
   (n: number): _FieldDecoderImpl<T>;
 };
 
-//@ts-ignore
-export type _FieldTemplateImpl<T> = {
-  __path: string;
-};
-
 /**
  * Pointer to a form field.
  * Used to interact with Formts API via `useField` hook.

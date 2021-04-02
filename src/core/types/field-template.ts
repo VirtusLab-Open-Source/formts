@@ -27,7 +27,7 @@ export type GenericFieldTemplate<T, Err = unknown> =
 export type ArrayFieldTemplate<T extends Array<unknown>, Err> =
   & FieldTemplate<T, Err>
   & {
-    readonly nth: (index?: number) => GenericFieldTemplate<T[number], Err>;
+    readonly nth: (index: number) => GenericFieldTemplate<T[number], Err>;
     readonly every: () => GenericFieldTemplate<T[number], Err>;
   };
 
@@ -58,5 +58,19 @@ export const generateFieldPathsFromTemplate = (
         return generateFieldPathsFromTemplate(indexedTemplate, getValue);
       });
     }
+  }
+};
+
+export const pathMatchesTemplatePath = (path: string, template: string) => {
+  if (!template.includes("[*]")) {
+    return false;
+  } else {
+    const templateRegex = template
+      .replace(new RegExp("\\.", "g"), "\\.")
+      .replace(new RegExp("\\[", "g"), "\\[")
+      .replace(new RegExp("\\]", "g"), "\\]")
+      .replace(new RegExp("\\*", "g"), "(\\d+)");
+
+    return !!path.match(new RegExp(`\^${templateRegex}\$`));
   }
 };
