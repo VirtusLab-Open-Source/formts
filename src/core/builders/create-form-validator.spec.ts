@@ -1319,6 +1319,17 @@ describe("createFormValidator", () => {
       { path: "arrayNestedArrays[1].array[0]", error: null },
     ]);
   });
+
+  it("should not accept templates as dependencies", async () => {
+    createFormValidatorImpl(Schema, validate => [
+      //@ts-expect-error
+      validate({
+        field: Schema.string,
+        dependencies: [Schema.arrayString.every()],
+        rules: _template => [],
+      }),
+    ]);
+  });
 });
 
 describe("debounced validation", () => {

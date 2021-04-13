@@ -38,16 +38,18 @@ export type ObjectFieldTemplate<T extends object, Err> =
 
 export const pathIsTemplate = (x: string): boolean => x.includes("[*]");
 
+const templateMark = "[*]";
+
 export const generateFieldPathsFromTemplate = (
   template: string,
   getValue: (path: string) => unknown
 ): string[] => {
-  const templateIndex = template.indexOf("[*]");
+  const templateIndex = template.indexOf(templateMark);
   if (templateIndex === -1) {
     return [template];
   } else {
     const root = template.slice(0, templateIndex);
-    const childPath = template.slice(templateIndex + 3);
+    const childPath = template.slice(templateIndex + templateMark.length);
     const value = getValue(root);
 
     if (!Array.isArray(value) || value.length <= 0) {
