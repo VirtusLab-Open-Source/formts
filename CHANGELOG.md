@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.2.4](https://github.com/VirtusLab/formts/compare/v0.2.3...v0.2.4) (2021-04-14)
+
+
+### Features
+
+* every() template validation ([#86](https://github.com/VirtusLab/formts/issues/86)) ([59727fa](https://github.com/VirtusLab/formts/commit/59727fafc52220e4f70cc3d6f45b96601087b309))
+
 ### [0.2.3](https://github.com/VirtusLab/formts/compare/v0.2.2...v0.2.3) (2021-04-04)
 
 ### [0.2.2](https://github.com/VirtusLab/formts/compare/v0.2.1...v0.2.2) (2021-04-01)
