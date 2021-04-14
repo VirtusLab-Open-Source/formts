@@ -135,17 +135,14 @@ export const createFormtsMethods = <Values extends object, Err>({
 
   const setFieldErrors = (
     ...fields: Array<{
-      field: FieldDescriptor<unknown, Err>;
+      path: string;
       error: Err | null;
     }>
   ): Task<void> =>
     Task.from(() =>
       dispatch({
         type: "setErrors",
-        payload: fields.map(it => ({
-          path: impl(it.field).__path,
-          error: it.error,
-        })),
+        payload: fields
       })
     );
 
@@ -177,12 +174,7 @@ export const createFormtsMethods = <Values extends object, Err>({
 
     return validateForm("submit")
       .map(errors =>
-        errors
-          .filter(({ error }) => error != null)
-          .map(({ field, error }) => ({
-            path: impl(field).__path,
-            error: error!,
-          }))
+        errors.filter(({ error }) => error != null) as FieldError<Err>[]
       )
       .flatMap(errors => {
         if (errors.length > 0) {

@@ -3,18 +3,21 @@ import { compact, flatMap, uniqBy } from "../../utils/array";
 import { Task } from "../../utils/task";
 import {
   FieldDescriptor,
-  getArrayDescriptorChildren,
-  getObjectDescriptorChildren,
-  isArrayDescriptor,
-  isObjectDescriptor,
+  getChildrenDescriptors,
+  getParentsChain,
 } from "../types/field-descriptor";
+import {
+  createRegexForTemplate,
+  generateFieldPathsFromTemplate,
+  pathIsTemplate,
+} from "../types/field-template";
 import { FormSchema } from "../types/form-schema";
 import {
   FieldDescTuple,
+  FieldPath,
   FieldValidator,
   FormValidator,
   GetValue,
-  isNth,
   ValidateConfig,
   ValidateField,
   ValidateFn,
@@ -63,13 +66,13 @@ export const createFormValidator = <Values extends object, Err>(
   const debounceStepHandler = DebouncedValidation.createDebounceStepHandler();
 
   const getValidatorsForField = (
-    descriptor: FieldDescriptor<unknown, Err>,
+    fieldPath: FieldPath,
     trigger?: ValidationTrigger
   ): FieldValidator<any, Err, any[]>[] => {
     return allValidators.filter(x => {
       const triggerMatches =
         trigger && x.triggers ? x.triggers.includes(trigger) : true;
-      return triggerMatches && validatorMatchesField(x, descriptor);
+      return triggerMatches && validatorMatchesField(x, fieldPath);
     });
   };
 
@@ -85,22 +88,24 @@ export const createFormValidator = <Values extends object, Err>(
 
       const resolveFieldsToValidate = () => {
         const allFields = flatMap(fields, x =>
-          getChildrenDescriptors(x, getValue)
+          getChildrenDescriptors(x, getValue).map(x => impl(x).__path)
         );
         const dependents = flatMap(fields, x =>
           getDependents(x, dependenciesDict, getValue)
         );
-        const parents = flatMap(fields, getParentsChain);
+        const parents = flatMap(fields, x =>
+          getParentsChain(x).map(x => impl(x).__path)
+        );
 
         const uniqueFields = uniqBy(
           [...allFields, ...dependents, ...parents],
-          x => impl(x).__path
+          x => x
         );
 
         return uniqueFields
-          .map(field => ({
-            field,
-            validators: getValidatorsForField(field, trigger),
+          .map(fieldPath => ({
+            fieldPath,
+            validators: getValidatorsForField(fieldPath, trigger),
           }))
           .filter(x => x.validators.length > 0);
       };
@@ -108,18 +113,18 @@ export const createFormValidator = <Values extends object, Err>(
       return Task.from(resolveFieldsToValidate)
         .flatMap(fieldsToValidate =>
           Task.all(
-            ...fieldsToValidate.map(({ field, validators }) => {
-              const validationKey = FieldValidationKey.make(field, trigger);
+            ...fieldsToValidate.map(({ fieldPath, validators }) => {
+              const validationKey = FieldValidationKey.make(fieldPath, trigger);
 
               return Task.from(() => {
-                onFieldValidationStart?.(field);
+                onFieldValidationStart?.(fieldPath);
                 ongoingValidationTimestamps[validationKey] = timestamp;
-                return getValue(field);
+                return getValue(fieldPath);
               })
                 .flatMap(value =>
                   firstNonNullTaskResult(
                     validators.map(v =>
-                      debounceStepHandler(v, field).flatMap(() =>
+                      debounceStepHandler(v, fieldPath).flatMap(() =>
                         runValidationForField(v, value, getValue)
                       )
                     )
@@ -129,17 +134,17 @@ export const createFormValidator = <Values extends object, Err>(
                   if (err === true) {
                     return Task.success(null); // optional validator edge-case
                   }
-                  onFieldValidationEnd?.(field);
+                  onFieldValidationEnd?.(fieldPath);
                   return Task.failure(err);
                 })
                 .map(validationError => {
-                  onFieldValidationEnd?.(field);
+                  onFieldValidationEnd?.(fieldPath);
 
                   if (
                     ongoingValidationTimestamps[validationKey] === timestamp
                   ) {
                     delete ongoingValidationTimestamps[validationKey];
-                    return { field, error: validationError };
+                    return { path: fieldPath, error: validationError };
                   }
 
                   // primitive cancellation of outdated validation results
@@ -168,9 +173,15 @@ const validate = (): ValidateFn => {
         ? { ...(x as ValidateConfig<T, Err, Deps>) }
         : { field: x as ValidateField<T, Err>, rules: () => rules };
 
+    const path = impl(config.field).__path;
+    const regex = pathIsTemplate(path)
+      ? createRegexForTemplate(path)
+      : undefined;
+
     return {
       id: (index++).toString(),
-      field: config.field,
+      path,
+      regex,
       triggers: config.triggers,
       validators: config.rules,
       dependencies: config.dependencies,
@@ -210,50 +221,23 @@ const firstNonNullTaskResult = <T, E>(
   );
 };
 
-const getChildrenDescriptors = <Err>(
-  descriptor: FieldDescriptor<unknown, Err>,
-  getValue: (field: FieldDescriptor<unknown, Err>) => unknown
-): Array<FieldDescriptor<unknown, Err>> => {
-  const root = [descriptor];
-
-  if (isObjectDescriptor(descriptor)) {
-    const children = getObjectDescriptorChildren(descriptor);
-    return root.concat(
-      flatMap(children, x => getChildrenDescriptors(x, getValue))
-    );
-  } else if (isArrayDescriptor(descriptor)) {
-    const numberOfChildren = (getValue(descriptor) as any[])?.length;
-    if (numberOfChildren === 0) {
-      return root;
-    }
-    const children = getArrayDescriptorChildren(descriptor, numberOfChildren);
-    return root.concat(
-      flatMap(children, x =>
-        getChildrenDescriptors(x as FieldDescriptor<unknown, Err>, getValue)
-      )
-    );
-  } else {
-    return root;
-  }
-};
-
-type DependenciesDict<Err> = {
-  [path: string]: ValidateField<unknown, Err>[];
+type DependenciesDict = {
+  [path: string]: FieldPath[];
 };
 
 const buildDependenciesDict = <Err>(
   validators: FieldValidator<any, Err, any>[]
-): DependenciesDict<Err> => {
-  let dict: DependenciesDict<Err> = {};
+): DependenciesDict => {
+  let dict: DependenciesDict = {};
 
   for (const validator of validators) {
     for (const dependency of validator.dependencies ?? []) {
       const path = impl(dependency).__path;
 
       if (!dict[path]) {
-        dict[path] = [validator.field];
+        dict[path] = [validator.path];
       } else {
-        dict[path].push(validator.field);
+        dict[path].push(validator.path);
       }
     }
   }
@@ -263,29 +247,16 @@ const buildDependenciesDict = <Err>(
 
 const getDependents = <Err>(
   desc: FieldDescriptor<any, Err>,
-  dependenciesDict: DependenciesDict<Err>,
+  dependenciesDict: DependenciesDict,
   getValue: GetValue<Err>
-): FieldDescriptor<any, Err>[] =>
+): FieldPath[] =>
   flatMap(dependenciesDict[impl(desc).__path] ?? [], x => {
-    if (isNth(x)) {
-      const rootPath = impl(x).__rootPath;
-      return getValue<any[]>(rootPath).map((_, i) => x(i));
+    if (pathIsTemplate(x)) {
+      return generateFieldPathsFromTemplate(x, getValue);
     } else {
       return [x];
     }
   });
-
-const getParentsChain = <Err>(
-  desc: FieldDescriptor<any, Err>
-): FieldDescriptor<any, Err>[] => {
-  const parent = impl(desc).__parent;
-  if (!parent) {
-    return [];
-  } else {
-    const opaqueParent = opaque(parent) as FieldDescriptor<any, Err>;
-    return [opaqueParent, ...getParentsChain(opaqueParent)];
-  }
-};
 
 const getDependenciesValues = <Values extends readonly any[], Err>(
   deps: readonly [...FieldDescTuple<Values, Err>],
@@ -296,24 +267,21 @@ const getDependenciesValues = <Values extends readonly any[], Err>(
 
 const validatorMatchesField = (
   validator: FieldValidator<any, any, any[]>,
-  field: FieldDescriptor<any>
+  fieldPath: FieldPath
 ): boolean => {
-  if (isNth(validator.field)) {
-    const validatorRootPath = impl(validator.field).__rootPath;
-    const fieldRootPath = impl(field).__parent?.__path;
-    return validatorRootPath === fieldRootPath;
+  if (validator.regex != null) {
+    return !!fieldPath.match(validator.regex);
   } else {
-    return impl(validator.field).__path === impl(field).__path;
+    return validator.path === fieldPath;
   }
 };
 
 type FieldValidationKey = string;
 namespace FieldValidationKey {
   export const make = (
-    field: FieldDescriptor<unknown>,
+    fieldPath: FieldPath,
     trigger?: ValidationTrigger
-  ): FieldValidationKey =>
-    `${impl(field).__path}:t-${trigger ?? "none"}` as any;
+  ): FieldValidationKey => `${fieldPath}:t-${trigger ?? "none"}` as any;
 }
 
 type Timestamp = number;
@@ -326,7 +294,7 @@ namespace DebouncedValidation {
   type DebouncedValidationsDict = Record<FieldValidationKey, Cancel>;
   type DebounceStepHandler = (
     validator: FieldValidator<unknown, unknown, unknown[]>,
-    field: FieldDescriptor<unknown, unknown>
+    fieldPath: FieldPath
   ) => Task<void>;
 
   const CANCEL_ERR = "__CANCEL__";
@@ -334,9 +302,9 @@ namespace DebouncedValidation {
   export const createDebounceStepHandler = (): DebounceStepHandler => {
     const debouncedValidations: DebouncedValidationsDict = {};
 
-    return (v, field) =>
+    return (v, fieldPath) =>
       Task.make(({ resolve, reject }) => {
-        const id = `${v.id}-${impl(field).__path}`;
+        const id = `${v.id}-${fieldPath}`;
         if (v.debounce) {
           debouncedValidations[id]?.();
 

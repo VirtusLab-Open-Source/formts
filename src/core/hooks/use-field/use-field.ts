@@ -160,7 +160,7 @@ const createFieldHandle = <T, Err>(
       methods.setFieldValueFromEvent(descriptor, event).runPromise(),
 
     setError: error =>
-      methods.setFieldErrors({ field: descriptor, error }).runPromise(),
+      methods.setFieldErrors({ path: impl(descriptor).__path, error }).runPromise(),
 
     addItem: item => {
       if (isArrayDescriptor(descriptor)) {

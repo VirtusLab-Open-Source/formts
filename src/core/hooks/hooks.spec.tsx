@@ -4,6 +4,7 @@ import React from "react";
 import { Task } from "../../utils/task";
 import { createFormSchema } from "../builders";
 import { FormProvider } from "../context";
+import { FormHandle } from "../types/form-handle";
 import { ValidateIn } from "../types/form-validator";
 import { impl, opaque } from "../types/type-mapper-util";
 
@@ -739,12 +740,8 @@ describe("formts hooks API", () => {
     const validator = opaque({
       validate: jest
         .fn()
-        .mockReturnValueOnce(
-          Task.success([{ field: Schema.theNum, error: "ERR_1" }])
-        )
-        .mockReturnValueOnce(
-          Task.success([{ field: Schema.theNum, error: null }])
-        ),
+        .mockReturnValueOnce(Task.success([{ path: "theNum", error: "ERR_1" }]))
+        .mockReturnValueOnce(Task.success([{ path: "theNum", error: null }])),
     });
 
     const { result: controllerHook } = renderHook(() =>
@@ -806,12 +803,8 @@ describe("formts hooks API", () => {
     const validator = opaque({
       validate: jest
         .fn()
-        .mockReturnValueOnce(
-          Task.success([{ field: Schema.theNum, error: "ERR_1" }])
-        )
-        .mockReturnValueOnce(
-          Task.success([{ field: Schema.theNum, error: null }])
-        ),
+        .mockReturnValueOnce(Task.success([{ path: "theNum", error: "ERR_1" }]))
+        .mockReturnValueOnce(Task.success([{ path: "theNum", error: null }])),
     });
 
     const { result: controllerHook } = renderHook(() =>
@@ -876,7 +869,7 @@ describe("formts hooks API", () => {
         .mockImplementation(({ fields, getValue }: ValidateIn<any>) =>
           Task.success(
             fields.map(field => ({
-              field,
+              path: impl(field).__path,
               error: getValue(field) === "" ? "REQUIRED" : null,
             }))
           )
@@ -943,7 +936,9 @@ describe("formts hooks API", () => {
       validate: jest
         .fn()
         .mockImplementation(({ fields }: ValidateIn<any>) =>
-          Task.success(fields.map(field => ({ field, error: "ERROR" })))
+          Task.success(
+            fields.map(field => ({ path: impl(field).__path, error: "ERROR" }))
+          )
         ),
     });
 
@@ -993,7 +988,9 @@ describe("formts hooks API", () => {
       validate: jest
         .fn()
         .mockImplementationOnce(({ fields }: ValidateIn<any>) =>
-          Task.success(fields.map(field => ({ field, error: "ERROR" })))
+          Task.success(
+            fields.map(field => ({ path: impl(field).__path, error: "ERROR" }))
+          )
         )
         .mockReturnValueOnce(Task.success([])),
     });
@@ -1055,5 +1052,24 @@ describe("formts hooks API", () => {
       });
       expect(onFailure).toHaveBeenCalledTimes(1);
     }
+  });
+
+  it("useField should not accept FieldTemplate", () => {
+    const mockUseField: typeof useField = jest.fn();
+
+    // @ts-expect-error
+    mockUseField(Schema.theArray.every());
+  });
+
+  it("FormHandle:setFieldValue/setFieldError should not accept FieldTemplate", () => {
+    const mockFormHandle: FormHandle<{}, {}> = {
+      setFieldError: jest.fn(),
+      setFieldValue: jest.fn(),
+    } as any;
+
+    // @ts-expect-error
+    mockFormHandle.setFieldValue(Schema.theArray.every(), []);
+    // @ts-expect-error
+    mockFormHandle.setFieldError(Schema.theArray.every(), null);
   });
 });
