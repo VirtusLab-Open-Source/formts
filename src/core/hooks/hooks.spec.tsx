@@ -1006,9 +1006,14 @@ describe("formts hooks API", () => {
     const onFailure = jest.fn();
 
     {
+      const { submitCount } = formHandleHook.current;
+
       expect(impl(validator).validate).not.toHaveBeenCalled();
       expect(onSuccess).not.toHaveBeenCalled();
       expect(onFailure).not.toHaveBeenCalled();
+      expect(submitCount.total).toBe(0);
+      expect(submitCount.valid).toBe(0);
+      expect(submitCount.invalid).toBe(0);
     }
 
     await act(async () => {
@@ -1017,6 +1022,8 @@ describe("formts hooks API", () => {
     });
 
     {
+      const { submitCount } = formHandleHook.current;
+
       expect(impl(validator).validate).toHaveBeenCalledTimes(1);
       expect(onSuccess).not.toHaveBeenCalled();
       expect(onFailure).toHaveBeenCalledTimes(1);
@@ -1030,6 +1037,9 @@ describe("formts hooks API", () => {
         { path: "theObject", error: "ERROR" },
         { path: "theObjectArray", error: "ERROR" },
       ]);
+      expect(submitCount.total).toBe(1);
+      expect(submitCount.valid).toBe(0);
+      expect(submitCount.invalid).toBe(1);
     }
 
     await act(async () => {
@@ -1038,6 +1048,8 @@ describe("formts hooks API", () => {
     });
 
     {
+      const { submitCount } = formHandleHook.current;
+
       expect(impl(validator).validate).toHaveBeenCalledTimes(2);
       expect(onSuccess).toHaveBeenCalledTimes(1);
       expect(onSuccess).toHaveBeenCalledWith({
@@ -1051,6 +1063,9 @@ describe("formts hooks API", () => {
         theObjectArray: { arr: [] },
       });
       expect(onFailure).toHaveBeenCalledTimes(1);
+      expect(submitCount.total).toBe(2);
+      expect(submitCount.valid).toBe(1);
+      expect(submitCount.invalid).toBe(1);
     }
   });
 
