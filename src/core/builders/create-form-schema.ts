@@ -3,6 +3,7 @@ import { Lens } from "../../utils/lenses";
 import * as Decoders from "../decoders";
 import { FieldDecoder, _FieldDecoderImpl } from "../types/field-decoder";
 import { _FieldDescriptorImpl } from "../types/field-descriptor";
+import { _FieldTemplateImpl } from "../types/field-template";
 import { FormSchema } from "../types/form-schema";
 import { impl } from "../types/type-mapper-util";
 
@@ -118,7 +119,13 @@ const createFieldDescriptor = (
         },
       });
 
-      return Object.assign(rootDescriptor, { nth });
+      const every = () =>
+        createFieldTemplate(
+          decoder.inner as _FieldDecoderImpl<any>,
+          `${path}[*]`
+        );
+
+      return Object.assign(rootDescriptor, { nth, every });
     }
 
     case "object": {
@@ -134,4 +141,81 @@ const createFieldDescriptor = (
     default:
       return assertNever(decoder.fieldType);
   }
+};
+
+const createFieldTemplate = (
+  decoder: _FieldDecoderImpl<any>,
+  path: string
+): _FieldTemplateImpl<any> => {
+  // these properties are hidden implementation details and thus should not be enumerable
+  const rootDescriptor = defineProperties(
+    {},
+    {
+      __path: {
+        value: path,
+        enumerable: false,
+        writable: false,
+        configurable: false,
+      },
+    }
+  );
+
+  switch (decoder.fieldType) {
+    case "bool":
+    case "number":
+    case "string":
+    case "date":
+    case "choice":
+      return rootDescriptor;
+
+    case "array": {
+      const nthHandler = (i: number) =>
+        createFieldTemplate(
+          decoder.inner as _FieldDecoderImpl<any>,
+          `${path}[${i}]`
+        );
+
+      const nth = defineProperties(nthHandler, {
+        __rootPath: {
+          value: path,
+          enumerable: false,
+          writable: false,
+          configurable: false,
+        },
+      });
+
+      const every = () =>
+        createFieldTemplate(
+          decoder.inner as _FieldDecoderImpl<any>,
+          `${path}[*]`
+        );
+
+      return Object.assign(rootDescriptor, { nth, every });
+    }
+
+    case "object": {
+      const props = createObjectTemplateSchema(
+        decoder.inner as DecodersMap<unknown>,
+        path
+      );
+      return Object.assign(rootDescriptor, props);
+    }
+
+    default:
+      return assertNever(decoder.fieldType);
+  }
+};
+
+const createObjectTemplateSchema = <O extends object>(
+  decodersMap: DecodersMap<O>,
+  path: string
+) => {
+  return keys(decodersMap).reduce((schema, key) => {
+    const decoder = decodersMap[key];
+    (schema as any)[key] = createFieldTemplate(
+      impl(decoder) as _FieldDecoderImpl<any>,
+      `${path}.${key}`
+    );
+    return schema;
+  }, {} as { [x in keyof O]: _FieldTemplateImpl<O[x]> });
 };

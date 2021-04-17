@@ -9,6 +9,7 @@ import { resolveTouched } from "../../helpers";
 import { FormController } from "../../types/form-controller";
 import { FormHandle } from "../../types/form-handle";
 import { FormSchema } from "../../types/form-schema";
+import { impl } from "../../types/type-mapper-util";
 
 /**
  * Hook used to gain access to form-wide methods and properties computed from all fields.
@@ -108,6 +109,6 @@ export const useFormHandle = <Values extends object, Err>(
       methods.setFieldValue(field, value).runPromise(),
 
     setFieldError: (field, error) =>
-      methods.setFieldErrors({ field, error }).runPromise(),
+      methods.setFieldErrors({ path: impl(field).__path, error }).runPromise(),
   };
 };

@@ -1,11 +1,8 @@
 import { Falsy, NoInfer, Nominal } from "../../utils";
 import { Task } from "../../utils/task";
 
-import {
-  ArrayFieldDescriptor,
-  FieldDescriptor,
-  GenericFieldDescriptor,
-} from "./field-descriptor";
+import { FieldDescriptor, GenericFieldDescriptor } from "./field-descriptor";
+import { GenericFieldTemplate } from "./field-template";
 
 /**
  * Function responsible for validating single field.
@@ -27,7 +24,7 @@ export namespace Validator {
 export type ValidationTrigger = "change" | "blur" | "submit";
 
 export type ValidationResult<Err> = Array<{
-  field: FieldDescriptor<unknown, Err>;
+  path: FieldPath;
   error: Err | null;
 }>;
 
@@ -35,8 +32,8 @@ export type ValidateIn<Err> = {
   fields: Array<FieldDescriptor<unknown, Err>>;
   trigger?: ValidationTrigger;
   getValue: GetValue<Err>;
-  onFieldValidationStart?: (field: FieldDescriptor<unknown, Err>) => void;
-  onFieldValidationEnd?: (field: FieldDescriptor<unknown, Err>) => void;
+  onFieldValidationStart?: (fieldPath: FieldPath) => void;
+  onFieldValidationEnd?: (fieldPath: FieldPath) => void;
 };
 
 export type GetValue<Err> = {
@@ -54,11 +51,12 @@ export type _FormValidatorImpl<Values extends object, Err> = {
 
 export type FieldValidator<T, Err, Dependencies extends any[]> = {
   id: string;
-  field: ValidateField<T, Err>;
+  path: FieldPath;
   triggers?: Array<ValidationTrigger>;
   validators: (...deps: [...Dependencies]) => Array<Falsy | Validator<T, Err>>;
   dependencies?: readonly [...FieldDescTuple<Dependencies, Err>];
   debounce?: number;
+  regex?: RegExp;
 };
 
 export type ValidateFn = {
@@ -156,12 +154,10 @@ export type ValidateConfig<T, Err, Dependencies extends any[]> = {
 
 export type ValidateField<T, Err> =
   | GenericFieldDescriptor<T, Err>
-  | ArrayFieldDescriptor<T[], Err>["nth"];
+  | GenericFieldTemplate<T, Err>;
 
 export type FieldDescTuple<ValuesTuple extends readonly any[], Err> = {
   [Index in keyof ValuesTuple]: GenericFieldDescriptor<ValuesTuple[Index], Err>;
 };
 
-export const isNth = <T, Err>(
-  x: ValidateField<T, Err>
-): x is ArrayFieldDescriptor<T[], Err>["nth"] => typeof x === "function";
+export type FieldPath = string;
