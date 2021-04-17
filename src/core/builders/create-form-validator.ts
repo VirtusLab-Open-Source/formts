@@ -35,17 +35,25 @@ import { impl, opaque } from "../types/type-mapper-util";
  * @example
  * ```
  * const validator = createFormValidator(Schema, validate => [
- *   validate(Schema.password, required(), minLength(6)),
+ *   validate(
+ *     Schema.password,
+ *     required("password is required!"),
+ *     minLength(6, "password must be at least 6 characters long!")
+ *   ),
  *   validate({
  *     field: Schema.passwordConfirm,
  *     dependencies: [Schema.password],
  *     triggers: ["blur", "submit"],
  *     rules: (password) => [
- *       required(),
- *       val => val === password ? null : { code: "passwordMismatch" },
+ *       required("password confirmation is required!"),
+ *       val => val === password ? null : "passwords are different",
  *     ]
  *   }),
- *   validate(Schema.promoCodes.nth, optional(), exactLength(6))
+ *   validate(
+ *     Schema.promoCodes.nth,
+ *     optional(),
+ *     exactLength(6, "promo code must be 6 characters long")
+ *   )
  * ])
  * ```
  */

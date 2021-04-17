@@ -142,7 +142,7 @@ export type ValidateConfig<T, Err, Dependencies extends any[]> = {
         validate({
           field: Schema.parentsConsent,
           dependencies: [Schema.age]
-          rules: (age) => [age < 18 && required()],
+          rules: (age) => [age < 18 && required("Field us required!")],
         }),
       ]);
    * ```
