@@ -45,7 +45,7 @@ import { impl, opaque } from "../types/type-mapper-util";
  *       val => val === password ? null : { code: "passwordMismatch" },
  *     ]
  *   }),
- *   validate(Schema.promoCodes.nth, optional(), exactLength(6))
+ *   validate(Schema.promoCodes.every(), optional(), exactLength(6))
  * ])
  * ```
  */
