@@ -23,6 +23,8 @@ export const getInitialState = <Values extends object, Err>({
     errors: Atom.of({}),
     validating: Atom.of({}),
     isSubmitting: Atom.of<boolean>(false),
+    successfulSubmitCount: Atom.of(0),
+    failedSubmitCount: Atom.of(0),
   };
 };
 
@@ -39,6 +41,8 @@ export const createStateDispatch = <Values extends object, Err>(
       state.errors.set({});
       state.validating.set({});
       state.isSubmitting.set(false);
+      state.successfulSubmitCount.set(0);
+      state.failedSubmitCount.set(0);
       break;
     }
 
@@ -151,9 +155,19 @@ export const createStateDispatch = <Values extends object, Err>(
       break;
     }
 
-    case "setIsSubmitting": {
-      const { isSubmitting } = action.payload;
-      return state.isSubmitting.set(isSubmitting);
+    case "submitStart": {
+      state.isSubmitting.set(true);
+      break;
+    }
+    case "submitSuccess": {
+      state.isSubmitting.set(false);
+      state.successfulSubmitCount.set(state.successfulSubmitCount.val + 1);
+      break;
+    }
+    case "submitFailure": {
+      state.isSubmitting.set(false);
+      state.failedSubmitCount.set(state.failedSubmitCount.val + 1);
+      break;
     }
   }
 };

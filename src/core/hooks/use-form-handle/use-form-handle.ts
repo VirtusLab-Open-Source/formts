@@ -41,16 +41,32 @@ export const useFormHandle = <Values extends object, Err>(
   const stateAtom = useMemo(
     () =>
       Atom.fuse(
-        (isTouched, isValid, isValidating, isSubmitting) => ({
+        (
           isTouched,
           isValid,
           isValidating,
           isSubmitting,
+          successfulSubmitCount,
+          failedSubmitCount
+        ) => ({
+          isTouched,
+          isValid,
+          isValidating,
+          isSubmitting,
+          successfulSubmitCount,
+          failedSubmitCount,
         }),
-        Atom.fuse(resolveTouched, state.touched),
+        Atom.fuse(
+          (sc, fc, touched) => sc > 0 || fc > 0 || resolveTouched(touched),
+          state.successfulSubmitCount,
+          state.failedSubmitCount,
+          state.touched
+        ),
         Atom.fuse(x => values(x).every(err => err == null), state.errors),
         Atom.fuse(x => keys(x).length > 0, state.validating),
-        state.isSubmitting
+        state.isSubmitting,
+        state.successfulSubmitCount,
+        state.failedSubmitCount
       ),
     [state]
   );
@@ -65,6 +81,16 @@ export const useFormHandle = <Values extends object, Err>(
     isValid: stateAtom.val.isValid,
 
     isValidating: stateAtom.val.isValidating,
+
+    get submitCount() {
+      const { successfulSubmitCount, failedSubmitCount } = stateAtom.val;
+
+      return {
+        valid: successfulSubmitCount,
+        invalid: failedSubmitCount,
+        total: successfulSubmitCount + failedSubmitCount,
+      };
+    },
 
     reset: () => methods.resetForm().runPromise(),
 

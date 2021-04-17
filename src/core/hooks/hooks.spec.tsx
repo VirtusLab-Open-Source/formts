@@ -1056,4 +1056,45 @@ describe("formts hooks API", () => {
       expect(onFailure).toHaveBeenCalledTimes(1);
     }
   });
+
+  it("creates submit handler which marks all fields as touched", async () => {
+    const { result: controllerHook } = renderHook(() =>
+      useFormController({ Schema })
+    );
+    const { result: formHandleHook } = renderHook(() =>
+      useFormHandle(Schema, controllerHook.current)
+    );
+
+    const { result: theNumFieldHook } = renderHook(() =>
+      useField(Schema.theNum, controllerHook.current)
+    );
+    const { result: theObjectFooFieldHook } = renderHook(() =>
+      useField(Schema.theObject.foo, controllerHook.current)
+    );
+    const { result: theArrayItemFieldHook } = renderHook(() =>
+      useField(Schema.theArray.nth(0), controllerHook.current)
+    );
+
+    const onSuccess = jest.fn();
+    const onFailure = jest.fn();
+
+    {
+      expect(formHandleHook.current.isTouched).toBeFalsy();
+      expect(theNumFieldHook.current.isTouched).toBeFalsy();
+      expect(theObjectFooFieldHook.current.isTouched).toBeFalsy();
+      expect(theArrayItemFieldHook.current.isTouched).toBeFalsy();
+    }
+
+    await act(async () => {
+      const { submit } = formHandleHook.current;
+      await submit(onSuccess, onFailure);
+    });
+
+    {
+      expect(formHandleHook.current.isTouched).toBeTruthy();
+      expect(theNumFieldHook.current.isTouched).toBeTruthy();
+      expect(theObjectFooFieldHook.current.isTouched).toBeTruthy();
+      expect(theArrayItemFieldHook.current.isTouched).toBeTruthy();
+    }
+  });
 });
