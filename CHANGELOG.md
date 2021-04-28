@@ -1,8 +1,13 @@
 # Changelog
 
-All notable changes to this project will be documented in this file. See
-[standard-version](https://github.com/conventional-changelog/standard-version)
-for commit guidelines.
+All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
+
+### [0.2.5](https://github.com/VirtusLab/formts/compare/v0.2.4...v0.2.5) (2021-04-28)
+
+
+### Features
+
+* submit count; set touched to true on submit ([#91](https://github.com/VirtusLab/formts/issues/91)) ([60eaf29](https://github.com/VirtusLab/formts/commit/60eaf29d35cbd48e73618b8e7b0dfc01fbb67006))
 
 ### [0.2.4](https://github.com/VirtusLab/formts/compare/v0.2.3...v0.2.4) (2021-04-14)
 
