@@ -10,7 +10,7 @@ describe("validateFn", () => {
   const fd1: GenericFieldDescriptor<string, Err> = {} as any;
   const fd2: GenericFieldDescriptor<number, Err> = {} as any;
   const fd3: GenericFieldDescriptor<"a" | "b" | "c", Err> = {} as any;
-  const fd4: GenericFieldDescriptor<Date[], Err> = { every: () => { } } as any;
+  const fd4: GenericFieldDescriptor<Date[], Err> = { every: () => {} } as any;
   const fd5: GenericFieldDescriptor<
     { parent: { child: string[] } },
     Err

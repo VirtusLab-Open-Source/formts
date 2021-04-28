@@ -13,7 +13,9 @@ export type FormtsAction<Values, Err> =
   | { type: "setErrors"; payload: Array<{ path: string; error: Err | null }> }
   | { type: "validatingStart"; payload: { path: string; uuid: string } }
   | { type: "validatingStop"; payload: { path: string; uuid: string } }
-  | { type: "setIsSubmitting"; payload: { isSubmitting: boolean } };
+  | { type: "submitStart" }
+  | { type: "submitSuccess" }
+  | { type: "submitFailure" };
 
 export type FormtsAtomState<Values extends object, Err> = {
   values: Atom<Values>;
@@ -21,6 +23,8 @@ export type FormtsAtomState<Values extends object, Err> = {
   errors: Atom<FieldErrors<Err>>;
   validating: Atom<FieldValidatingState>;
   isSubmitting: Atom<boolean>;
+  successfulSubmitCount: Atom<number>;
+  failedSubmitCount: Atom<number>;
 };
 
 export type TouchedValues<V> = [V] extends [Array<infer U>]
