@@ -1,8 +1,13 @@
 # Changelog
 
-All notable changes to this project will be documented in this file. See
-[standard-version](https://github.com/conventional-changelog/standard-version)
-for commit guidelines.
+All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
+
+### [0.2.7](https://github.com/VirtusLab/formts/compare/v0.2.6...v0.2.7) (2021-04-30)
+
+
+### Features
+
+* **validators:** remove default errors ([#92](https://github.com/VirtusLab/formts/issues/92)) ([eeb9b18](https://github.com/VirtusLab/formts/commit/eeb9b188d5194f52c46aed8405022c62d69f4e0d))
 
 ### [0.2.6](https://github.com/VirtusLab/formts/compare/v0.2.5...v0.2.6) (2021-04-28)
 
