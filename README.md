@@ -150,8 +150,7 @@ a) Step-by-step introduction:
 1. [basic form (naive)](https://codesandbox.io/s/intro-01-basic-form-naive-vplnc?file=/src/example.tsx)
 2. [basic form + optimized re-renders](https://codesandbox.io/s/intro-02-basic-form-optimised-re-renders-r6mrc?file=/src/example.tsx)
 3. [basic form + validation](https://codesandbox.io/s/intro-03-basic-form-validation-nhsg7?file=/src/example.tsx:770-795)
-4. [basic form + improved validation](https://codesandbox.io/s/intro-04-basic-form-advanced-validation-xxybu?file=/src/example.tsx)
-5. [basic form + Material-UI](https://codesandbox.io/s/intro-05-basic-form-material-ui-e0kkl?file=/src/example.tsx)
+4. [basic form + Material-UI](https://codesandbox.io/s/intro-04-basic-form-material-ui-e0kkl?file=/src/example.tsx)
 
 b) HTML input bindings:
 
