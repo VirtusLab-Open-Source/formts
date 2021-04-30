@@ -1,5 +1,4 @@
 import { keys, toIdentityDict } from "../../../utils";
-import { Atom } from "../../../utils/atoms";
 import { Task } from "../../../utils/task";
 import { useSubscription } from "../../../utils/use-subscription";
 import { useFormtsContext } from "../../context";
@@ -14,9 +13,12 @@ import {
 import { FieldHandle, toFieldHandle } from "../../types/field-handle";
 import { FormController } from "../../types/form-controller";
 import { InternalFormtsMethods } from "../../types/formts-context";
-import { FormtsAtomState, TouchedValues } from "../../types/formts-state";
+import { FormtsAtomState } from "../../types/formts-state";
 import { impl } from "../../types/type-mapper-util";
-import { FieldStateAtomCache } from "../use-form-controller/atom-cache";
+import {
+  FieldStateAtom,
+  FieldStateAtomCache,
+} from "../use-form-controller/atom-cache";
 
 /**
  * Hook used to gain access to field-specific state and methods
@@ -66,15 +68,10 @@ export const useField = <T, Err>(
   );
 };
 
-type FieldState<T> = Atom.Readonly<{
-  value: T;
-  touched: TouchedValues<T>;
-}>;
-
 const createFieldHandle = <T, Err>(
   descriptor: FieldDescriptor<T, Err>,
   methods: InternalFormtsMethods<object, Err>,
-  fieldState: FieldState<T>,
+  fieldState: FieldStateAtom<T>,
   formState: FormtsAtomState<object, Err>,
   fieldStateCache: FieldStateAtomCache<object, Err>
 ): FieldHandle<T, Err> =>
@@ -86,7 +83,10 @@ const createFieldHandle = <T, Err>(
     value: fieldState.val.value,
 
     get isTouched() {
-      return Helpers.resolveTouched(fieldState.val.touched);
+      return (
+        fieldState.val.formSubmitted ||
+        Helpers.resolveTouched(fieldState.val.touched)
+      );
     },
 
     get error() {
@@ -160,7 +160,9 @@ const createFieldHandle = <T, Err>(
       methods.setFieldValueFromEvent(descriptor, event).runPromise(),
 
     setError: error =>
-      methods.setFieldErrors({ path: impl(descriptor).__path, error }).runPromise(),
+      methods
+        .setFieldErrors({ path: impl(descriptor).__path, error })
+        .runPromise(),
 
     addItem: item => {
       if (isArrayDescriptor(descriptor)) {

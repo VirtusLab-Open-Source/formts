@@ -9,6 +9,7 @@ type FieldPath = string;
 export type FieldStateAtom<T> = Atom.Readonly<{
   value: T;
   touched: TouchedValues<T>;
+  formSubmitted: boolean;
 }>;
 
 export class FieldStateAtomCache<Values extends object, Err> {
@@ -42,14 +43,19 @@ export class FieldStateAtomCache<Values extends object, Err> {
     const lens = impl(field).__lens;
 
     return Atom.fuse(
-      (value, touched) => {
-        return {
-          value,
-          touched: touched as any,
-        };
-      },
+      (value, touched, formSubmitted) => ({
+        value,
+        touched: touched as any,
+        formSubmitted,
+      }),
+
       Atom.entangle(this.formtsState.values, lens),
-      Atom.entangle(this.formtsState.touched, lens)
+      Atom.entangle(this.formtsState.touched, lens),
+      Atom.fuse(
+        (sc, fc) => sc + fc > 0,
+        this.formtsState.successfulSubmitCount,
+        this.formtsState.failedSubmitCount
+      )
     );
   }
 }

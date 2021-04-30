@@ -142,7 +142,7 @@ export const createFormtsMethods = <Values extends object, Err>({
     Task.from(() =>
       dispatch({
         type: "setErrors",
-        payload: fields
+        payload: fields,
       })
     );
 
@@ -163,31 +163,24 @@ export const createFormtsMethods = <Values extends object, Err>({
     onSuccess: (values: Values) => Task<void>,
     onFailure: (errors: Array<FieldError<Err>>) => Task<void>
   ): Task<void> => {
-    dispatch({ type: "setIsSubmitting", payload: { isSubmitting: true } });
-
-    const cleanup = () => {
-      dispatch({
-        type: "setIsSubmitting",
-        payload: { isSubmitting: false },
-      });
-    };
+    dispatch({ type: "submitStart" });
 
     return validateForm("submit")
-      .map(errors =>
-        errors.filter(({ error }) => error != null) as FieldError<Err>[]
+      .map(
+        errors =>
+          errors.filter(({ error }) => error != null) as FieldError<Err>[]
       )
       .flatMap(errors => {
         if (errors.length > 0) {
+          dispatch({ type: "submitFailure" });
           return onFailure(errors);
         } else {
+          dispatch({ type: "submitSuccess" });
           return onSuccess(state.values.val);
         }
       })
-      .map(() => {
-        cleanup();
-      })
       .mapErr(err => {
-        cleanup();
+        dispatch({ type: "submitFailure" });
         return err;
       });
   };

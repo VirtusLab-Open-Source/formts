@@ -23,6 +23,15 @@ export type FormHandle<Values extends object, Err> = {
   /** True if form submission process is ongoing (due to validation on submit or unfulfilled Promise returned from submit handler) */
   isSubmitting: boolean;
 
+  submitCount: {
+    /** will be incremented after every call of `submit` function, sum of `valid` and `invalid` counts. */
+    total: number;
+    /** will be incremented after every call of `submit` function when validation passes */
+    valid: number;
+    /** will be incremented after every failed call of `submit` function when validation fails */
+    invalid: number;
+  };
+
   /**
    * Resets the form cleaning all validation errors and touched flags.
    * Form values will be set to initial values.
@@ -39,6 +48,7 @@ export type FormHandle<Values extends object, Err> = {
    * Runs form validation with 'submit' trigger and invokes `onSuccess` or `onFailure` callback.
    * Sets `isSubmitting` flag to true when validation or `onSuccess` callback promise are running.
    * Freezes changes to form values during submission process.
+   * Sets `isTouched` flag of all fields to true.
    *
    * @param onSuccess - callback invoked after successful submit validation.
    * Receives form values. Can return Promise which will affect `isSubmitting` flag.

@@ -50,7 +50,7 @@ import { impl, opaque } from "../types/type-mapper-util";
  *     ]
  *   }),
  *   validate(
- *     Schema.promoCodes.nth,
+ *     Schema.promoCodes.every(),
  *     optional(),
  *     exactLength(6, "promo code must be 6 characters long")
  *   )

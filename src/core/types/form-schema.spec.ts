@@ -89,8 +89,8 @@ describe("FormSchema type", () => {
       nth: (
         index: number
       ) => FieldDescriptor<string[], SomeErr> & {
-          nth: (index: number) => FieldDescriptor<string, SomeErr>;
-          every: () => FieldTemplate<string, SomeErr>;
+        nth: (index: number) => FieldDescriptor<string, SomeErr>;
+        every: () => FieldTemplate<string, SomeErr>;
       };
       every: () => ArrayFieldTemplate<string[], SomeErr>;
     };
@@ -152,7 +152,7 @@ describe("FormSchema type", () => {
       };
       every: () => FieldTemplate<{ string: string }, SomeErr> & {
         string: FieldTemplate<string, SomeErr>;
-      }
+      };
     };
 
     assert<IsExact<Actual, Expected>>(true);

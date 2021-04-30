@@ -1,13 +1,26 @@
 # Changelog
 
-All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
+All notable changes to this project will be documented in this file. See
+[standard-version](https://github.com/conventional-changelog/standard-version)
+for commit guidelines.
 
-### [0.2.4](https://github.com/VirtusLab/formts/compare/v0.2.3...v0.2.4) (2021-04-14)
+### [0.2.6](https://github.com/VirtusLab/formts/compare/v0.2.5...v0.2.6) (2021-04-28)
 
+### [0.2.5](https://github.com/VirtusLab/formts/compare/v0.2.4...v0.2.5) (2021-04-28)
 
 ### Features
 
-* every() template validation ([#86](https://github.com/VirtusLab/formts/issues/86)) ([59727fa](https://github.com/VirtusLab/formts/commit/59727fafc52220e4f70cc3d6f45b96601087b309))
+- submit count; set touched to true on submit
+  ([#91](https://github.com/VirtusLab/formts/issues/91))
+  ([60eaf29](https://github.com/VirtusLab/formts/commit/60eaf29d35cbd48e73618b8e7b0dfc01fbb67006))
+
+### [0.2.4](https://github.com/VirtusLab/formts/compare/v0.2.3...v0.2.4) (2021-04-14)
+
+### Features
+
+- every() template validation
+  ([#86](https://github.com/VirtusLab/formts/issues/86))
+  ([59727fa](https://github.com/VirtusLab/formts/commit/59727fafc52220e4f70cc3d6f45b96601087b309))
 
 ### [0.2.3](https://github.com/VirtusLab/formts/compare/v0.2.2...v0.2.3) (2021-04-04)
 
@@ -15,19 +28,21 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### [0.2.1](https://github.com/VirtusLab/formts/compare/v0.2.0...v0.2.1) (2021-03-21)
 
-
 ### Bug Fixes
 
-* **validators:** generic function signatures ([#85](https://github.com/VirtusLab/formts/issues/85)) ([5cb4b6b](https://github.com/VirtusLab/formts/commit/5cb4b6b13d93c9e56e6e5b6d1ac9f4c56f801ac9))
+- **validators:** generic function signatures
+  ([#85](https://github.com/VirtusLab/formts/issues/85))
+  ([5cb4b6b](https://github.com/VirtusLab/formts/commit/5cb4b6b13d93c9e56e6e5b6d1ac9f4c56f801ac9))
 
 ### [0.1.26](https://github.com/VirtusLab/formts/compare/v0.1.25...v0.1.26) (2021-03-19)
 
 ### [0.1.25](https://github.com/VirtusLab/formts/compare/v0.1.24...v0.1.25) (2021-03-19)
 
-
 ### Bug Fixes
 
-* **core:** child validation triggers parent validation ([#84](https://github.com/VirtusLab/formts/issues/84)) ([8eaab1f](https://github.com/VirtusLab/formts/commit/8eaab1ffdde52ba38bfe8d3adb311cec1365122d))
+- **core:** child validation triggers parent validation
+  ([#84](https://github.com/VirtusLab/formts/issues/84))
+  ([8eaab1f](https://github.com/VirtusLab/formts/commit/8eaab1ffdde52ba38bfe8d3adb311cec1365122d))
 
 ### [0.1.24](https://github.com/VirtusLab/formts/compare/v0.1.23...v0.1.24) (2021-03-17)
 
