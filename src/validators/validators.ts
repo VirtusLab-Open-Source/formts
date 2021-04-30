@@ -4,21 +4,7 @@ import { Validator } from "../core";
 import { Task } from "../utils/task";
 import { Primitive, WidenType } from "../utils/utility-types";
 
-import { Errors } from "./base-errors";
-
 // utils
-
-/**
- * Creates new validator that is a wrapper around provided validator
- * but returning different errors
- *
- * @param validator used to construct new validator
- * @param error errors returned by the new validator
- */
-export const withError = <T, Err1, Err2>(
-  validator: Validator.Sync<T, Err1>,
-  error: Err2
-): Validator.Sync<T, Err2> => val => (validator(val) == null ? null : error);
 
 type Combine = {
   <T, E, E1>(
@@ -134,10 +120,10 @@ type Combine = {
  * ```ts
     const validPass = combine(
       [
-        required(),
-        minLength(8),
-        hasLowerCaseChar()
-        hasUpperCaseChar(),
+        required("Field is required!"),
+        minLength(8, "Field must be at lest 8 characters long!"),
+        hasLowerCaseChar("Field must contain at least one lowercase character")
+        hasUpperCaseChar("Field must contain at least one uppercase character"),
       ],
       ([required, minLength, lowerChar, upperChar]) => ({
         code: "validPass" as const,
@@ -165,9 +151,9 @@ export const combine: Combine = <T, E>(
 // general
 
 /** Checks if field value is present */
-export const required = <T>(): Validator.Sync<T, Errors.Required> => val =>
+export const required = <T, E>(error: E): Validator.Sync<T, E> => val =>
   val == null || (val as unknown) === "" || (val as unknown) === false
-    ? { code: "required" }
+    ? error
     : null;
 
 /**
@@ -175,7 +161,7 @@ export const required = <T>(): Validator.Sync<T, Errors.Required> => val =>
  * This means that other validators do not have to handle empty value as edge case.
  */
 export const optional = <T>() => (val: T): null => {
-  const notPresent = required()(val) != null;
+  const notPresent = required("err")(val) != null;
 
   if (notPresent) {
     throw true; // special way of breaking validation chain early
@@ -184,101 +170,101 @@ export const optional = <T>() => (val: T): null => {
 };
 
 /** checks if value is one of provided values */
-export const oneOf = <V extends Primitive>(
-  ...allowedValues: V[]
-): Validator.Sync<WidenType<V>, Errors.OneOf> => val =>
-  allowedValues.includes(val as V) ? null : { code: "oneOf", allowedValues };
+export const oneOf = <V extends Primitive, E>(
+  allowedValues: V[],
+  error: E
+): Validator.Sync<WidenType<V>, E> => val =>
+  allowedValues.includes(val as V) ? null : error;
 
 // numbers
 
 /** checks if value is integer number */
-export const integer = <T extends Numberlike>(): Validator.Sync<
-  T,
-  Errors.Integer
-> => num => (Number.isInteger(num) ? null : { code: "integer" });
+export const integer = <T extends Numberlike, E>(
+  error: E
+): Validator.Sync<T, E> => num => (Number.isInteger(num) ? null : error);
 
 /** checks number value against provided minimum */
-export const minValue = <T extends Numberlike>(
-  min: number
-): Validator.Sync<T, Errors.MinValue> => num =>
-  num === "" || num < min ? { code: "minValue", min } : null;
+export const minValue = <T extends Numberlike, E>(
+  min: number,
+  error: E
+): Validator.Sync<T, E> => num => (num === "" || num < min ? error : null);
 
 /** checks number value against provided maximum */
-export const maxValue = <T extends Numberlike>(
-  max: number
-): Validator.Sync<T, Errors.MaxValue> => num =>
-  num === "" || num > max ? { code: "maxValue", max } : null;
+export const maxValue = <T extends Numberlike, E>(
+  max: number,
+  error: E
+): Validator.Sync<T, E> => num => (num === "" || num > max ? error : null);
 
 /** checks if value is a number greater than provided value */
-export const greaterThan = <T extends Numberlike>(
-  threshold: number
-): Validator.Sync<T, Errors.GreaterThan> => num =>
-  num === "" || num <= threshold ? { code: "greaterThan", threshold } : null;
+export const greaterThan = <T extends Numberlike, E>(
+  threshold: number,
+  error: E
+): Validator.Sync<T, E> => num =>
+  num === "" || num <= threshold ? error : null;
 
 /** checks if value is a number smaller than provided value */
-export const lesserThan = <T extends Numberlike>(
-  threshold: number
-): Validator.Sync<T, Errors.LesserThan> => num =>
-  num === "" || num >= threshold ? { code: "lesserThan", threshold } : null;
+export const lesserThan = <T extends Numberlike, E>(
+  threshold: number,
+  error: E
+): Validator.Sync<T, E> => num =>
+  num === "" || num >= threshold ? error : null;
 
 // strings
 
 /** checks pattern exists in string value using `RegExp.test` function */
-export const pattern = <T extends string>(
-  regex: RegExp
-): Validator.Sync<T, Errors.Pattern> => string =>
-  regex.test(string) ? null : { code: "pattern", regex };
+export const pattern = <T extends string, E>(
+  regex: RegExp,
+  error: E
+): Validator.Sync<T, E> => string => (regex.test(string) ? null : error);
 
 /** checks if string value contains an uppercase character */
-export const hasUpperCaseChar = <T extends string>(): Validator.Sync<
-  T,
-  Errors.HasUpperCaseChar
-> => (val: string) =>
-  /[A-Z]/.test(val) ? null : { code: "hasUpperCaseChar" as const };
+export const hasUpperCaseChar = <T extends string, E>(
+  error: E
+): Validator.Sync<T, E> => (val: string) => (/[A-Z]/.test(val) ? null : error);
 
 /** checks if string value contains an lowercase character */
-export const hasLowerCaseChar = <T extends string>(): Validator.Sync<
-  T,
-  Errors.HasLowerCaseChar
-> => (val: string) =>
-  /[a-z]/.test(val) ? null : { code: "hasLowerCaseChar" as const };
+export const hasLowerCaseChar = <T extends string, E>(
+  error: E
+): Validator.Sync<T, E> => (val: string) => (/[a-z]/.test(val) ? null : error);
 
 // strings or arrays
 
 /** checks length of string or array value against provided minimum */
-export const minLength = <T extends Lenghtable>(
-  min: number
-): Validator.Sync<T, Errors.MinLength> => val =>
-  val.length < min ? { code: "minLength", min } : null;
+export const minLength = <T extends Lenghtable, E>(
+  min: number,
+  error: E
+): Validator.Sync<T, E> => val => (val.length < min ? error : null);
 
 /** checks length of string or array value against provided maximum */
-export const maxLength = <T extends Lenghtable>(
-  max: number
-): Validator.Sync<T, Errors.MaxLength> => val =>
-  val.length > max ? { code: "maxLength", max } : null;
+export const maxLength = <T extends Lenghtable, E>(
+  max: number,
+  error: E
+): Validator.Sync<T, E> => val => (val.length > max ? error : null);
 
 /** checks if length of string or array value is equal to expected */
-export const exactLength = <T extends Lenghtable>(
-  expected: number
-): Validator.Sync<T, Errors.ExactLength> => val =>
-  val.length !== expected ? { code: "exactLength", expected } : null;
+export const exactLength = <T extends Lenghtable, E>(
+  expected: number,
+  error: E
+): Validator.Sync<T, E> => val => (val.length !== expected ? error : null);
 
 // dates
 
 /** compares date value against provided minimum */
-export const minDate = (
-  min: Date
-): Validator.Sync<Date | null, Errors.MinDate> => date =>
+export const minDate = <E>(
+  min: Date,
+  error: E
+): Validator.Sync<Date | null, E> => date =>
   date == null || Number.isNaN(date.valueOf()) || date.valueOf() < min.valueOf()
-    ? { code: "minDate", min }
+    ? error
     : null;
 
 /** compares date value against provided maximum */
-export const maxDate = (
-  max: Date
-): Validator.Sync<Date | null, Errors.MaxDate> => date =>
+export const maxDate = <E>(
+  max: Date,
+  error: E
+): Validator.Sync<Date | null, E> => date =>
   date == null || Number.isNaN(date.valueOf()) || date.valueOf() > max.valueOf()
-    ? { code: "maxDate", max }
+    ? error
     : null;
 
 // prettier-ignore

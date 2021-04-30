@@ -1,22 +1,8 @@
-import { assert, IsExact } from "conditional-type-checks";
-
 import * as validators from "./validators";
 
 const str = JSON.stringify;
 
 describe("validators", () => {
-  describe("withError", () => {
-    it("creates new validator with changed error", () => {
-      const original = (val: number) => (val == 42 ? null : ("ERR_A" as const));
-
-      const modified = validators.withError(original, "ERR_B" as const);
-
-      assert<IsExact<ReturnType<typeof modified>, "ERR_B" | null>>(true);
-      expect(modified(10)).toBe("ERR_B");
-      expect(modified(42)).toBe(null);
-    });
-  });
-
   describe("combine", () => {
     it("creates validator which returns null when all inner validators return null", () => {
       const combined = validators.combine(
@@ -58,9 +44,10 @@ describe("validators", () => {
       { value: [], ok: true },
     ].forEach(({ value, ok }) =>
       it(`required()(${str(value)}) -> ${ok ? "OK" : "ERROR"}`, () => {
-        const validator = validators.required();
+        const error = "Field is required!";
+        const validator = validators.required(error);
 
-        expect(validator(value)).toEqual(ok ? null : { code: "required" });
+        expect(validator(value)).toEqual(ok ? null : error);
       })
     );
   });
@@ -116,11 +103,10 @@ describe("validators", () => {
       it(`oneOf(${str(allowed)})(${str(value)}) -> ${
         ok ? "OK" : "ERROR"
       }`, () => {
-        const validator = validators.oneOf(...allowed);
+        const error = `Value must be one of: [${allowed.join(", ")}]`;
+        const validator = validators.oneOf(allowed, error);
 
-        expect(validator(value)).toEqual(
-          ok ? null : { code: "oneOf", allowedValues: allowed }
-        );
+        expect(validator(value)).toEqual(ok ? null : error);
       })
     );
   });
@@ -135,9 +121,10 @@ describe("validators", () => {
       { value: NaN, ok: false },
     ].forEach(({ value, ok }) =>
       it(`integer()(${str(value)}) -> ${ok ? "OK" : "ERROR"}`, () => {
-        const validator = validators.integer();
+        const error = "Field must be an integer";
+        const validator = validators.integer(error);
 
-        expect(validator(value)).toEqual(ok ? null : { code: "integer" });
+        expect(validator(value)).toEqual(ok ? null : error);
       })
     );
   });
@@ -152,9 +139,10 @@ describe("validators", () => {
       it(`minValue(${str(min)})(${str(value)}) -> ${
         ok ? "OK" : "ERROR"
       }`, () => {
-        const validator = validators.minValue(min);
+        const error = `Field must be at least ${min}`;
+        const validator = validators.minValue(min, error);
 
-        expect(validator(value)).toEqual(ok ? null : { code: "minValue", min });
+        expect(validator(value)).toEqual(ok ? null : error);
       })
     );
   });
@@ -170,9 +158,10 @@ describe("validators", () => {
       it(`maxValue(${str(max)})(${str(value)}) -> ${
         ok ? "OK" : "ERROR"
       }`, () => {
-        const validator = validators.maxValue(max);
+        const error = `Field must be at most ${max}`;
+        const validator = validators.maxValue(max, error);
 
-        expect(validator(value)).toEqual(ok ? null : { code: "maxValue", max });
+        expect(validator(value)).toEqual(ok ? null : error);
       })
     );
   });
@@ -188,11 +177,10 @@ describe("validators", () => {
       it(`greaterThan(${str(threshold)})(${str(value)}) -> ${
         ok ? "OK" : "ERROR"
       }`, () => {
-        const validator = validators.greaterThan(threshold);
+        const error = `Field must be greater than ${threshold}`;
+        const validator = validators.greaterThan(threshold, error);
 
-        expect(validator(value)).toEqual(
-          ok ? null : { code: "greaterThan", threshold }
-        );
+        expect(validator(value)).toEqual(ok ? null : error);
       })
     );
   });
@@ -209,11 +197,10 @@ describe("validators", () => {
       it(`lesserThan(${str(threshold)})(${str(value)}) -> ${
         ok ? "OK" : "ERROR"
       }`, () => {
-        const validator = validators.lesserThan(threshold);
+        const error = `Field must be lesser than ${threshold}`;
+        const validator = validators.lesserThan(threshold, error);
 
-        expect(validator(value)).toEqual(
-          ok ? null : { code: "lesserThan", threshold }
-        );
+        expect(validator(value)).toEqual(ok ? null : error);
       })
     );
   });
@@ -229,11 +216,10 @@ describe("validators", () => {
       { value: "ffffoooobarrr", ok: true },
     ].forEach(({ value, ok }) =>
       it(`pattern(${regex})(${str(value)}) -> ${ok ? "OK" : "ERROR"}`, () => {
-        const validator = validators.pattern(regex);
+        const error = "Field must much required pattern";
+        const validator = validators.pattern(regex, error);
 
-        expect(validator(value)).toEqual(
-          ok ? null : { code: "pattern", regex }
-        );
+        expect(validator(value)).toEqual(ok ? null : error);
       })
     );
   });
@@ -247,11 +233,10 @@ describe("validators", () => {
       { value: "ABC", ok: true },
     ].forEach(({ value, ok }) =>
       it(`hasUpperCaseChar()(${str(value)}) -> ${ok ? "OK" : "ERROR"}`, () => {
-        const validator = validators.hasUpperCaseChar();
+        const error = "Field must contain at least one uppercase character";
+        const validator = validators.hasUpperCaseChar(error);
 
-        expect(validator(value)).toEqual(
-          ok ? null : { code: "hasUpperCaseChar" }
-        );
+        expect(validator(value)).toEqual(ok ? null : error);
       })
     );
   });
@@ -263,11 +248,10 @@ describe("validators", () => {
       { value: "Foo", ok: true },
     ].forEach(({ value, ok }) =>
       it(`hasLowerCaseChar()(${str(value)}) -> ${ok ? "OK" : "ERROR"}`, () => {
-        const validator = validators.hasLowerCaseChar();
+        const error = "Field must contain at least one lowercase character";
+        const validator = validators.hasLowerCaseChar(error);
 
-        expect(validator(value)).toEqual(
-          ok ? null : { code: "hasLowerCaseChar" }
-        );
+        expect(validator(value)).toEqual(ok ? null : error);
       })
     );
   });
@@ -284,11 +268,10 @@ describe("validators", () => {
       { min: 3, value: [1, 1, 1, 1, 1], ok: true },
     ].forEach(({ min, value, ok }) =>
       it(`minLength(${min})(${str(value)}) -> ${ok ? "OK" : "ERROR"}`, () => {
-        const validator = validators.minLength(min);
+        const error = `Minimum length is ${min}`;
+        const validator = validators.minLength(min, error);
 
-        expect(validator(value)).toEqual(
-          ok ? null : { code: "minLength", min }
-        );
+        expect(validator(value)).toEqual(ok ? null : error);
       })
     );
   });
@@ -309,11 +292,10 @@ describe("validators", () => {
       { max: 2, value: [1, 2, 3], ok: false },
     ].forEach(({ max, value, ok }) =>
       it(`maxLength(${max})(${str(value)}) -> ${ok ? "OK" : "ERROR"}`, () => {
-        const validator = validators.maxLength(max);
+        const error = `Maximum length is ${max}`;
+        const validator = validators.maxLength(max, error);
 
-        expect(validator(value)).toEqual(
-          ok ? null : { code: "maxLength", max }
-        );
+        expect(validator(value)).toEqual(ok ? null : error);
       })
     );
   });
@@ -336,11 +318,10 @@ describe("validators", () => {
       it(`exactLength(${expected})(${str(value)}) -> ${
         ok ? "OK" : "ERROR"
       }`, () => {
-        const validator = validators.exactLength(expected);
+        const error = `Required length is exactly ${expected}`;
+        const validator = validators.exactLength(expected, error);
 
-        expect(validator(value)).toEqual(
-          ok ? null : { code: "exactLength", expected }
-        );
+        expect(validator(value)).toEqual(ok ? null : error);
       })
     );
   });
@@ -360,9 +341,10 @@ describe("validators", () => {
       it(`minDate(${min.toDateString()})(${
         value?.toDateString() ?? "null"
       }) -> ${ok ? "OK" : "ERROR"}`, () => {
-        const validator = validators.minDate(min);
+        const error = `Date must be at least ${min.toLocaleDateString()}`;
+        const validator = validators.minDate(min, error);
 
-        expect(validator(value)).toEqual(ok ? null : { code: "minDate", min });
+        expect(validator(value)).toEqual(ok ? null : error);
       })
     );
   });
@@ -382,9 +364,10 @@ describe("validators", () => {
       it(`maxDate(${max.toDateString()})(${
         value?.toDateString() ?? "null"
       }) -> ${ok ? "OK" : "ERROR"}`, () => {
-        const validator = validators.maxDate(max);
+        const error = `Date must be at most ${max.toLocaleDateString()}`;
+        const validator = validators.maxDate(max, error);
 
-        expect(validator(value)).toEqual(ok ? null : { code: "maxDate", max });
+        expect(validator(value)).toEqual(ok ? null : error);
       })
     );
   });
