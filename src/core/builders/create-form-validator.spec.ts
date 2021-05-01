@@ -14,7 +14,7 @@ export const wait = <T extends string | null>(value: T): Promise<T> =>
   new Promise(resolve => setTimeout(() => resolve(value), 0));
 
 describe("createFormValidator types", () => {
-  const Schema = FormSchemaBuilder()
+  const Schema = new FormSchemaBuilder()
     .fields({
       string: FormFields.string(),
       choice: FormFields.choice("A", "B", "C"),
@@ -43,7 +43,7 @@ describe("createFormValidator types", () => {
 });
 
 describe("createFormValidator", () => {
-  const Schema = FormSchemaBuilder()
+  const Schema = new FormSchemaBuilder()
     .fields({
       string: FormFields.string(),
       number: FormFields.number(),
@@ -1341,7 +1341,7 @@ describe("createFormValidator", () => {
 });
 
 describe("debounced validation", () => {
-  const Schema = FormSchemaBuilder()
+  const Schema = new FormSchemaBuilder()
     .fields({
       string: FormFields.string(),
       number: FormFields.number(),

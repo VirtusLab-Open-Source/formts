@@ -23,7 +23,7 @@ import { createFormtsMethods } from "./formts-methods";
  *
  * @example
  * ```ts
- * const Schema = FormSchemaBuilder()...;
+ * const Schema = new FormSchemaBuilder()...;
  *
  * const MyForm: React.FC = () => {
  *   const controller = useFormController({ Schema })

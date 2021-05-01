@@ -48,7 +48,7 @@ npm install @virtuslab/formts
 ```ts
 import { FormSchemaBuilder, FormFields } from "@virtuslab/formts";
 
-const Schema = FormSchemaBuilder()
+const Schema = new FormSchemaBuilder()
   .fields({ answer: FormFields.string() })
   .errors<string>()
   .build();

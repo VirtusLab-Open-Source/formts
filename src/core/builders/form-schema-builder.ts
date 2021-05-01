@@ -9,9 +9,86 @@ type DecodersMap<O> = keyof O extends never
   ? never
   : { [K in keyof O]: FieldDecoder<O[K]> };
 
-interface SchemaBuilder$Complete<V extends object, Err> {
-  /** finalize construction of `FormSchema` */
-  build: () => FormSchema<V, Err>;
+/**
+ * Builds schema which defines shape of the form values and type of validation errors.
+ * The schema is used not only for compile-time type-safety but also for runtime validation of form values.
+ * The schema can be defined top-level, so that it can be exported to nested Form components for usage together with `useField` hook.
+ *
+ * @returns
+ * FormSchema - used to interact with Formts API and point to specific form fields
+ *
+ * @example
+ * ```
+ * import { FormSchemaBuilder, FormFields } from "@virtuslab/formts"
+ *
+ * const Schema = new FormSchemaBuilder()
+ *   .fields({
+ *     name: FormFields.string(),
+ *     age: FormFields.number(),
+ *   })
+ *   .errors<string>()
+ *   .build()
+ * ```
+ */
+export class FormSchemaBuilder {
+  private decoders: DecodersMap<any> = {} as any;
+
+  /**
+   * Builds schema which defines shape of the form values and type of validation errors.
+   * The schema is used not only for compile-time type-safety but also for runtime validation of form values.
+   * The schema can be defined top-level, so that it can be exported to nested Form components for usage together with `useField` hook.
+   *
+   * @returns
+   * FormSchema - used to interact with Formts API and point to specific form fields
+   *
+   * @example
+   * ```
+   * import { FormSchemaBuilder, FormFields } from "@virtuslab/formts"
+   *
+   * const Schema = new FormSchemaBuilder()
+   *   .fields({
+   *     name: FormFields.string(),
+   *     age: FormFields.number(),
+   *   })
+   *   .errors<string>()
+   *   .build()
+   * ```
+   */
+  constructor() {}
+
+  /**
+   * Define form fields as dictionary of decoders. Use `FormFields` import.
+   *
+   * @example
+   * ```
+   * new FormSchemaBuilder()
+   *   .fields({
+   *     name: FormFields.string(),
+   *     age: FormFields.number(),
+   *   })
+   * ```
+   */
+  fields = <V extends object>(fields: DecodersMap<V>) => {
+    this.decoders = fields;
+
+    return (this as any) as SchemaBuilder$Fields<V>;
+  };
+
+  /**
+   * Define form errors to be used by `FormValidatorBuilder`.
+   *
+   * @example
+   * ```
+   * new FormSchemaBuilder()
+   *   .errors<MyErrorCodesEnum>()
+   * ```
+   */
+  errors = <Err>() => {
+    return (this as any) as SchemaBuilder$Errors<Err>;
+  };
+
+  // @ts-ignore
+  private build = () => createObjectSchema(this.decoders, Lens.identity());
 }
 
 interface SchemaBuilder$Errors<Err> {
@@ -20,7 +97,7 @@ interface SchemaBuilder$Errors<Err> {
    *
    * @example
    * ```
-   * FormSchemaBuilder()
+   * new FormSchemaBuilder()
    *   .fields({
    *     name: FormFields.string(),
    *     age: FormFields.number(),
@@ -38,7 +115,7 @@ interface SchemaBuilder$Fields<V extends object> {
    *
    * @example
    * ```
-   * FormSchemaBuilder()
+   * new FormSchemaBuilder()
    *   .errors<MyErrorCodesEnum>()
    * ```
    */
@@ -48,70 +125,10 @@ interface SchemaBuilder$Fields<V extends object> {
   build: () => FormSchema<V, never>;
 }
 
-interface SchemaBuilder$Initial {
-  /**
-   * Define form fields as dictionary of decoders. Use `FormFields` import.
-   *
-   * @example
-   * ```
-   * FormSchemaBuilder()
-   *   .fields({
-   *     name: FormFields.string(),
-   *     age: FormFields.number(),
-   *   })
-   * ```
-   */
-  fields: <V extends object>(fields: DecodersMap<V>) => SchemaBuilder$Fields<V>;
-
-  /**
-   * Define form errors to be used by `FormValidatorBuilder`.
-   *
-   * @example
-   * ```
-   * FormSchemaBuilder()
-   *   .errors<MyErrorCodesEnum>()
-   * ```
-   */
-  errors: <Err>() => SchemaBuilder$Errors<Err>;
+interface SchemaBuilder$Complete<V extends object, Err> {
+  /** finalize construction of `FormSchema` */
+  build: () => FormSchema<V, Err>;
 }
-
-/**
- * Builds schema which defines shape of the form values and type of validation errors.
- * This is used not only for compile-time type-safety but also for runtime validation of form values.
- * The schema can be defined top-level, so that it can be exported to nested Form components for usage together with `useField` hook.
- *
- * @returns
- * FormSchema - used to interact with Formts API and point to specific form fields
- *
- * @example
- * ```
- * import { FormSchemaBuilder, FormFields } from "@virtuslab/formts"
- *
- * const Schema = FormSchemaBuilder()
- *   .fields({
- *     name: FormFields.string(),
- *     age: FormFields.number(),
- *   })
- *   .errors<string>()
- *   .build()
- * ```
- */
-export const FormSchemaBuilder = <V extends object>() => {
-  let _decoders: DecodersMap<V> = {} as any;
-
-  const _builder = {
-    fields: (f: DecodersMap<V>) => {
-      _decoders = f;
-      return _builder;
-    },
-
-    errors: () => _builder,
-
-    build: () => createObjectSchema(_decoders, Lens.identity()) as any,
-  };
-
-  return (_builder as any) as SchemaBuilder$Initial;
-};
 
 const createObjectSchema = <O extends object, Root>(
   decodersMap: DecodersMap<O>,
@@ -141,30 +158,10 @@ const createFieldDescriptor = (
   const rootDescriptor = defineProperties(
     {},
     {
-      __decoder: {
-        value: decoder,
-        enumerable: false,
-        writable: false,
-        configurable: false,
-      },
-      __path: {
-        value: path,
-        enumerable: false,
-        writable: false,
-        configurable: false,
-      },
-      __lens: {
-        value: lens,
-        enumerable: false,
-        writable: false,
-        configurable: false,
-      },
-      __parent: {
-        value: parent,
-        enumerable: false,
-        writable: false,
-        configurable: false,
-      },
+      __decoder: hiddenJsProperty(decoder),
+      __path: hiddenJsProperty(path),
+      __lens: hiddenJsProperty(lens),
+      __parent: hiddenJsProperty(parent),
     }
   );
 
@@ -186,12 +183,7 @@ const createFieldDescriptor = (
         );
 
       const nth = defineProperties(nthHandler, {
-        __rootPath: {
-          value: path,
-          enumerable: false,
-          writable: false,
-          configurable: false,
-        },
+        __rootPath: hiddenJsProperty(path),
       });
 
       const every = () =>
@@ -225,14 +217,7 @@ const createFieldTemplate = (
   // these properties are hidden implementation details and thus should not be enumerable
   const rootDescriptor = defineProperties(
     {},
-    {
-      __path: {
-        value: path,
-        enumerable: false,
-        writable: false,
-        configurable: false,
-      },
-    }
+    { __path: hiddenJsProperty(path) }
   );
 
   switch (decoder.fieldType) {
@@ -251,12 +236,7 @@ const createFieldTemplate = (
         );
 
       const nth = defineProperties(nthHandler, {
-        __rootPath: {
-          value: path,
-          enumerable: false,
-          writable: false,
-          configurable: false,
-        },
+        __rootPath: hiddenJsProperty(path),
       });
 
       const every = () =>
@@ -294,3 +274,11 @@ const createObjectTemplateSchema = <O extends object>(
     return schema;
   }, {} as { [x in keyof O]: _FieldTemplateImpl<O[x]> });
 };
+
+const hiddenJsProperty = <T>(value: T) =>
+  ({
+    value,
+    enumerable: false,
+    writable: false,
+    configurable: false,
+  } as const);

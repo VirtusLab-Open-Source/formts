@@ -5,23 +5,23 @@ import { createInitialValues } from "./create-initial-values";
 describe("createInitialValues", () => {
   it("should be empty for empty schema", () => {
     // @ts-ignore
-    const schema = FormSchemaBuilder().fields({}).build();
+    const Schema = new FormSchemaBuilder().fields({}).build();
 
-    expect(createInitialValues(schema)).toEqual({});
+    expect(createInitialValues(Schema)).toEqual({});
   });
 
   it("for one-element schema", () => {
-    const schema = FormSchemaBuilder()
+    const Schema = new FormSchemaBuilder()
       .fields({
         stringField: FormFields.string(),
       })
       .build();
 
-    expect(createInitialValues(schema)).toEqual({ stringField: "" });
+    expect(createInitialValues(Schema)).toEqual({ stringField: "" });
   });
 
   it("for multi-element schema", () => {
-    const schema = FormSchemaBuilder()
+    const Schema = new FormSchemaBuilder()
       .fields({
         stringField: FormFields.string(),
         boolField: FormFields.bool(),
@@ -31,7 +31,7 @@ describe("createInitialValues", () => {
       })
       .build();
 
-    expect(createInitialValues(schema)).toEqual({
+    expect(createInitialValues(Schema)).toEqual({
       stringField: "",
       boolField: false,
       numberField: "",
@@ -41,7 +41,7 @@ describe("createInitialValues", () => {
   });
 
   it("for multi-element schema with single-element init", () => {
-    const schema = FormSchemaBuilder()
+    const Schema = new FormSchemaBuilder()
       .fields({
         stringField: FormFields.string(),
         boolField: FormFields.bool(),
@@ -51,7 +51,7 @@ describe("createInitialValues", () => {
       })
       .build();
 
-    expect(createInitialValues(schema, { stringField: "dodo" })).toEqual({
+    expect(createInitialValues(Schema, { stringField: "dodo" })).toEqual({
       stringField: "dodo",
       boolField: false,
       numberField: "",
@@ -61,7 +61,7 @@ describe("createInitialValues", () => {
   });
 
   it("for multi-element schema with multiple-element init", () => {
-    const schema = FormSchemaBuilder()
+    const Schema = new FormSchemaBuilder()
       .fields({
         stringField: FormFields.string(),
         boolField: FormFields.bool(),
@@ -72,7 +72,7 @@ describe("createInitialValues", () => {
       .build();
 
     expect(
-      createInitialValues(schema, {
+      createInitialValues(Schema, {
         stringField: "dodo",
         boolField: true,
         numberField: 0,
@@ -89,7 +89,7 @@ describe("createInitialValues", () => {
   });
 
   it("for nested-object", () => {
-    const schema = FormSchemaBuilder()
+    const Schema = new FormSchemaBuilder()
       .fields({
         parent: FormFields.object({
           kain: FormFields.choice("Banana", "Spinach"),
@@ -98,7 +98,7 @@ describe("createInitialValues", () => {
       })
       .build();
 
-    expect(createInitialValues(schema, { parent: { abel: true } })).toEqual({
+    expect(createInitialValues(Schema, { parent: { abel: true } })).toEqual({
       parent: {
         kain: "Banana",
         abel: true,
@@ -107,7 +107,7 @@ describe("createInitialValues", () => {
   });
 
   it("for array of objects", () => {
-    const schema = FormSchemaBuilder()
+    const Schema = new FormSchemaBuilder()
       .fields({
         arr: FormFields.array(
           FormFields.object({
@@ -119,24 +119,24 @@ describe("createInitialValues", () => {
       .build();
 
     // @ts-expect-error
-    createInitialValues(schema, { arr: [{ two: [10] }] });
+    createInitialValues(Schema, { arr: [{ two: [10] }] });
 
     expect(
-      createInitialValues(schema, { arr: [{ one: "foo", two: [10] }] })
+      createInitialValues(Schema, { arr: [{ one: "foo", two: [10] }] })
     ).toEqual({
       arr: [{ one: "foo", two: [10] }],
     });
   });
 
   it("for date field", () => {
-    const schema = FormSchemaBuilder()
+    const Schema = new FormSchemaBuilder()
       .fields({
         dateField: FormFields.date(),
       })
       .build();
 
     expect(
-      createInitialValues(schema, { dateField: Date.UTC(2021, 1, 1) })
+      createInitialValues(Schema, { dateField: Date.UTC(2021, 1, 1) })
     ).toEqual({ dateField: Date.UTC(2021, 1, 1) });
   });
 });

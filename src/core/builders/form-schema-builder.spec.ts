@@ -9,10 +9,10 @@ import { FormSchemaBuilder } from "./form-schema-builder";
 describe("FormSchemaBuilder", () => {
   it("does not allow creating Schema with no fields", () => {
     // @ts-expect-error
-    const Schema1 = FormSchemaBuilder().build();
+    const Schema1 = new FormSchemaBuilder().build();
 
     // @ts-expect-error
-    const Schema2 = FormSchemaBuilder().errors<string>().build();
+    const Schema2 = new FormSchemaBuilder().errors<string>().build();
 
     expect(Object.keys(Schema1)).toEqual([]);
     expect(Object.keys(Schema2)).toEqual([]);
@@ -20,13 +20,13 @@ describe("FormSchemaBuilder", () => {
 
   it("does not allow creating Schema with empty fields", () => {
     // @ts-expect-error
-    const Schema = FormSchemaBuilder().fields({}).build();
+    const Schema = new FormSchemaBuilder().fields({}).build();
 
     expect(Object.keys(Schema)).toEqual([]);
   });
 
   it("creates FormSchema type based on field decoders with default error type", () => {
-    const Schema = FormSchemaBuilder()
+    const Schema = new FormSchemaBuilder()
       .fields({
         string: FormFields.string(),
         choice: FormFields.choice("A", "B", "C"),
@@ -83,7 +83,7 @@ describe("FormSchemaBuilder", () => {
   });
 
   it("creates FormSchema type based on field decoders with custom error type", () => {
-    const Schema = FormSchemaBuilder()
+    const Schema = new FormSchemaBuilder()
       .fields({
         string: FormFields.string(),
         choice: FormFields.choice("A", "B", "C"),
@@ -141,7 +141,7 @@ describe("FormSchemaBuilder", () => {
   });
 
   it("creates schema object with keys for every field", () => {
-    const Schema = FormSchemaBuilder()
+    const Schema = new FormSchemaBuilder()
       .fields({
         string: FormFields.string(),
         choice: FormFields.choice("A", "B", "C"),
@@ -190,7 +190,7 @@ describe("FormSchemaBuilder", () => {
   });
 
   it("creates schema object with paths for every field", () => {
-    const Schema = FormSchemaBuilder()
+    const Schema = new FormSchemaBuilder()
       .fields({
         string: FormFields.string(),
         choice: FormFields.choice("A", "B", "C"),
@@ -270,7 +270,7 @@ describe("FormSchemaBuilder", () => {
   });
 
   it("creates field descriptor for string field", () => {
-    const Schema = FormSchemaBuilder()
+    const Schema = new FormSchemaBuilder()
       .fields({
         theString: FormFields.string(),
       })
@@ -286,7 +286,7 @@ describe("FormSchemaBuilder", () => {
   });
 
   it("creates field descriptor for choice field", () => {
-    const Schema = FormSchemaBuilder()
+    const Schema = new FormSchemaBuilder()
       .fields({
         theChoice: FormFields.choice("A", "B", "C"),
       })
@@ -303,7 +303,7 @@ describe("FormSchemaBuilder", () => {
   });
 
   it("does not allow creating schema with empty choice field", () => {
-    FormSchemaBuilder()
+    new FormSchemaBuilder()
       .fields({
         // @ts-expect-error
         theChoice: FormFields.choice(),
@@ -312,7 +312,7 @@ describe("FormSchemaBuilder", () => {
   });
 
   it("creates field descriptor for number field", () => {
-    const Schema = FormSchemaBuilder()
+    const Schema = new FormSchemaBuilder()
       .fields({
         theNumber: FormFields.number(),
       })
@@ -328,7 +328,7 @@ describe("FormSchemaBuilder", () => {
   });
 
   it("creates field descriptor for bool field", () => {
-    const Schema = FormSchemaBuilder()
+    const Schema = new FormSchemaBuilder()
       .fields({
         theBoolean: FormFields.bool(),
       })
@@ -344,7 +344,7 @@ describe("FormSchemaBuilder", () => {
   });
 
   it("creates field descriptor for date field", () => {
-    const Schema = FormSchemaBuilder()
+    const Schema = new FormSchemaBuilder()
       .fields({
         theDate: FormFields.date(),
       })
@@ -360,7 +360,7 @@ describe("FormSchemaBuilder", () => {
   });
 
   it("creates field descriptor for array field", () => {
-    const Schema = FormSchemaBuilder()
+    const Schema = new FormSchemaBuilder()
       .fields({
         theArray: FormFields.array(FormFields.string()),
       })
@@ -385,7 +385,7 @@ describe("FormSchemaBuilder", () => {
   });
 
   it("creates field descriptor for nested array field", () => {
-    const Schema = FormSchemaBuilder()
+    const Schema = new FormSchemaBuilder()
       .fields({
         theArray: FormFields.array(FormFields.array(FormFields.number())),
       })
@@ -405,7 +405,7 @@ describe("FormSchemaBuilder", () => {
   });
 
   it("creates field descriptor for object field", () => {
-    const Schema = FormSchemaBuilder()
+    const Schema = new FormSchemaBuilder()
       .fields({
         theObject: FormFields.object({
           str: FormFields.string(),
@@ -430,7 +430,7 @@ describe("FormSchemaBuilder", () => {
   });
 
   it("creates field descriptor for a complex object field", () => {
-    const Schema = FormSchemaBuilder()
+    const Schema = new FormSchemaBuilder()
       .fields({
         theObject: FormFields.object({
           choice: FormFields.choice("A", "B"),
@@ -482,7 +482,7 @@ describe("FormSchemaBuilder", () => {
   });
 
   it("does not allow creating schema with empty object field", () => {
-    FormSchemaBuilder()
+    new FormSchemaBuilder()
       .fields({
         // @ts-expect-error
         theObject: FormFields.object({}),

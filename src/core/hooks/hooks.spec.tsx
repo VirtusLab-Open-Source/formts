@@ -13,7 +13,7 @@ import { useFormHandle } from "./use-form-handle";
 
 import { useFormController, useFormValues } from ".";
 
-const Schema = FormSchemaBuilder()
+const Schema = new FormSchemaBuilder()
   .fields({
     theString: FormFields.string(),
     theChoice: FormFields.choice("", "A", "B", "C"),

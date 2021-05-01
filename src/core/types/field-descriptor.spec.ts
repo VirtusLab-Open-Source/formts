@@ -7,7 +7,7 @@ import {
 } from "./field-descriptor";
 import { impl } from "./type-mapper-util";
 
-const Schema = FormSchemaBuilder()
+const Schema = new FormSchemaBuilder()
   .fields({
     theString: FormFields.string(),
     theNumber: FormFields.number(),
