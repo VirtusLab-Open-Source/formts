@@ -1,30 +1,35 @@
-import { createFormSchema } from "../builders/create-form-schema";
+import { FormFields, FormSchemaBuilder } from "../builders";
 
 import { createInitialValues } from "./create-initial-values";
 
 describe("createInitialValues", () => {
   it("should be empty for empty schema", () => {
-    const schema = createFormSchema(() => ({}));
+    // @ts-ignore
+    const schema = FormSchemaBuilder().fields({}).build();
 
     expect(createInitialValues(schema)).toEqual({});
   });
 
   it("for one-element schema", () => {
-    const schema = createFormSchema(fields => ({
-      stringField: fields.string(),
-    }));
+    const schema = FormSchemaBuilder()
+      .fields({
+        stringField: FormFields.string(),
+      })
+      .build();
 
     expect(createInitialValues(schema)).toEqual({ stringField: "" });
   });
 
   it("for multi-element schema", () => {
-    const schema = createFormSchema(fields => ({
-      stringField: fields.string(),
-      boolField: fields.bool(),
-      numberField: fields.number(),
-      arrayField: fields.array(fields.number()),
-      choiceField: fields.choice("Banana", "Avocado", "Cream"),
-    }));
+    const schema = FormSchemaBuilder()
+      .fields({
+        stringField: FormFields.string(),
+        boolField: FormFields.bool(),
+        numberField: FormFields.number(),
+        arrayField: FormFields.array(FormFields.number()),
+        choiceField: FormFields.choice("Banana", "Avocado", "Cream"),
+      })
+      .build();
 
     expect(createInitialValues(schema)).toEqual({
       stringField: "",
@@ -36,13 +41,15 @@ describe("createInitialValues", () => {
   });
 
   it("for multi-element schema with single-element init", () => {
-    const schema = createFormSchema(fields => ({
-      stringField: fields.string(),
-      boolField: fields.bool(),
-      numberField: fields.number(),
-      arrayField: fields.array(fields.number()),
-      choiceField: fields.choice("Banana", "Avocado", "Cream"),
-    }));
+    const schema = FormSchemaBuilder()
+      .fields({
+        stringField: FormFields.string(),
+        boolField: FormFields.bool(),
+        numberField: FormFields.number(),
+        arrayField: FormFields.array(FormFields.number()),
+        choiceField: FormFields.choice("Banana", "Avocado", "Cream"),
+      })
+      .build();
 
     expect(createInitialValues(schema, { stringField: "dodo" })).toEqual({
       stringField: "dodo",
@@ -54,13 +61,15 @@ describe("createInitialValues", () => {
   });
 
   it("for multi-element schema with multiple-element init", () => {
-    const schema = createFormSchema(fields => ({
-      stringField: fields.string(),
-      boolField: fields.bool(),
-      numberField: fields.number(),
-      arrayField: fields.array(fields.number()),
-      choiceField: fields.choice("Banana", "Avocado", "Cream"),
-    }));
+    const schema = FormSchemaBuilder()
+      .fields({
+        stringField: FormFields.string(),
+        boolField: FormFields.bool(),
+        numberField: FormFields.number(),
+        arrayField: FormFields.array(FormFields.number()),
+        choiceField: FormFields.choice("Banana", "Avocado", "Cream"),
+      })
+      .build();
 
     expect(
       createInitialValues(schema, {
@@ -80,12 +89,14 @@ describe("createInitialValues", () => {
   });
 
   it("for nested-object", () => {
-    const schema = createFormSchema(fields => ({
-      parent: fields.object({
-        kain: fields.choice("Banana", "Spinach"),
-        abel: fields.bool(),
-      }),
-    }));
+    const schema = FormSchemaBuilder()
+      .fields({
+        parent: FormFields.object({
+          kain: FormFields.choice("Banana", "Spinach"),
+          abel: FormFields.bool(),
+        }),
+      })
+      .build();
 
     expect(createInitialValues(schema, { parent: { abel: true } })).toEqual({
       parent: {
@@ -96,14 +107,16 @@ describe("createInitialValues", () => {
   });
 
   it("for array of objects", () => {
-    const schema = createFormSchema(fields => ({
-      arr: fields.array(
-        fields.object({
-          one: fields.string(),
-          two: fields.array(fields.number()),
-        })
-      ),
-    }));
+    const schema = FormSchemaBuilder()
+      .fields({
+        arr: FormFields.array(
+          FormFields.object({
+            one: FormFields.string(),
+            two: FormFields.array(FormFields.number()),
+          })
+        ),
+      })
+      .build();
 
     // @ts-expect-error
     createInitialValues(schema, { arr: [{ two: [10] }] });
@@ -116,9 +129,11 @@ describe("createInitialValues", () => {
   });
 
   it("for date field", () => {
-    const schema = createFormSchema(fields => ({
-      dateField: fields.date(),
-    }));
+    const schema = FormSchemaBuilder()
+      .fields({
+        dateField: FormFields.date(),
+      })
+      .build();
 
     expect(
       createInitialValues(schema, { dateField: Date.UTC(2021, 1, 1) })

@@ -6,22 +6,23 @@ import { FieldDescriptor } from "../types/field-descriptor";
 import { FormValidator } from "../types/form-validator";
 import { impl } from "../types/type-mapper-util";
 
-import { createFormSchema } from "./create-form-schema";
 import { createFormValidator } from "./create-form-validator";
+import { FormFields } from "./form-fields";
+import { FormSchemaBuilder } from "./form-schema-builder";
 
 export const wait = <T extends string | null>(value: T): Promise<T> =>
   new Promise(resolve => setTimeout(() => resolve(value), 0));
 
 describe("createFormValidator types", () => {
-  const Schema = createFormSchema(
-    fields => ({
-      string: fields.string(),
-      choice: fields.choice("A", "B", "C"),
-      num: fields.number(),
-      bool: fields.bool(),
-    }),
-    errors => errors<"err1" | "err2">()
-  );
+  const Schema = FormSchemaBuilder()
+    .fields({
+      string: FormFields.string(),
+      choice: FormFields.choice("A", "B", "C"),
+      num: FormFields.number(),
+      bool: FormFields.bool(),
+    })
+    .errors<"err1" | "err2">()
+    .build();
 
   it("resolves ok", () => {
     const formValidator = createFormValidator(Schema, _validate => []);
@@ -42,35 +43,42 @@ describe("createFormValidator types", () => {
 });
 
 describe("createFormValidator", () => {
-  const Schema = createFormSchema(
-    fields => ({
-      string: fields.string(),
-      number: fields.number(),
-      choice: fields.choice("A", "B", "C"),
-      date: fields.date(),
-      arrayString: fields.array(fields.string()),
-      arrayChoice: fields.array(fields.choice("a", "b", "c")),
-      arrayArrayString: fields.array(fields.array(fields.string())),
-      object: fields.object({ str: fields.string(), num: fields.number() }),
-      arrayObjectString: fields.array(fields.object({ str: fields.string() })),
-      objectArray: fields.object({
-        arrayString: fields.array(fields.string()),
+  const Schema = FormSchemaBuilder()
+    .fields({
+      string: FormFields.string(),
+      number: FormFields.number(),
+      choice: FormFields.choice("A", "B", "C"),
+      date: FormFields.date(),
+      arrayString: FormFields.array(FormFields.string()),
+      arrayChoice: FormFields.array(FormFields.choice("a", "b", "c")),
+      arrayArrayString: FormFields.array(FormFields.array(FormFields.string())),
+      object: FormFields.object({
+        str: FormFields.string(),
+        num: FormFields.number(),
       }),
-      objectObjectArrayObjectString: fields.object({
-        obj: fields.object({
-          array: fields.array(fields.object({ str: fields.string() })),
+      arrayObjectString: FormFields.array(
+        FormFields.object({ str: FormFields.string() })
+      ),
+      objectArray: FormFields.object({
+        arrayString: FormFields.array(FormFields.string()),
+      }),
+      objectObjectArrayObjectString: FormFields.object({
+        obj: FormFields.object({
+          array: FormFields.array(
+            FormFields.object({ str: FormFields.string() })
+          ),
         }),
       }),
-      objectTwoArrays: fields.object({
-        arrayString: fields.array(fields.string()),
-        arrayNumber: fields.array(fields.number()),
+      objectTwoArrays: FormFields.object({
+        arrayString: FormFields.array(FormFields.string()),
+        arrayNumber: FormFields.array(FormFields.number()),
       }),
-      arrayNestedArrays: fields.array(
-        fields.object({ array: fields.array(fields.string()) })
+      arrayNestedArrays: FormFields.array(
+        FormFields.object({ array: FormFields.array(FormFields.string()) })
       ),
-    }),
-    error => error<"REQUIRED" | "TOO_SHORT" | "INVALID_VALUE">()
-  );
+    })
+    .errors<"REQUIRED" | "TOO_SHORT" | "INVALID_VALUE">()
+    .build();
 
   const createFormValidatorImpl = (
     ...args: Parameters<typeof createFormValidator>
@@ -1333,13 +1341,14 @@ describe("createFormValidator", () => {
 });
 
 describe("debounced validation", () => {
-  const Schema = createFormSchema(
-    fields => ({
-      string: fields.string(),
-      number: fields.number(),
-    }),
-    error => error<"REQUIRED" | "TOO_SHORT" | "INVALID_VALUE">()
-  );
+  const Schema = FormSchemaBuilder()
+    .fields({
+      string: FormFields.string(),
+      number: FormFields.number(),
+    })
+    .errors<"REQUIRED" | "TOO_SHORT" | "INVALID_VALUE">()
+    .build();
+
   const createFormValidatorImpl = (
     ...args: Parameters<typeof createFormValidator>
   ) => impl(createFormValidator(...args));

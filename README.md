@@ -46,12 +46,12 @@ npm install @virtuslab/formts
 #### 2) Define shape of the form
 
 ```ts
-import { createFormSchema } from "@virtuslab/formts";
+import { FormSchemaBuilder, FormFields } from "@virtuslab/formts";
 
-const Schema = createFormSchema(
-  fields => ({ answer: fields.string() }),
-  errors => errors<string>()
-);
+const Schema = FormSchemaBuilder()
+  .fields({ answer: FormFields.string() })
+  .errors<string>()
+  .build();
 ```
 
 #### 3) Define validation rules (optional)

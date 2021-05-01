@@ -1,20 +1,82 @@
 import { assertNever, defineProperties, keys } from "../../utils";
 import { Lens } from "../../utils/lenses";
-import * as Decoders from "../decoders";
 import { FieldDecoder, _FieldDecoderImpl } from "../types/field-decoder";
 import { _FieldDescriptorImpl } from "../types/field-descriptor";
 import { _FieldTemplateImpl } from "../types/field-template";
 import { FormSchema } from "../types/form-schema";
-import { impl } from "../types/type-mapper-util";
 
-type BuilderFn<V> = (fields: typeof Decoders) => DecodersMap<V>;
+type DecodersMap<O> = keyof O extends never
+  ? never
+  : { [K in keyof O]: FieldDecoder<O[K]> };
 
-type DecodersMap<O> = { [K in keyof O]: FieldDecoder<O[K]> };
+interface SchemaBuilder$Complete<V extends object, Err> {
+  /** finalize construction of `FormSchema` */
+  build: () => FormSchema<V, Err>;
+}
 
-type ErrorsMarker<Err> = (errors: <Err>() => Err) => Err;
+interface SchemaBuilder$Errors<Err> {
+  /**
+   * Define form fields as dictionary of decoders. Use `FormFields` import.
+   *
+   * @example
+   * ```
+   * FormSchemaBuilder()
+   *   .fields({
+   *     name: FormFields.string(),
+   *     age: FormFields.number(),
+   *   })
+   * ```
+   */
+  fields: <V extends object>(
+    fields: DecodersMap<V>
+  ) => SchemaBuilder$Complete<V, Err>;
+}
+
+interface SchemaBuilder$Fields<V extends object> {
+  /**
+   * Define form errors to be used by `FormValidatorBuilder`.
+   *
+   * @example
+   * ```
+   * FormSchemaBuilder()
+   *   .errors<MyErrorCodesEnum>()
+   * ```
+   */
+  errors: <Err>() => SchemaBuilder$Complete<V, Err>;
+
+  /** finalize construction of `FormSchema` */
+  build: () => FormSchema<V, never>;
+}
+
+interface SchemaBuilder$Initial {
+  /**
+   * Define form fields as dictionary of decoders. Use `FormFields` import.
+   *
+   * @example
+   * ```
+   * FormSchemaBuilder()
+   *   .fields({
+   *     name: FormFields.string(),
+   *     age: FormFields.number(),
+   *   })
+   * ```
+   */
+  fields: <V extends object>(fields: DecodersMap<V>) => SchemaBuilder$Fields<V>;
+
+  /**
+   * Define form errors to be used by `FormValidatorBuilder`.
+   *
+   * @example
+   * ```
+   * FormSchemaBuilder()
+   *   .errors<MyErrorCodesEnum>()
+   * ```
+   */
+  errors: <Err>() => SchemaBuilder$Errors<Err>;
+}
 
 /**
- * Define shape of the form values and type of validation errors.
+ * Builds schema which defines shape of the form values and type of validation errors.
  * This is used not only for compile-time type-safety but also for runtime validation of form values.
  * The schema can be defined top-level, so that it can be exported to nested Form components for usage together with `useField` hook.
  *
@@ -23,20 +85,33 @@ type ErrorsMarker<Err> = (errors: <Err>() => Err) => Err;
  *
  * @example
  * ```
- * const Schema = createFormSchema(
- *   fields => ({
- *     name: fields.string(),
- *     age: fields.number(),
- *   }),
- *   errors => errors<string>()
- * );
+ * import { FormSchemaBuilder, FormFields } from "@virtuslab/formts"
+ *
+ * const Schema = FormSchemaBuilder()
+ *   .fields({
+ *     name: FormFields.string(),
+ *     age: FormFields.number(),
+ *   })
+ *   .errors<string>()
+ *   .build()
  * ```
  */
-export const createFormSchema = <Values extends object, Err = never>(
-  fields: BuilderFn<Values>,
-  _errors?: ErrorsMarker<Err>
-): FormSchema<Values, Err> =>
-  createObjectSchema(fields(Decoders), Lens.identity()) as any;
+export const FormSchemaBuilder = <V extends object>() => {
+  let _decoders: DecodersMap<V> = {} as any;
+
+  const _builder = {
+    fields: (f: DecodersMap<V>) => {
+      _decoders = f;
+      return _builder;
+    },
+
+    errors: () => _builder,
+
+    build: () => createObjectSchema(_decoders, Lens.identity()) as any,
+  };
+
+  return (_builder as any) as SchemaBuilder$Initial;
+};
 
 const createObjectSchema = <O extends object, Root>(
   decodersMap: DecodersMap<O>,
@@ -47,7 +122,7 @@ const createObjectSchema = <O extends object, Root>(
   return keys(decodersMap).reduce((schema, key) => {
     const decoder = decodersMap[key];
     (schema as any)[key] = createFieldDescriptor(
-      impl(decoder) as _FieldDecoderImpl<any>,
+      decoder as any,
       Lens.compose(lens, Lens.prop(key as any)),
       path ? `${path}.${key}` : `${key}`,
       parent
@@ -213,7 +288,7 @@ const createObjectTemplateSchema = <O extends object>(
   return keys(decodersMap).reduce((schema, key) => {
     const decoder = decodersMap[key];
     (schema as any)[key] = createFieldTemplate(
-      impl(decoder) as _FieldDecoderImpl<any>,
+      decoder as any,
       `${path}.${key}`
     );
     return schema;

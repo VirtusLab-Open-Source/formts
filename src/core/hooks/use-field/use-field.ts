@@ -32,7 +32,7 @@ import {
  *
  * @example
  * ```ts
- * const Schema = createFormSchema(...);
+ * const Schema = FormSchemaBuilder()...;
  *
  * const MyForm: React.FC = () => {
  *   const controller = useFormController({ Schema })

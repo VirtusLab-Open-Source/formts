@@ -15,7 +15,7 @@ import { impl } from "../../types/type-mapper-util";
  * Hook used to gain access to form-wide methods and properties computed from all fields.
  * Causes the component to subscribe to changes to form state that affect the computed properties.
  *
- * @param Schema - obtained by calling `createFormSchema` function, used to infer types.
+ * @param Schema - created using `FormSchemaBuilder`, needed for type inference.
  * @param controller - obtained by using `useFormController` hook, used to connect to form state.
  * Injected automatically via React Context when used inside `FormProvider` component.
  *
@@ -23,7 +23,7 @@ import { impl } from "../../types/type-mapper-util";
  *
  * @example
  * ```ts
- * const Schema = createFormSchema(...);
+ * const Schema = FormSchemaBuilder()...;
  *
  * const MyForm: React.FC = () => {
  *   const controller = useFormController({ Schema })

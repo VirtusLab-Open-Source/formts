@@ -2,7 +2,7 @@ import { act, renderHook } from "@testing-library/react-hooks";
 import React from "react";
 
 import { Task } from "../../utils/task";
-import { createFormSchema } from "../builders";
+import { FormFields, FormSchemaBuilder } from "../builders";
 import { FormProvider } from "../context";
 import { FormHandle } from "../types/form-handle";
 import { ValidateIn } from "../types/form-validator";
@@ -13,21 +13,23 @@ import { useFormHandle } from "./use-form-handle";
 
 import { useFormController, useFormValues } from ".";
 
-const Schema = createFormSchema(
-  fields => ({
-    theString: fields.string(),
-    theChoice: fields.choice("", "A", "B", "C"),
-    theNum: fields.number(),
-    theBool: fields.bool(),
-    theDate: fields.date(),
-    theArray: fields.array(fields.string()),
-    theObject: fields.object({
-      foo: fields.string(),
+const Schema = FormSchemaBuilder()
+  .fields({
+    theString: FormFields.string(),
+    theChoice: FormFields.choice("", "A", "B", "C"),
+    theNum: FormFields.number(),
+    theBool: FormFields.bool(),
+    theDate: FormFields.date(),
+    theArray: FormFields.array(FormFields.string()),
+    theObject: FormFields.object({
+      foo: FormFields.string(),
     }),
-    theObjectArray: fields.object({ arr: fields.array(fields.string()) }),
-  }),
-  errors => errors<string>()
-);
+    theObjectArray: FormFields.object({
+      arr: FormFields.array(FormFields.string()),
+    }),
+  })
+  .errors<string>()
+  .build();
 
 describe("formts hooks API", () => {
   it("throws error when a hook is not connected to FormController", () => {

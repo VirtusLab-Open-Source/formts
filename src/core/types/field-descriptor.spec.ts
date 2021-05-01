@@ -1,4 +1,4 @@
-import { createFormSchema } from "../builders";
+import { FormFields, FormSchemaBuilder } from "../builders";
 
 import {
   FieldDescriptor,
@@ -7,18 +7,20 @@ import {
 } from "./field-descriptor";
 import { impl } from "./type-mapper-util";
 
-const Schema = createFormSchema(
-  fields => ({
-    theString: fields.string(),
-    theNumber: fields.number(),
-    theArray: fields.array(fields.string()),
-    theObject: fields.object({
-      foo: fields.string(),
+const Schema = FormSchemaBuilder()
+  .fields({
+    theString: FormFields.string(),
+    theNumber: FormFields.number(),
+    theArray: FormFields.array(FormFields.string()),
+    theObject: FormFields.object({
+      foo: FormFields.string(),
     }),
-    theObjectArray: fields.object({ arr: fields.array(fields.string()) }),
-  }),
-  errors => errors<string>()
-);
+    theObjectArray: FormFields.object({
+      arr: FormFields.array(FormFields.string()),
+    }),
+  })
+  .errors<string>()
+  .build();
 
 describe("getChildrenDescriptors", () => {
   it("should return no children for primitive types", () => {
