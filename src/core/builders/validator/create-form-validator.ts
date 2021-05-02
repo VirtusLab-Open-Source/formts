@@ -1,31 +1,32 @@
-import { isFalsy } from "../../utils";
-import { compact, flatMap, uniqBy } from "../../utils/array";
-import { Task } from "../../utils/task";
+import { isFalsy } from "../../../utils";
+import { compact, flatMap, uniqBy } from "../../../utils/array";
+import { Task } from "../../../utils/task";
 import {
   FieldDescriptor,
   getChildrenDescriptors,
   getParentsChain,
-} from "../types/field-descriptor";
+} from "../../types/field-descriptor";
 import {
-  createRegexForTemplate,
   generateFieldPathsFromTemplate,
   pathIsTemplate,
-} from "../types/field-template";
-import { FormSchema } from "../types/form-schema";
+} from "../../types/field-template";
+import { FormSchema } from "../../types/form-schema";
 import {
-  FieldDescTuple,
   FieldPath,
-  FieldValidator,
   FormValidator,
   GetValue,
-  ValidateConfig,
-  ValidateField,
-  ValidateFn,
   ValidationTrigger,
   Validator,
   _FormValidatorImpl,
-} from "../types/form-validator";
-import { impl, opaque } from "../types/type-mapper-util";
+} from "../../types/form-validator";
+import { impl, opaque } from "../../types/type-mapper-util";
+
+import {
+  createFieldValidator,
+  CreateFieldValidatorFn,
+  FieldDescTuple,
+  FieldValidator,
+} from "./field-validator";
 
 /**
  * Create form validator based on provided set of validation rules.
@@ -60,10 +61,10 @@ import { impl, opaque } from "../types/type-mapper-util";
 export const createFormValidator = <Values extends object, Err>(
   _schema: FormSchema<Values, Err>,
   builder: (
-    validate: ValidateFn
+    validate: CreateFieldValidatorFn
   ) => Array<FieldValidator<any, Err, any | unknown>>
 ): FormValidator<Values, Err> => {
-  const allValidators = builder(validate());
+  const allValidators = builder(createFieldValidator);
   const dependenciesDict = buildDependenciesDict(allValidators);
 
   const ongoingValidationTimestamps: Record<
@@ -167,35 +168,6 @@ export const createFormValidator = <Values extends object, Err>(
   };
 
   return opaque(formValidator);
-};
-
-const validate = (): ValidateFn => {
-  let index = 0;
-
-  return <T, Err, Deps extends any[]>(
-    x: ValidateConfig<T, Err, Deps> | ValidateField<T, Err>,
-    ...rules: Array<Validator<T, Err>>
-  ): FieldValidator<T, Err, Deps> => {
-    const config: ValidateConfig<T, Err, Deps> =
-      (x as any)["field"] != null
-        ? { ...(x as ValidateConfig<T, Err, Deps>) }
-        : { field: x as ValidateField<T, Err>, rules: () => rules };
-
-    const path = impl(config.field).__path;
-    const regex = pathIsTemplate(path)
-      ? createRegexForTemplate(path)
-      : undefined;
-
-    return {
-      id: (index++).toString(),
-      path,
-      regex,
-      triggers: config.triggers,
-      validators: config.rules,
-      dependencies: config.dependencies,
-      debounce: config.debounce,
-    };
-  };
 };
 
 const runValidationForField = <Value, Err, Dependencies extends any[]>(

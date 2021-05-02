@@ -1,13 +1,13 @@
 import { assert, IsExact } from "conditional-type-checks";
 
-import { Task } from "../../utils/task";
-import * as validators from "../../validators";
-import { FieldDescriptor } from "../types/field-descriptor";
-import { FormValidator } from "../types/form-validator";
-import { impl } from "../types/type-mapper-util";
+import { Task } from "../../../utils/task";
+import * as validators from "../../../validators";
+import { FieldDescriptor } from "../../types/field-descriptor";
+import { FormValidator } from "../../types/form-validator";
+import { impl } from "../../types/type-mapper-util";
+import { FormFields, FormSchemaBuilder } from "../schema";
 
 import { createFormValidator } from "./create-form-validator";
-import { FormFields, FormSchemaBuilder } from "./schema";
 
 export const wait = <T extends string | null>(value: T): Promise<T> =>
   new Promise(resolve => setTimeout(() => resolve(value), 0));
