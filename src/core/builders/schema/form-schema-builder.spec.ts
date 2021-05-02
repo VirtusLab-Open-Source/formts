@@ -1,10 +1,9 @@
 import { assert, IsExact } from "conditional-type-checks";
 
-import { FormSchema } from "../types/form-schema";
-import { impl } from "../types/type-mapper-util";
+import { FormSchema } from "../../types/form-schema";
+import { impl } from "../../types/type-mapper-util";
 
-import { FormFields } from "./form-fields";
-import { FormSchemaBuilder } from "./form-schema-builder";
+import { FormFields, FormSchemaBuilder } from ".";
 
 describe("FormSchemaBuilder", () => {
   it("does not allow creating Schema with no fields", () => {

@@ -1,4 +1,4 @@
-import * as Decoders from "../decoders";
+import * as Decoders from "../../decoders";
 
 export const FormFields = {
   bool: Decoders.bool,

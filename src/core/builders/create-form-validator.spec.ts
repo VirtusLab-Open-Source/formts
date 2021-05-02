@@ -7,8 +7,7 @@ import { FormValidator } from "../types/form-validator";
 import { impl } from "../types/type-mapper-util";
 
 import { createFormValidator } from "./create-form-validator";
-import { FormFields } from "./form-fields";
-import { FormSchemaBuilder } from "./form-schema-builder";
+import { FormFields, FormSchemaBuilder } from "./schema";
 
 export const wait = <T extends string | null>(value: T): Promise<T> =>
   new Promise(resolve => setTimeout(() => resolve(value), 0));

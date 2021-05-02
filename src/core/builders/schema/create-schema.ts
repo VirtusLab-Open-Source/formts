@@ -1,136 +1,19 @@
-import { assertNever, defineProperties, keys } from "../../utils";
-import { Lens } from "../../utils/lenses";
-import { FieldDecoder, _FieldDecoderImpl } from "../types/field-decoder";
-import { _FieldDescriptorImpl } from "../types/field-descriptor";
-import { _FieldTemplateImpl } from "../types/field-template";
-import { FormSchema } from "../types/form-schema";
+import { assertNever, defineProperties, keys } from "../../../utils";
+import { Lens } from "../../../utils/lenses";
+import { FieldDecoder, _FieldDecoderImpl } from "../../types/field-decoder";
+import { _FieldDescriptorImpl } from "../../types/field-descriptor";
+import { _FieldTemplateImpl } from "../../types/field-template";
+import { FormSchema } from "../../types/form-schema";
 
-type DecodersMap<O> = keyof O extends never
+export type DecodersMap<O> = keyof O extends never
   ? never
   : { [K in keyof O]: FieldDecoder<O[K]> };
 
-/**
- * Builds schema which defines shape of the form values and type of validation errors.
- * The schema is used not only for compile-time type-safety but also for runtime validation of form values.
- * The schema can be defined top-level, so that it can be exported to nested Form components for usage together with `useField` hook.
- *
- * @returns
- * FormSchema - used to interact with Formts API and point to specific form fields
- *
- * @example
- * ```
- * import { FormSchemaBuilder, FormFields } from "@virtuslab/formts"
- *
- * const Schema = new FormSchemaBuilder()
- *   .fields({
- *     name: FormFields.string(),
- *     age: FormFields.number(),
- *   })
- *   .errors<string>()
- *   .build()
- * ```
- */
-export class FormSchemaBuilder {
-  private decoders: DecodersMap<any> = {} as any;
+export const createFormSchema = <V extends object, Err>(
+  decoders: DecodersMap<V>
+): FormSchema<V, Err> => createObjectSchema(decoders, Lens.identity());
 
-  /**
-   * Builds schema which defines shape of the form values and type of validation errors.
-   * The schema is used not only for compile-time type-safety but also for runtime validation of form values.
-   * The schema can be defined top-level, so that it can be exported to nested Form components for usage together with `useField` hook.
-   *
-   * @returns
-   * FormSchema - used to interact with Formts API and point to specific form fields
-   *
-   * @example
-   * ```
-   * import { FormSchemaBuilder, FormFields } from "@virtuslab/formts"
-   *
-   * const Schema = new FormSchemaBuilder()
-   *   .fields({
-   *     name: FormFields.string(),
-   *     age: FormFields.number(),
-   *   })
-   *   .errors<string>()
-   *   .build()
-   * ```
-   */
-  constructor() {}
-
-  /**
-   * Define form fields as dictionary of decoders. Use `FormFields` import.
-   *
-   * @example
-   * ```
-   * new FormSchemaBuilder()
-   *   .fields({
-   *     name: FormFields.string(),
-   *     age: FormFields.number(),
-   *   })
-   * ```
-   */
-  fields = <V extends object>(fields: DecodersMap<V>) => {
-    this.decoders = fields;
-
-    return (this as any) as SchemaBuilder$Fields<V>;
-  };
-
-  /**
-   * Define form errors to be used by `FormValidatorBuilder`.
-   *
-   * @example
-   * ```
-   * new FormSchemaBuilder()
-   *   .errors<MyErrorCodesEnum>()
-   * ```
-   */
-  errors = <Err>() => {
-    return (this as any) as SchemaBuilder$Errors<Err>;
-  };
-
-  // @ts-ignore
-  private build = () => createObjectSchema(this.decoders, Lens.identity());
-}
-
-interface SchemaBuilder$Errors<Err> {
-  /**
-   * Define form fields as dictionary of decoders. Use `FormFields` import.
-   *
-   * @example
-   * ```
-   * new FormSchemaBuilder()
-   *   .fields({
-   *     name: FormFields.string(),
-   *     age: FormFields.number(),
-   *   })
-   * ```
-   */
-  fields: <V extends object>(
-    fields: DecodersMap<V>
-  ) => SchemaBuilder$Complete<V, Err>;
-}
-
-interface SchemaBuilder$Fields<V extends object> {
-  /**
-   * Define form errors to be used by `FormValidatorBuilder`.
-   *
-   * @example
-   * ```
-   * new FormSchemaBuilder()
-   *   .errors<MyErrorCodesEnum>()
-   * ```
-   */
-  errors: <Err>() => SchemaBuilder$Complete<V, Err>;
-
-  /** finalize construction of `FormSchema` */
-  build: () => FormSchema<V, never>;
-}
-
-interface SchemaBuilder$Complete<V extends object, Err> {
-  /** finalize construction of `FormSchema` */
-  build: () => FormSchema<V, Err>;
-}
-
-const createObjectSchema = <O extends object, Root>(
+const createObjectSchema = <O extends object, Root, Err>(
   decodersMap: DecodersMap<O>,
   lens: Lens<Root, O>,
   path?: string,
@@ -145,7 +28,7 @@ const createObjectSchema = <O extends object, Root>(
       parent
     );
     return schema;
-  }, {} as FormSchema<O, unknown>);
+  }, {} as FormSchema<O, Err>);
 };
 
 const createFieldDescriptor = (
