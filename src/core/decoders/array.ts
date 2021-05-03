@@ -8,9 +8,11 @@ import { impl, opaque } from "../types/type-mapper-util";
  *
  * @example
  * ```
- * const Schema = createForm.schema(fields => ({
- *   x: fields.array(fields.string()) // x: string[]
- * }));
+ * const Schema = new FormSchemaBuilder()
+ *  .fields({
+ *    x: FormFields.array(FormFields.string()) // x: string[]
+ *  })
+ *  .build()
  * ```
  */
 export const array = <E>(
