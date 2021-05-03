@@ -21,51 +21,14 @@ import {
 } from "../../types/form-validator";
 import { impl, opaque } from "../../types/type-mapper-util";
 
-import {
-  createFieldValidator,
-  CreateFieldValidatorFn,
-  FieldDescTuple,
-  FieldValidator,
-} from "./field-validator";
+import { FieldValidator } from "./field-validator";
+import { FieldDescTuple } from "./form-validator-builder";
 
-/**
- * Create form validator based on provided set of validation rules.
- * Error type of all validation rules is specified by the FormSchema.
- * You can also specify validation dependencies between fields and validation triggers.
- *
- * @example
- * ```
- * const validator = createFormValidator(Schema, validate => [
- *   validate(
- *     Schema.password,
- *     required("password is required!"),
- *     minLength(6, "password must be at least 6 characters long!")
- *   ),
- *   validate({
- *     field: Schema.passwordConfirm,
- *     dependencies: [Schema.password],
- *     triggers: ["blur", "submit"],
- *     rules: (password) => [
- *       required("password confirmation is required!"),
- *       val => val === password ? null : "passwords are different",
- *     ]
- *   }),
- *   validate(
- *     Schema.promoCodes.every(),
- *     optional(),
- *     exactLength(6, "promo code must be 6 characters long")
- *   )
- * ])
- * ```
- */
 export const createFormValidator = <Values extends object, Err>(
   _schema: FormSchema<Values, Err>,
-  builder: (
-    validate: CreateFieldValidatorFn
-  ) => Array<FieldValidator<any, Err, any | unknown>>
+  validators: Array<FieldValidator<any, Err, any>>
 ): FormValidator<Values, Err> => {
-  const allValidators = builder(createFieldValidator);
-  const dependenciesDict = buildDependenciesDict(allValidators);
+  const dependenciesDict = buildDependenciesDict(validators);
 
   const ongoingValidationTimestamps: Record<
     FieldValidationKey,
@@ -78,7 +41,7 @@ export const createFormValidator = <Values extends object, Err>(
     fieldPath: FieldPath,
     trigger?: ValidationTrigger
   ): FieldValidator<any, Err, any[]>[] => {
-    return allValidators.filter(x => {
+    return validators.filter(x => {
       const triggerMatches =
         trigger && x.triggers ? x.triggers.includes(trigger) : true;
       return triggerMatches && validatorMatchesField(x, fieldPath);

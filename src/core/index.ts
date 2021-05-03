@@ -1,4 +1,8 @@
-export { FormFields, FormSchemaBuilder, createFormValidator } from "./builders";
+export {
+  FormFields,
+  FormSchemaBuilder,
+  FormValidatorBuilder,
+} from "./builders";
 
 export {
   useFormController,

@@ -57,15 +57,15 @@ const Schema = new FormSchemaBuilder()
 #### 3) Define validation rules (optional)
 
 ```ts
-import { createFormValidator } from "@virtuslab/formts";
+import { FormValidatorBuilder } from "@virtuslab/formts";
 
-const validator = createFormValidator(Schema, validate => [
-  validate(
+const validator = new FormValidatorBuilder(Schema)
+  .validate(
     Schema.answer,
     val => (val === "" ? "Required!" : null),
     val => (val !== "42" ? "Wrong answer!" : null)
-  ),
-]);
+  )
+  .build();
 ```
 
 #### 3) Create controller holding form state

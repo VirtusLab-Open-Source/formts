@@ -1,1 +1,1 @@
-export { createFormValidator } from "./create-form-validator";
+export { FormValidatorBuilder } from "./form-validator-builder";

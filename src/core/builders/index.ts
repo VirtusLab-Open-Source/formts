@@ -1,2 +1,2 @@
 export { FormFields, FormSchemaBuilder } from "./schema";
-export { createFormValidator } from "./validator";
+export { FormValidatorBuilder } from "./validator";

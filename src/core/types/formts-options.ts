@@ -12,7 +12,7 @@ export type FormtsOptions<Values extends object, Err> = {
    */
   initialValues?: InitialValues<Values>;
 
-  /** Form validator created using `createFormValidator` function (optional). */
+  /** Form validator created using `FormValidatorBuilder` (optional). */
   validator?: FormValidator<Values, Err>;
 };
 
