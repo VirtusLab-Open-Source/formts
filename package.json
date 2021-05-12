@@ -33,7 +33,7 @@
     "analyze": "size-limit --why",
     "prepack": "sh ./scripts/prepack.sh",
     "postpack": "sh ./scripts/postpack.sh",
-    "update-docs": "node_modules/.bin/typedoc src/index.ts ",
+    "update-docs": "node_modules/.bin/typedoc src/index.ts && git add docs/ && git commit -m \"chore(docs): docs update [ci skip]\"",
     "release": "standard-version --releaseCommitMessageFormat \"chore(release): {{currentTag}} [ci skip]\""
   },
   "husky": {
