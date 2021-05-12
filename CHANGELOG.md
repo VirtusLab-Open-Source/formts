@@ -4,13 +4,6 @@ All notable changes to this project will be documented in this file. See
 [standard-version](https://github.com/conventional-changelog/standard-version)
 for commit guidelines.
 
-### [0.2.13](https://github.com/VirtusLab/formts/compare/v0.2.9...v0.2.13) (2021-05-12)
-
-### Features
-
-- added typedoc to master pipeline
-  ([7e39dc5](https://github.com/VirtusLab/formts/commit/7e39dc5fcabb4741db876dd28f56ba6098442aea))
-
 ### [0.2.9](https://github.com/VirtusLab/formts/compare/v0.2.8...v0.2.9) (2021-05-12)
 
 ### [0.2.8](https://github.com/VirtusLab/formts/compare/v0.2.7...v0.2.8) (2021-05-12)
