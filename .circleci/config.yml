@@ -58,6 +58,10 @@ jobs:
             git config user.email "circle@ci.com"
 
       - run:
+          name: Updated documentation files
+          command: yarn update-docs
+
+      - run:
           name: Create release
           command: yarn run release
 
