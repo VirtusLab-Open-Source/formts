@@ -8,9 +8,11 @@ import { opaque } from "../types/type-mapper-util";
  *
  * @example
  * ```
- * const Schema = createForm.schema(fields => ({
- *   x: fields.bool() // x: boolean
- * }));
+ * const Schema = new FormSchemaBuilder()
+ *  .fields({
+ *    x: FormFields.bool() // x: boolean
+ *  })
+ *  .build()
  * ```
  */
 export const bool = (): FieldDecoder<boolean> => {

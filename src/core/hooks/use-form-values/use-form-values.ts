@@ -7,7 +7,7 @@ import { FormSchema } from "../../types/form-schema";
  * Hook used to gain access to values of all form fields.
  * Causes the component to subscribe to changes of all field values.
  *
- * @param Schema - obtained by calling `createFormSchema` function, used to infer types.
+ * @param Schema - created using `FormSchemaBuilder`, needed for type inference.
  * @param controller - obtained by using `useFormController` hook, used to connect to form state.
  * Injected automatically via React Context when used inside `FormProvider` component.
  *
@@ -15,7 +15,7 @@ import { FormSchema } from "../../types/form-schema";
  *
  * @example
  * ```ts
- * const Schema = createFormSchema(...);
+ * const Schema = new FormSchemaBuilder()...;
  *
  * const MyForm: React.FC = () => {
  *   const controller = useFormController({ Schema })

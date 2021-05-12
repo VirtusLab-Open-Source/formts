@@ -14,9 +14,11 @@ import { opaque } from "../types/type-mapper-util";
  *
  * @example
  * ```
- * const Schema = createForm.schema(fields => ({
- *   x: fields.choice("A", "B", "C") // x: "A" | "B" | "C"
- * }));
+ * const Schema = new FormSchemaBuilder()
+ *  .fields({
+ *    x: FormFields.choice("A", "B", "C") // x: "A" | "B" | "C"
+ *  })
+ *  .build()
  * ```
  */
 export const choice = <Opts extends string>(

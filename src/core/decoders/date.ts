@@ -14,9 +14,11 @@ import { opaque } from "../types/type-mapper-util";
  *
  * @example
  * ```
- * const Schema = createForm.schema(fields => ({
- *   x: fields.date() // x: Date | null
- * }));
+ * const Schema = new FormSchemaBuilder()
+ *  .fields({
+ *    x: FormFields.date() // x: Date | null
+ *  })
+ *  .build()
  * ```
  */
 export const date = (): FieldDecoder<Date | null> => {
