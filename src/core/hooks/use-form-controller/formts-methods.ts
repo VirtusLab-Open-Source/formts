@@ -175,8 +175,9 @@ export const createFormtsMethods = <Values extends object, Err>({
           dispatch({ type: "submitFailure" });
           return onFailure(errors);
         } else {
-          dispatch({ type: "submitSuccess" });
-          return onSuccess(state.values.val);
+          return onSuccess(state.values.val).map(() => {
+            dispatch({ type: "submitSuccess" });
+          });
         }
       })
       .mapErr(err => {
