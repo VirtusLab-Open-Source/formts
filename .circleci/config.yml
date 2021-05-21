@@ -59,7 +59,10 @@ jobs:
 
       - run:
           name: Updated documentation files
-          command: yarn update-docs
+          command: |
+            yarn update-docs
+            git add docs/
+            git commit -m "chore(docs): docs update [ci skip]"
 
       - run:
           name: Create release
