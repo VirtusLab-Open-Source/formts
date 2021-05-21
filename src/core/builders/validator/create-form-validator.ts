@@ -1,70 +1,34 @@
-import { isFalsy } from "../../utils";
-import { compact, flatMap, uniqBy } from "../../utils/array";
-import { Task } from "../../utils/task";
+import { isFalsy } from "../../../utils";
+import { compact, flatMap, uniqBy } from "../../../utils/array";
+import { Task } from "../../../utils/task";
 import {
   FieldDescriptor,
   getChildrenDescriptors,
   getParentsChain,
-} from "../types/field-descriptor";
+} from "../../types/field-descriptor";
 import {
-  createRegexForTemplate,
   generateFieldPathsFromTemplate,
   pathIsTemplate,
-} from "../types/field-template";
-import { FormSchema } from "../types/form-schema";
+} from "../../types/field-template";
+import { FormSchema } from "../../types/form-schema";
 import {
-  FieldDescTuple,
   FieldPath,
-  FieldValidator,
   FormValidator,
   GetValue,
-  ValidateConfig,
-  ValidateField,
-  ValidateFn,
   ValidationTrigger,
   Validator,
   _FormValidatorImpl,
-} from "../types/form-validator";
-import { impl, opaque } from "../types/type-mapper-util";
+} from "../../types/form-validator";
+import { impl, opaque } from "../../types/type-mapper-util";
 
-/**
- * Create form validator based on provided set of validation rules.
- * Error type of all validation rules is specified by the FormSchema.
- * You can also specify validation dependencies between fields and validation triggers.
- *
- * @example
- * ```
- * const validator = createFormValidator(Schema, validate => [
- *   validate(
- *     Schema.password,
- *     required("password is required!"),
- *     minLength(6, "password must be at least 6 characters long!")
- *   ),
- *   validate({
- *     field: Schema.passwordConfirm,
- *     dependencies: [Schema.password],
- *     triggers: ["blur", "submit"],
- *     rules: (password) => [
- *       required("password confirmation is required!"),
- *       val => val === password ? null : "passwords are different",
- *     ]
- *   }),
- *   validate(
- *     Schema.promoCodes.every(),
- *     optional(),
- *     exactLength(6, "promo code must be 6 characters long")
- *   )
- * ])
- * ```
- */
+import { FieldValidator } from "./field-validator";
+import { FieldDescTuple } from "./form-validator-builder";
+
 export const createFormValidator = <Values extends object, Err>(
   _schema: FormSchema<Values, Err>,
-  builder: (
-    validate: ValidateFn
-  ) => Array<FieldValidator<any, Err, any | unknown>>
+  validators: Array<FieldValidator<any, Err, any>>
 ): FormValidator<Values, Err> => {
-  const allValidators = builder(validate());
-  const dependenciesDict = buildDependenciesDict(allValidators);
+  const dependenciesDict = buildDependenciesDict(validators);
 
   const ongoingValidationTimestamps: Record<
     FieldValidationKey,
@@ -77,7 +41,7 @@ export const createFormValidator = <Values extends object, Err>(
     fieldPath: FieldPath,
     trigger?: ValidationTrigger
   ): FieldValidator<any, Err, any[]>[] => {
-    return allValidators.filter(x => {
+    return validators.filter(x => {
       const triggerMatches =
         trigger && x.triggers ? x.triggers.includes(trigger) : true;
       return triggerMatches && validatorMatchesField(x, fieldPath);
@@ -167,35 +131,6 @@ export const createFormValidator = <Values extends object, Err>(
   };
 
   return opaque(formValidator);
-};
-
-const validate = (): ValidateFn => {
-  let index = 0;
-
-  return <T, Err, Deps extends any[]>(
-    x: ValidateConfig<T, Err, Deps> | ValidateField<T, Err>,
-    ...rules: Array<Validator<T, Err>>
-  ): FieldValidator<T, Err, Deps> => {
-    const config: ValidateConfig<T, Err, Deps> =
-      (x as any)["field"] != null
-        ? { ...(x as ValidateConfig<T, Err, Deps>) }
-        : { field: x as ValidateField<T, Err>, rules: () => rules };
-
-    const path = impl(config.field).__path;
-    const regex = pathIsTemplate(path)
-      ? createRegexForTemplate(path)
-      : undefined;
-
-    return {
-      id: (index++).toString(),
-      path,
-      regex,
-      triggers: config.triggers,
-      validators: config.rules,
-      dependencies: config.dependencies,
-      debounce: config.debounce,
-    };
-  };
 };
 
 const runValidationForField = <Value, Err, Dependencies extends any[]>(

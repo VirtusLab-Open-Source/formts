@@ -4,6 +4,22 @@ All notable changes to this project will be documented in this file. See
 [standard-version](https://github.com/conventional-changelog/standard-version)
 for commit guidelines.
 
+### [0.2.12](https://github.com/VirtusLab/formts/compare/v0.2.11...v0.2.12) (2021-05-21)
+
+
+### Bug Fixes
+
+* isSubmitting not being set to true while Promise received from submit onSuccess callback is processing ([#103](https://github.com/VirtusLab/formts/issues/103)) ([fc3f3cb](https://github.com/VirtusLab/formts/commit/fc3f3cbf9655aa30c8ecd30d88bab1efbd40e61b))
+
+### [0.2.11](https://github.com/VirtusLab/formts/compare/v0.2.10...v0.2.11) (2021-05-12)
+
+
+### Features
+
+* builder api ([#97](https://github.com/VirtusLab/formts/issues/97)) ([f78bd91](https://github.com/VirtusLab/formts/commit/f78bd91079ec90c6c5f761da61949424f82300a9))
+
+### [0.2.10](https://github.com/VirtusLab/formts/compare/v0.2.9...v0.2.10) (2021-05-12)
+
 ### [0.2.9](https://github.com/VirtusLab/formts/compare/v0.2.8...v0.2.9) (2021-05-12)
 
 ### [0.2.8](https://github.com/VirtusLab/formts/compare/v0.2.7...v0.2.8) (2021-05-12)

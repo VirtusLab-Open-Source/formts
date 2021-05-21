@@ -1,44 +1,19 @@
-import { assertNever, defineProperties, keys } from "../../utils";
-import { Lens } from "../../utils/lenses";
-import * as Decoders from "../decoders";
-import { FieldDecoder, _FieldDecoderImpl } from "../types/field-decoder";
-import { _FieldDescriptorImpl } from "../types/field-descriptor";
-import { _FieldTemplateImpl } from "../types/field-template";
-import { FormSchema } from "../types/form-schema";
-import { impl } from "../types/type-mapper-util";
+import { assertNever, defineProperties, keys } from "../../../utils";
+import { Lens } from "../../../utils/lenses";
+import { FieldDecoder, _FieldDecoderImpl } from "../../types/field-decoder";
+import { _FieldDescriptorImpl } from "../../types/field-descriptor";
+import { _FieldTemplateImpl } from "../../types/field-template";
+import { FormSchema } from "../../types/form-schema";
 
-type BuilderFn<V> = (fields: typeof Decoders) => DecodersMap<V>;
+export type DecodersMap<O> = keyof O extends never
+  ? never
+  : { [K in keyof O]: FieldDecoder<O[K]> };
 
-type DecodersMap<O> = { [K in keyof O]: FieldDecoder<O[K]> };
+export const createFormSchema = <V extends object, Err>(
+  decoders: DecodersMap<V>
+): FormSchema<V, Err> => createObjectSchema(decoders, Lens.identity());
 
-type ErrorsMarker<Err> = (errors: <Err>() => Err) => Err;
-
-/**
- * Define shape of the form values and type of validation errors.
- * This is used not only for compile-time type-safety but also for runtime validation of form values.
- * The schema can be defined top-level, so that it can be exported to nested Form components for usage together with `useField` hook.
- *
- * @returns
- * FormSchema - used to interact with Formts API and point to specific form fields
- *
- * @example
- * ```
- * const Schema = createFormSchema(
- *   fields => ({
- *     name: fields.string(),
- *     age: fields.number(),
- *   }),
- *   errors => errors<string>()
- * );
- * ```
- */
-export const createFormSchema = <Values extends object, Err = never>(
-  fields: BuilderFn<Values>,
-  _errors?: ErrorsMarker<Err>
-): FormSchema<Values, Err> =>
-  createObjectSchema(fields(Decoders), Lens.identity()) as any;
-
-const createObjectSchema = <O extends object, Root>(
+const createObjectSchema = <O extends object, Root, Err>(
   decodersMap: DecodersMap<O>,
   lens: Lens<Root, O>,
   path?: string,
@@ -47,13 +22,13 @@ const createObjectSchema = <O extends object, Root>(
   return keys(decodersMap).reduce((schema, key) => {
     const decoder = decodersMap[key];
     (schema as any)[key] = createFieldDescriptor(
-      impl(decoder) as _FieldDecoderImpl<any>,
+      decoder as any,
       Lens.compose(lens, Lens.prop(key as any)),
       path ? `${path}.${key}` : `${key}`,
       parent
     );
     return schema;
-  }, {} as FormSchema<O, unknown>);
+  }, {} as FormSchema<O, Err>);
 };
 
 const createFieldDescriptor = (
@@ -66,30 +41,10 @@ const createFieldDescriptor = (
   const rootDescriptor = defineProperties(
     {},
     {
-      __decoder: {
-        value: decoder,
-        enumerable: false,
-        writable: false,
-        configurable: false,
-      },
-      __path: {
-        value: path,
-        enumerable: false,
-        writable: false,
-        configurable: false,
-      },
-      __lens: {
-        value: lens,
-        enumerable: false,
-        writable: false,
-        configurable: false,
-      },
-      __parent: {
-        value: parent,
-        enumerable: false,
-        writable: false,
-        configurable: false,
-      },
+      __decoder: hiddenJsProperty(decoder),
+      __path: hiddenJsProperty(path),
+      __lens: hiddenJsProperty(lens),
+      __parent: hiddenJsProperty(parent),
     }
   );
 
@@ -111,12 +66,7 @@ const createFieldDescriptor = (
         );
 
       const nth = defineProperties(nthHandler, {
-        __rootPath: {
-          value: path,
-          enumerable: false,
-          writable: false,
-          configurable: false,
-        },
+        __rootPath: hiddenJsProperty(path),
       });
 
       const every = () =>
@@ -150,14 +100,7 @@ const createFieldTemplate = (
   // these properties are hidden implementation details and thus should not be enumerable
   const rootDescriptor = defineProperties(
     {},
-    {
-      __path: {
-        value: path,
-        enumerable: false,
-        writable: false,
-        configurable: false,
-      },
-    }
+    { __path: hiddenJsProperty(path) }
   );
 
   switch (decoder.fieldType) {
@@ -176,12 +119,7 @@ const createFieldTemplate = (
         );
 
       const nth = defineProperties(nthHandler, {
-        __rootPath: {
-          value: path,
-          enumerable: false,
-          writable: false,
-          configurable: false,
-        },
+        __rootPath: hiddenJsProperty(path),
       });
 
       const every = () =>
@@ -213,9 +151,17 @@ const createObjectTemplateSchema = <O extends object>(
   return keys(decodersMap).reduce((schema, key) => {
     const decoder = decodersMap[key];
     (schema as any)[key] = createFieldTemplate(
-      impl(decoder) as _FieldDecoderImpl<any>,
+      decoder as any,
       `${path}.${key}`
     );
     return schema;
   }, {} as { [x in keyof O]: _FieldTemplateImpl<O[x]> });
 };
+
+const hiddenJsProperty = <T>(value: T) =>
+  ({
+    value,
+    enumerable: false,
+    writable: false,
+    configurable: false,
+  } as const);

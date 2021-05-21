@@ -9,9 +9,11 @@ import { opaque } from "../types/type-mapper-util";
  *
  * @example
  * ```
- * const Schema = createForm.schema(fields => ({
- *   x: fields.number() // x: number | ""
- * }));
+ * const Schema = new FormSchemaBuilder()
+ *  .fields({
+ *    x: FormFields.number() // x: number | ""
+ *  })
+ *  .build()
  * ```
  */
 export const number = (): FieldDecoder<number | ""> => {

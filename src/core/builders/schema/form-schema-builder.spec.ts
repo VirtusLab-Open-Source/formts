@@ -1,32 +1,61 @@
 import { assert, IsExact } from "conditional-type-checks";
 
-import { FormSchema } from "../types/form-schema";
-import { impl } from "../types/type-mapper-util";
+import { FormSchema } from "../../types/form-schema";
+import { impl } from "../../types/type-mapper-util";
 
-import { createFormSchema } from "./create-form-schema";
+import { FormFields, FormSchemaBuilder } from ".";
 
-describe("createFormSchema", () => {
+describe("FormSchemaBuilder", () => {
+  it("does not allow creating Schema with no fields", () => {
+    // @ts-expect-error
+    const Schema1 = new FormSchemaBuilder().build();
+
+    // @ts-expect-error
+    const Schema2 = new FormSchemaBuilder().errors<string>().build();
+
+    expect(Object.keys(Schema1)).toEqual([]);
+    expect(Object.keys(Schema2)).toEqual([]);
+  });
+
+  it("does not allow creating Schema with empty fields", () => {
+    // @ts-expect-error
+    const Schema = new FormSchemaBuilder().fields({}).build();
+
+    expect(Object.keys(Schema)).toEqual([]);
+  });
+
   it("creates FormSchema type based on field decoders with default error type", () => {
-    const Schema = createFormSchema(fields => ({
-      string: fields.string(),
-      choice: fields.choice("A", "B", "C"),
-      num: fields.number(),
-      bool: fields.bool(),
-      date: fields.date(),
-      arrayString: fields.array(fields.string()),
-      arrayChoice: fields.array(fields.choice("a", "b", "c")),
-      arrayArrayString: fields.array(fields.array(fields.string())),
-      object: fields.object({ str: fields.string(), num: fields.number() }),
-      arrayObjectString: fields.array(fields.object({ str: fields.string() })),
-      objectArray: fields.object({
-        arrayString: fields.array(fields.string()),
-      }),
-      objectObjectArrayObjectString: fields.object({
-        obj: fields.object({
-          array: fields.array(fields.object({ str: fields.string() })),
+    const Schema = new FormSchemaBuilder()
+      .fields({
+        string: FormFields.string(),
+        choice: FormFields.choice("A", "B", "C"),
+        num: FormFields.number(),
+        bool: FormFields.bool(),
+        date: FormFields.date(),
+        arrayString: FormFields.array(FormFields.string()),
+        arrayChoice: FormFields.array(FormFields.choice("a", "b", "c")),
+        arrayArrayString: FormFields.array(
+          FormFields.array(FormFields.string())
+        ),
+        object: FormFields.object({
+          str: FormFields.string(),
+          num: FormFields.number(),
         }),
-      }),
-    }));
+        arrayObjectString: FormFields.array(
+          FormFields.object({ str: FormFields.string() })
+        ),
+        objectArray: FormFields.object({
+          arrayString: FormFields.array(FormFields.string()),
+        }),
+        objectObjectArrayObjectString: FormFields.object({
+          obj: FormFields.object({
+            array: FormFields.array(
+              FormFields.object({ str: FormFields.string() })
+            ),
+          }),
+        }),
+      })
+      .build();
 
     type Actual = typeof Schema;
     type Expected = FormSchema<
@@ -53,31 +82,38 @@ describe("createFormSchema", () => {
   });
 
   it("creates FormSchema type based on field decoders with custom error type", () => {
-    const Schema = createFormSchema(
-      fields => ({
-        string: fields.string(),
-        choice: fields.choice("A", "B", "C"),
-        num: fields.number(),
-        bool: fields.bool(),
-        date: fields.date(),
-        arrayString: fields.array(fields.string()),
-        arrayChoice: fields.array(fields.choice("a", "b", "c")),
-        arrayArrayString: fields.array(fields.array(fields.string())),
-        object: fields.object({ str: fields.string(), num: fields.number() }),
-        arrayObjectString: fields.array(
-          fields.object({ str: fields.string() })
+    const Schema = new FormSchemaBuilder()
+      .fields({
+        string: FormFields.string(),
+        choice: FormFields.choice("A", "B", "C"),
+        num: FormFields.number(),
+        bool: FormFields.bool(),
+        date: FormFields.date(),
+        arrayString: FormFields.array(FormFields.string()),
+        arrayChoice: FormFields.array(FormFields.choice("a", "b", "c")),
+        arrayArrayString: FormFields.array(
+          FormFields.array(FormFields.string())
         ),
-        objectArray: fields.object({
-          arrayString: fields.array(fields.string()),
+        object: FormFields.object({
+          str: FormFields.string(),
+          num: FormFields.number(),
         }),
-        objectObjectArrayObjectString: fields.object({
-          obj: fields.object({
-            array: fields.array(fields.object({ str: fields.string() })),
+        arrayObjectString: FormFields.array(
+          FormFields.object({ str: FormFields.string() })
+        ),
+        objectArray: FormFields.object({
+          arrayString: FormFields.array(FormFields.string()),
+        }),
+        objectObjectArrayObjectString: FormFields.object({
+          obj: FormFields.object({
+            array: FormFields.array(
+              FormFields.object({ str: FormFields.string() })
+            ),
           }),
         }),
-      }),
-      error => error<"ERR_1" | "ERR_2">()
-    );
+      })
+      .errors<"ERR_1" | "ERR_2">()
+      .build();
 
     type Actual = typeof Schema;
     type Expected = FormSchema<
@@ -103,33 +139,38 @@ describe("createFormSchema", () => {
     assert<IsExact<Actual, Expected>>(true);
   });
 
-  it("creates empty schema object when no fields are specified", () => {
-    const Schema = createFormSchema(() => ({}));
-
-    expect(Object.keys(Schema)).toEqual([]);
-  });
-
   it("creates schema object with keys for every field", () => {
-    const Schema = createFormSchema(fields => ({
-      string: fields.string(),
-      choice: fields.choice("A", "B", "C"),
-      num: fields.number(),
-      bool: fields.bool(),
-      date: fields.date(),
-      arrayString: fields.array(fields.string()),
-      arrayChoice: fields.array(fields.choice("a", "b", "c")),
-      arrayArrayString: fields.array(fields.array(fields.string())),
-      object: fields.object({ str: fields.string(), num: fields.number() }),
-      arrayObjectString: fields.array(fields.object({ str: fields.string() })),
-      objectArray: fields.object({
-        arrayString: fields.array(fields.string()),
-      }),
-      objectObjectArrayObjectString: fields.object({
-        obj: fields.object({
-          array: fields.array(fields.object({ str: fields.string() })),
+    const Schema = new FormSchemaBuilder()
+      .fields({
+        string: FormFields.string(),
+        choice: FormFields.choice("A", "B", "C"),
+        num: FormFields.number(),
+        bool: FormFields.bool(),
+        date: FormFields.date(),
+        arrayString: FormFields.array(FormFields.string()),
+        arrayChoice: FormFields.array(FormFields.choice("a", "b", "c")),
+        arrayArrayString: FormFields.array(
+          FormFields.array(FormFields.string())
+        ),
+        object: FormFields.object({
+          str: FormFields.string(),
+          num: FormFields.number(),
         }),
-      }),
-    }));
+        arrayObjectString: FormFields.array(
+          FormFields.object({ str: FormFields.string() })
+        ),
+        objectArray: FormFields.object({
+          arrayString: FormFields.array(FormFields.string()),
+        }),
+        objectObjectArrayObjectString: FormFields.object({
+          obj: FormFields.object({
+            array: FormFields.array(
+              FormFields.object({ str: FormFields.string() })
+            ),
+          }),
+        }),
+      })
+      .build();
 
     expect(Object.keys(Schema)).toEqual([
       "string",
@@ -148,26 +189,37 @@ describe("createFormSchema", () => {
   });
 
   it("creates schema object with paths for every field", () => {
-    const Schema = createFormSchema(fields => ({
-      string: fields.string(),
-      choice: fields.choice("A", "B", "C"),
-      num: fields.number(),
-      bool: fields.bool(),
-      date: fields.date(),
-      arrayString: fields.array(fields.string()),
-      arrayChoice: fields.array(fields.choice("a", "b", "c")),
-      arrayArrayString: fields.array(fields.array(fields.string())),
-      object: fields.object({ str: fields.string(), num: fields.number() }),
-      arrayObjectString: fields.array(fields.object({ str: fields.string() })),
-      objectArray: fields.object({
-        arrayString: fields.array(fields.string()),
-      }),
-      objectObjectArrayObjectString: fields.object({
-        obj: fields.object({
-          array: fields.array(fields.object({ str: fields.string() })),
+    const Schema = new FormSchemaBuilder()
+      .fields({
+        string: FormFields.string(),
+        choice: FormFields.choice("A", "B", "C"),
+        num: FormFields.number(),
+        bool: FormFields.bool(),
+        date: FormFields.date(),
+        arrayString: FormFields.array(FormFields.string()),
+        arrayChoice: FormFields.array(FormFields.choice("a", "b", "c")),
+        arrayArrayString: FormFields.array(
+          FormFields.array(FormFields.string())
+        ),
+        object: FormFields.object({
+          str: FormFields.string(),
+          num: FormFields.number(),
         }),
-      }),
-    }));
+        arrayObjectString: FormFields.array(
+          FormFields.object({ str: FormFields.string() })
+        ),
+        objectArray: FormFields.object({
+          arrayString: FormFields.array(FormFields.string()),
+        }),
+        objectObjectArrayObjectString: FormFields.object({
+          obj: FormFields.object({
+            array: FormFields.array(
+              FormFields.object({ str: FormFields.string() })
+            ),
+          }),
+        }),
+      })
+      .build();
 
     expect(Schema).toEqual({
       string: expect.objectContaining({ __path: "string" }),
@@ -217,9 +269,11 @@ describe("createFormSchema", () => {
   });
 
   it("creates field descriptor for string field", () => {
-    const Schema = createFormSchema(fields => ({
-      theString: fields.string(),
-    }));
+    const Schema = new FormSchemaBuilder()
+      .fields({
+        theString: FormFields.string(),
+      })
+      .build();
 
     const descriptor = impl(Schema.theString);
 
@@ -231,9 +285,11 @@ describe("createFormSchema", () => {
   });
 
   it("creates field descriptor for choice field", () => {
-    const Schema = createFormSchema(fields => ({
-      theChoice: fields.choice("A", "B", "C"),
-    }));
+    const Schema = new FormSchemaBuilder()
+      .fields({
+        theChoice: FormFields.choice("A", "B", "C"),
+      })
+      .build();
 
     const descriptor = impl(Schema.theChoice);
 
@@ -246,16 +302,20 @@ describe("createFormSchema", () => {
   });
 
   it("does not allow creating schema with empty choice field", () => {
-    createFormSchema(fields => ({
-      // @ts-expect-error
-      theChoice: fields.choice(),
-    }));
+    new FormSchemaBuilder()
+      .fields({
+        // @ts-expect-error
+        theChoice: FormFields.choice(),
+      })
+      .build();
   });
 
   it("creates field descriptor for number field", () => {
-    const Schema = createFormSchema(fields => ({
-      theNumber: fields.number(),
-    }));
+    const Schema = new FormSchemaBuilder()
+      .fields({
+        theNumber: FormFields.number(),
+      })
+      .build();
 
     const descriptor = impl(Schema.theNumber);
 
@@ -267,9 +327,11 @@ describe("createFormSchema", () => {
   });
 
   it("creates field descriptor for bool field", () => {
-    const Schema = createFormSchema(fields => ({
-      theBoolean: fields.bool(),
-    }));
+    const Schema = new FormSchemaBuilder()
+      .fields({
+        theBoolean: FormFields.bool(),
+      })
+      .build();
 
     const descriptor = impl(Schema.theBoolean);
 
@@ -281,9 +343,11 @@ describe("createFormSchema", () => {
   });
 
   it("creates field descriptor for date field", () => {
-    const Schema = createFormSchema(fields => ({
-      theDate: fields.date(),
-    }));
+    const Schema = new FormSchemaBuilder()
+      .fields({
+        theDate: FormFields.date(),
+      })
+      .build();
 
     const descriptor = impl(Schema.theDate);
 
@@ -295,9 +359,11 @@ describe("createFormSchema", () => {
   });
 
   it("creates field descriptor for array field", () => {
-    const Schema = createFormSchema(fields => ({
-      theArray: fields.array(fields.string()),
-    }));
+    const Schema = new FormSchemaBuilder()
+      .fields({
+        theArray: FormFields.array(FormFields.string()),
+      })
+      .build();
 
     const rootDescriptor = impl(Schema.theArray);
 
@@ -318,9 +384,11 @@ describe("createFormSchema", () => {
   });
 
   it("creates field descriptor for nested array field", () => {
-    const Schema = createFormSchema(fields => ({
-      theArray: fields.array(fields.array(fields.number())),
-    }));
+    const Schema = new FormSchemaBuilder()
+      .fields({
+        theArray: FormFields.array(FormFields.array(FormFields.number())),
+      })
+      .build();
 
     const rootDescriptor = impl(Schema.theArray);
     expect(rootDescriptor.__decoder.fieldType).toBe("array");
@@ -336,9 +404,14 @@ describe("createFormSchema", () => {
   });
 
   it("creates field descriptor for object field", () => {
-    const Schema = createFormSchema(fields => ({
-      theObject: fields.object({ str: fields.string(), num: fields.number() }),
-    }));
+    const Schema = new FormSchemaBuilder()
+      .fields({
+        theObject: FormFields.object({
+          str: FormFields.string(),
+          num: FormFields.number(),
+        }),
+      })
+      .build();
 
     const rootDescriptor = impl(Schema.theObject);
     expect(rootDescriptor.__decoder.fieldType).toBe("object");
@@ -356,14 +429,18 @@ describe("createFormSchema", () => {
   });
 
   it("creates field descriptor for a complex object field", () => {
-    const Schema = createFormSchema(fields => ({
-      theObject: fields.object({
-        choice: fields.choice("A", "B"),
-        nested: fields.object({
-          array: fields.array(fields.object({ str: fields.string() })),
+    const Schema = new FormSchemaBuilder()
+      .fields({
+        theObject: FormFields.object({
+          choice: FormFields.choice("A", "B"),
+          nested: FormFields.object({
+            array: FormFields.array(
+              FormFields.object({ str: FormFields.string() })
+            ),
+          }),
         }),
-      }),
-    }));
+      })
+      .build();
 
     const rootDescriptor = impl(Schema.theObject);
     expect(rootDescriptor.__decoder.fieldType).toBe("object");
@@ -404,9 +481,11 @@ describe("createFormSchema", () => {
   });
 
   it("does not allow creating schema with empty object field", () => {
-    createFormSchema(fields => ({
-      // @ts-expect-error
-      theObject: fields.object({}),
-    }));
+    new FormSchemaBuilder()
+      .fields({
+        // @ts-expect-error
+        theObject: FormFields.object({}),
+      })
+      .build();
   });
 });

@@ -2,7 +2,7 @@ import { FormSchema } from "./form-schema";
 import { FormValidator } from "./form-validator";
 
 export type FormtsOptions<Values extends object, Err> = {
-  /** Definition of form fields created using `createFormSchema` function.  */
+  /** Definition of form fields created using `FormSchemaBuilder`.  */
   Schema: FormSchema<Values, Err>;
 
   /**
@@ -12,7 +12,7 @@ export type FormtsOptions<Values extends object, Err> = {
    */
   initialValues?: InitialValues<Values>;
 
-  /** Form validator created using `createFormValidator` function (optional). */
+  /** Form validator created using `FormValidatorBuilder` (optional). */
   validator?: FormValidator<Values, Err>;
 };
 

@@ -20,12 +20,14 @@ type ObjectFieldDecoderWithGuards<
  *
  * @example
  * ```
- * const Schema = createForm.schema(fields => ({
- *   x: fields.object({
- *     foo: fields.string(),
- *     bar: fields.number()
+ * const Schema = new FormSchemaBuilder()
+ *  .fields({
+ *    x: FormFields.object({
+ *      foo: FormFields.string(),
+ *      bar: FormFields.number()
  *   }) // x: { foo: string; bar: number | "" }
- * }));
+ *  })
+ *  .build()
  * ```
  */
 export const object = <O extends object>(
