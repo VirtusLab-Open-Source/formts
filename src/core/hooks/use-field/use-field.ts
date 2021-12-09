@@ -80,7 +80,9 @@ const createFieldHandle = <T, Err>(
 
     id: impl(descriptor).__path,
 
-    value: fieldState.val.value,
+    get value() {
+      return fieldState.val.value;
+    },
 
     get isTouched() {
       return (

@@ -75,13 +75,21 @@ export const useFormHandle = <Values extends object, Err>(
   useSubscription(stateAtom);
 
   return {
-    isSubmitting: stateAtom.val.isSubmitting,
+    get isSubmitting() {
+      return stateAtom.val.isSubmitting;
+    },
 
-    isTouched: stateAtom.val.isTouched,
+    get isTouched() {
+      return stateAtom.val.isTouched;
+    },
 
-    isValid: stateAtom.val.isValid,
+    get isValid() {
+      return stateAtom.val.isValid;
+    },
 
-    isValidating: stateAtom.val.isValidating,
+    get isValidating() {
+      return stateAtom.val.isValidating;
+    },
 
     get submitCount() {
       const { successfulSubmitCount, failedSubmitCount } = stateAtom.val;
