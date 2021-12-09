@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.2.15](https://github.com/VirtusLab/formts/compare/v0.2.14...v0.2.15) (2021-12-09)
+
+
+### Bug Fixes
+
+* **core:** replace use-handle props with getters ([#109](https://github.com/VirtusLab/formts/issues/109)) ([882d24d](https://github.com/VirtusLab/formts/commit/882d24d8d8d7928c24a5ac7993a839817a4e0361))
+
 ### [0.2.14](https://github.com/VirtusLab/formts/compare/v0.2.13...v0.2.14) (2021-06-07)
 
 ### [0.2.13](https://github.com/VirtusLab/formts/compare/v0.2.12...v0.2.13) (2021-06-07)
