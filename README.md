@@ -1,4 +1,4 @@
-[![build status](https://circleci.com/gh/VirtusLab/formts.svg?style=shield)](https://app.circleci.com/pipelines/github/VirtusLab/formts)
+[![build status](https://circleci.com/gh/VirtusLab-Open-Source/formts.svg?style=shield)](https://app.circleci.com/pipelines/github/VirtusLab-Open-Source/formts)
 [![GitHub license](https://img.shields.io/github/license/VirtusLab/formts)](https://github.com/VirtusLab/formts/blob/master/LICENSE)
 [![npm](https://img.shields.io/npm/v/@virtuslab/formts)](https://www.npmjs.com/package/@virtuslab/formts)
 [![npm bundle size](https://img.shields.io/bundlephobia/minzip/@virtuslab/formts)](https://bundlephobia.com/result?p=@virtuslab/formts)
