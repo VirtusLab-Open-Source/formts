@@ -41,15 +41,14 @@ describe("date decoder", () => {
 
     [
       new Date().toISOString(),
-      new Date().toLocaleDateString(),
       new Date().toUTCString(),
       new Date().toString(),
-    ].forEach(string =>
-      expect(decoder.decode(string)).toEqual({
+    ].forEach(string => {
+      return expect(decoder.decode(string)).toEqual({
         ok: true,
         value: new Date(string),
-      })
-    );
+      });
+    });
   });
 
   it("should NOT decode random strings", () => {
