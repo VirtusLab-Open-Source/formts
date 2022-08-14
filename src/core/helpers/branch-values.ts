@@ -25,7 +25,7 @@ export const constructBranchValidatingString = (
   return JSON.stringify(branchValidating);
 };
 
-const isExactOrChildPath = (field: FieldDescriptor<unknown>) => (
+export const isExactOrChildPath = (field: FieldDescriptor<unknown>) => (
   path: string
 ): boolean => {
   const fieldPath = impl(field).__path;

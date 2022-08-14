@@ -149,6 +149,9 @@ export const createFormtsMethods = <Values extends object, Err>({
   const resetForm = (): Task<void> =>
     Task.from(() => dispatch({ type: "resetForm" }));
 
+  const resetField = <T>(field: FieldDescriptor<T, Err>): Task<void> =>
+    Task.from(() => dispatch({ type: "resetField", payload: { field } }));
+
   const submitForm = (
     onSuccess: (values: Values) => Task<void>,
     onFailure: (errors: Array<FieldError<Err>>) => Task<void>
@@ -184,6 +187,7 @@ export const createFormtsMethods = <Values extends object, Err>({
     touchField,
     setFieldErrors,
     resetForm,
+    resetField,
     submitForm,
   };
 };

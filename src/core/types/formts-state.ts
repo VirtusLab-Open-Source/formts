@@ -5,6 +5,7 @@ import { FieldDescriptor } from "./field-descriptor";
 // internal state & actions
 export type FormtsAction<Err> =
   | { type: "resetForm" }
+  | { type: "resetField"; payload: { field: FieldDescriptor<unknown> } }
   | { type: "touchValue"; payload: { field: FieldDescriptor<unknown> } }
   | {
       type: "setValue";

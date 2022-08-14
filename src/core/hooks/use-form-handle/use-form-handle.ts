@@ -57,6 +57,7 @@ export const useFormHandle = <Values extends object, Err>(
           successfulSubmitCount,
           failedSubmitCount,
         }),
+
         Atom.fuse(
           (sc, fc, touched) => sc > 0 || fc > 0 || resolveTouched(touched),
           state.successfulSubmitCount,

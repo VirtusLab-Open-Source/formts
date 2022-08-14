@@ -187,4 +187,6 @@ const createFieldHandle = <T, Err>(
     },
 
     validate: () => methods.validateField(descriptor).runPromise(),
+
+    reset: () => methods.resetField(descriptor).runPromise(),
   });

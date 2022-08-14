@@ -2,6 +2,7 @@ import { filter, range } from "../../../utils";
 import { Atom } from "../../../utils/atoms";
 import {
   createInitialValues,
+  isExactOrChildPath,
   makeTouchedValues,
   makeUntouchedValues,
   resolveTouched,
@@ -44,6 +45,24 @@ export const createStateDispatch = <Values extends object, Err>(
       state.isSubmitting.set(false);
       state.successfulSubmitCount.set(0);
       state.failedSubmitCount.set(0);
+      break;
+    }
+
+    case "resetField": {
+      const { field } = action.payload;
+      const lens = impl(field).__lens;
+
+      const initialValue = lens.get(state.initialValues.val);
+      state.values.set(lens.update(state.values.val, () => initialValue));
+
+      state.touched.set(
+        lens.update(state.touched.val, () => makeUntouchedValues(initialValue))
+      );
+
+      state.errors.set(
+        filter(state.errors.val, ({ key }) => !isExactOrChildPath(field)(key))
+      );
+
       break;
     }
 
@@ -170,5 +189,10 @@ export const createStateDispatch = <Values extends object, Err>(
       state.failedSubmitCount.set(state.failedSubmitCount.val + 1);
       break;
     }
+
+    default:
+      exhaustivityCheck(action);
   }
 };
+
+const exhaustivityCheck = (_action: never) => {};
