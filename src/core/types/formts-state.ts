@@ -3,8 +3,8 @@ import { Atom } from "../../utils/atoms";
 import { FieldDescriptor } from "./field-descriptor";
 
 // internal state & actions
-export type FormtsAction<Values, Err> =
-  | { type: "reset"; payload: { values: Values } }
+export type FormtsAction<Err> =
+  | { type: "resetForm" }
   | { type: "touchValue"; payload: { field: FieldDescriptor<unknown> } }
   | {
       type: "setValue";
@@ -18,6 +18,7 @@ export type FormtsAction<Values, Err> =
   | { type: "submitFailure" };
 
 export type FormtsAtomState<Values extends object, Err> = {
+  initialValues: Atom.Readonly<Values>;
   values: Atom<Values>;
   touched: Atom<TouchedValues<Values>>;
   errors: Atom<FieldErrors<Err>>;

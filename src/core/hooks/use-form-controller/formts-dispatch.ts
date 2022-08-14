@@ -18,6 +18,7 @@ export const getInitialState = <Values extends object, Err>({
   const touched = makeUntouchedValues(values);
 
   return {
+    initialValues: Atom.of(values),
     values: Atom.of(values),
     touched: Atom.of(touched),
     errors: Atom.of({}),
@@ -30,10 +31,10 @@ export const getInitialState = <Values extends object, Err>({
 
 export const createStateDispatch = <Values extends object, Err>(
   state: FormtsAtomState<Values, Err>
-) => (action: FormtsAction<Values, Err>) => {
+) => (action: FormtsAction<Err>) => {
   switch (action.type) {
-    case "reset": {
-      const { values } = action.payload;
+    case "resetForm": {
+      const values = state.initialValues.val;
       const touched = makeUntouchedValues(values);
 
       state.values.set(values);

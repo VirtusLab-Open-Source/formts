@@ -17,7 +17,7 @@ import { impl } from "../../types/type-mapper-util";
 type Input<Values extends object, Err> = {
   options: FormtsOptions<Values, Err>;
   state: FormtsAtomState<Values, Err>;
-  dispatch: React.Dispatch<FormtsAction<Values, Err>>;
+  dispatch: React.Dispatch<FormtsAction<Err>>;
 };
 
 export const createFormtsMethods = <Values extends object, Err>({
@@ -147,17 +147,7 @@ export const createFormtsMethods = <Values extends object, Err>({
     );
 
   const resetForm = (): Task<void> =>
-    Task.from(() =>
-      dispatch({
-        type: "reset",
-        payload: {
-          values: Helpers.createInitialValues(
-            options.Schema,
-            options.initialValues
-          ),
-        },
-      })
-    );
+    Task.from(() => dispatch({ type: "resetForm" }));
 
   const submitForm = (
     onSuccess: (values: Values) => Task<void>,

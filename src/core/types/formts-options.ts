@@ -9,6 +9,8 @@ export type FormtsOptions<Values extends object, Err> = {
    * Values used to override the defaults when filling the form
    * after the component is mounted or after form reset (optional).
    * The defaults depend on field type (defined in the Schema).
+   * Snapshot of the initialValues will be taken when mounting the component
+   * and further changes will be ignored.
    */
   initialValues?: InitialValues<Values>;
 
