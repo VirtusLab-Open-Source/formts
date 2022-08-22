@@ -19,7 +19,7 @@ export type FormtsAction<Err> =
   | { type: "submitFailure" };
 
 export type FormtsAtomState<Values extends object, Err> = {
-  initialValues: Atom.Readonly<Values>;
+  initialValues: Values;
   values: Atom<Values>;
   touched: Atom<TouchedValues<Values>>;
   errors: Atom<FieldErrors<Err>>;
