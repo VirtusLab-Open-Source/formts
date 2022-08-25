@@ -2,6 +2,7 @@ import { filter, range } from "../../../utils";
 import { Atom } from "../../../utils/atoms";
 import {
   createInitialValues,
+  isExactOrChildPath,
   makeTouchedValues,
   makeUntouchedValues,
   resolveTouched,
@@ -18,6 +19,7 @@ export const getInitialState = <Values extends object, Err>({
   const touched = makeUntouchedValues(values);
 
   return {
+    initialValues: values,
     values: Atom.of(values),
     touched: Atom.of(touched),
     errors: Atom.of({}),
@@ -30,19 +32,36 @@ export const getInitialState = <Values extends object, Err>({
 
 export const createStateDispatch = <Values extends object, Err>(
   state: FormtsAtomState<Values, Err>
-) => (action: FormtsAction<Values, Err>) => {
+) => (action: FormtsAction<Err>) => {
   switch (action.type) {
-    case "reset": {
-      const { values } = action.payload;
-      const touched = makeUntouchedValues(values);
+    case "resetForm": {
+      const touched = makeUntouchedValues(state.initialValues);
 
-      state.values.set(values);
+      state.values.set(state.initialValues);
       state.touched.set(touched);
       state.errors.set({});
       state.validating.set({});
       state.isSubmitting.set(false);
       state.successfulSubmitCount.set(0);
       state.failedSubmitCount.set(0);
+      break;
+    }
+
+    case "resetField": {
+      const { field } = action.payload;
+      const lens = impl(field).__lens;
+
+      const initialValue = lens.get(state.initialValues);
+      state.values.set(lens.update(state.values.val, () => initialValue));
+
+      state.touched.set(
+        lens.update(state.touched.val, () => makeUntouchedValues(initialValue))
+      );
+
+      state.errors.set(
+        filter(state.errors.val, ({ key }) => !isExactOrChildPath(field)(key))
+      );
+
       break;
     }
 
@@ -169,5 +188,10 @@ export const createStateDispatch = <Values extends object, Err>(
       state.failedSubmitCount.set(state.failedSubmitCount.val + 1);
       break;
     }
+
+    default:
+      exhaustivityCheck(action);
   }
 };
+
+const exhaustivityCheck = (_action: never) => {};

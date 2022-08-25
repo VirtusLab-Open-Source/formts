@@ -72,6 +72,9 @@ type BaseFieldHandle<T, Err> = {
   /** runs all validation rules of the field, regardless of their validation triggers */
   validate: () => void;
 
+  /** resets value to initial value and clears related field state */
+  reset: () => void;
+
   /**
    * Will cause field validation to run with the `blur` trigger.
    * Will set `isTouched` to `true`.

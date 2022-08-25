@@ -26,6 +26,7 @@ export type InternalFormtsMethods<Values extends object, Err> = {
   touchField: <T>(field: FieldDescriptor<T, Err>) => Task<void>;
   setFieldErrors: (...fields: ValidationResult<Err>) => Task<void>;
   resetForm: () => Task<void>;
+  resetField: <T>(field: FieldDescriptor<T, Err>) => Task<void>;
   submitForm: (
     onSuccess: (values: Values) => Task<void>,
     onFailure: (errors: Array<FieldError<Err>>) => Task<void>

@@ -829,8 +829,8 @@ describe("decodeChangeEvent", () => {
       expect(decode(MockEvent.custom(validDate.toISOString()))).toEqual(
         Result.success(new Date(validDate.toISOString()))
       );
-      expect(decode(MockEvent.custom(validDate.toLocaleString()))).toEqual(
-        Result.success(new Date(validDate.toLocaleString()))
+      expect(decode(MockEvent.custom(validDate.toString()))).toEqual(
+        Result.success(new Date(validDate.toString()))
       );
       expect(decode(MockEvent.custom(validDate.valueOf()))).toEqual(
         Result.success(validDate)

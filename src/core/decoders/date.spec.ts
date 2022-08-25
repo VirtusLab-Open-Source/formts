@@ -41,7 +41,6 @@ describe("date decoder", () => {
 
     [
       new Date().toISOString(),
-      new Date().toLocaleDateString(),
       new Date().toUTCString(),
       new Date().toString(),
     ].forEach(string =>

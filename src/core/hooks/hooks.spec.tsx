@@ -738,6 +738,93 @@ describe("formts hooks API", () => {
     }
   });
 
+  it("resets field state to initial when FieldHandle reset method is called", () => {
+    const { result: controllerHook } = renderHook(() =>
+      useFormController({
+        Schema,
+        initialValues: { theObject: { foo: "42" } },
+      })
+    );
+    const {
+      result: numberFieldHook,
+      rerender: rerenderNumberFieldHook,
+    } = renderHook(() => useField(Schema.theNum, controllerHook.current));
+    const {
+      result: objectFieldHook,
+      rerender: rerenderObjectFieldHook,
+    } = renderHook(() => useField(Schema.theObject, controllerHook.current));
+    const {
+      result: nestedFooFieldHook,
+      rerender: rerenderNestedFooFieldHook,
+    } = renderHook(() =>
+      useField(Schema.theObject.foo, controllerHook.current)
+    );
+
+    const rerenderHooks = () => {
+      rerenderNumberFieldHook();
+      rerenderObjectFieldHook();
+      rerenderNestedFooFieldHook();
+    };
+
+    {
+      expect(numberFieldHook.current.isTouched).toBe(false);
+      expect(numberFieldHook.current.isValid).toBe(true);
+      expect(numberFieldHook.current.value).toEqual("");
+
+      expect(objectFieldHook.current.isTouched).toBe(false);
+      expect(objectFieldHook.current.isValid).toBe(true);
+      expect(objectFieldHook.current.value).toEqual({ foo: "42" });
+
+      expect(nestedFooFieldHook.current.isTouched).toBe(false);
+      expect(nestedFooFieldHook.current.isValid).toBe(true);
+      expect(nestedFooFieldHook.current.value).toEqual("42");
+    }
+
+    {
+      act(() => {
+        numberFieldHook.current.setValue(42);
+        objectFieldHook.current.setError("test error");
+        nestedFooFieldHook.current.setValue("24");
+        rerenderHooks();
+      });
+    }
+
+    {
+      expect(numberFieldHook.current.isTouched).toBe(true);
+      expect(numberFieldHook.current.isValid).toBe(true);
+      expect(numberFieldHook.current.value).toEqual(42);
+
+      expect(objectFieldHook.current.isTouched).toBe(true);
+      expect(objectFieldHook.current.isValid).toBe(false);
+      expect(objectFieldHook.current.value).toEqual({ foo: "24" });
+
+      expect(nestedFooFieldHook.current.isTouched).toBe(true);
+      expect(nestedFooFieldHook.current.isValid).toBe(true);
+      expect(nestedFooFieldHook.current.value).toEqual("24");
+    }
+
+    {
+      act(() => {
+        objectFieldHook.current.reset();
+        rerenderHooks();
+      });
+    }
+
+    {
+      expect(numberFieldHook.current.isTouched).toBe(true);
+      expect(numberFieldHook.current.isValid).toBe(true);
+      expect(numberFieldHook.current.value).toEqual(42);
+
+      expect(objectFieldHook.current.isTouched).toBe(false);
+      expect(objectFieldHook.current.isValid).toBe(true);
+      expect(objectFieldHook.current.value).toEqual({ foo: "42" });
+
+      expect(nestedFooFieldHook.current.isTouched).toBe(false);
+      expect(nestedFooFieldHook.current.isValid).toBe(true);
+      expect(nestedFooFieldHook.current.value).toEqual("42");
+    }
+  });
+
   it("validates field when FieldHandle blur handler is called", async () => {
     const validator = opaque({
       validate: jest
