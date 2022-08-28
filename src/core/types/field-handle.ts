@@ -38,8 +38,11 @@ type BaseFieldHandle<T, Err> = {
   /** Field error */
   error: null | Err;
 
-  /** True if `setValue` `handleChange` or `handleBlur` was called for this field */
+  /** True if `setValue` `handleChange` or `handleBlur` were called for this field */
   isTouched: boolean;
+
+  /** True if the field value is different from its initial value */
+  isChanged: boolean;
 
   /** True if the field has no error and none of its children fields have errors */
   isValid: boolean;

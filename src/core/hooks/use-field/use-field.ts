@@ -91,6 +91,10 @@ const createFieldHandle = <T, Err>(
       );
     },
 
+    get isChanged() {
+      return fieldState.val.changed;
+    },
+
     get error() {
       return formState.errors.val[impl(descriptor).__path] ?? null;
     },

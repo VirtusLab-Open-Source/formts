@@ -14,6 +14,9 @@ export type FormHandle<Values extends object, Err> = {
   /** True if any form field is touched */
   isTouched: boolean;
 
+  /** True if any form field is changed */
+  isChanged: boolean;
+
   /** True if there are no validation errors */
   isValid: boolean;
 
