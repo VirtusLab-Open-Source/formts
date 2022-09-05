@@ -1,4 +1,4 @@
-import { deepMerge, get, set, filter } from "./object";
+import { deepMerge, deepEqual, get, set, filter } from "./object";
 
 describe("filter", () => {
   it("returns object with filtered out properties", () => {
@@ -224,4 +224,100 @@ describe("deepMerge", () => {
       f: "foo",
     });
   });
+});
+
+describe("deepEqual", () => {
+  it("should resolve equality for nullable values", () => {
+    expect(deepEqual(null, null)).toBe(true);
+    expect(deepEqual(undefined, undefined)).toBe(true);
+    expect(deepEqual(null, undefined)).toBe(false);
+    expect(deepEqual({}, undefined)).toBe(false);
+    expect(deepEqual([], undefined)).toBe(false);
+    expect(deepEqual(false, undefined)).toBe(false);
+    expect(deepEqual("", undefined)).toBe(false);
+  });
+
+  it("should resolve equality for primitive values", () => {
+    expect(deepEqual(true, true)).toBe(true);
+    expect(deepEqual(false, true)).toBe(false);
+
+    expect(deepEqual("", "")).toBe(true);
+    expect(deepEqual("foo", "foo")).toBe(true);
+    expect(deepEqual("foo", "foo ")).toBe(false);
+
+    expect(deepEqual(1.333, 1.333)).toBe(true);
+    expect(deepEqual(1.333, 1.332)).toBe(false);
+    expect(deepEqual(1.333, "1.333")).toBe(false);
+    expect(deepEqual(-1, 1)).toBe(false);
+  });
+
+  it("should resolve equality for 0", () => {
+    expect(deepEqual(0, 0)).toBe(true);
+    expect(deepEqual(-0, +0)).toBe(true);
+    expect(deepEqual(+0, -0)).toBe(true);
+  });
+
+  it("should resolve equality for NaN", () => {
+    expect(deepEqual(NaN, NaN)).toBe(true);
+    expect(deepEqual(NaN, Infinity)).toBe(false);
+    expect(deepEqual(NaN, 42)).toBe(false);
+  });
+
+  it("should resolve equality for objects", () => {
+    expect(deepEqual({}, {})).toBe(true);
+    expect(deepEqual({ foo: 1 }, {})).toBe(false);
+    expect(deepEqual({}, { foo: 1 })).toBe(false);
+    expect(deepEqual({ foo: 1 }, { foo: 1 })).toBe(true);
+    expect(deepEqual({ foo: 1 }, { foo: 2 })).toBe(false);
+    expect(deepEqual({ foo: 1 }, { foo: 1, bar: 2 })).toBe(false);
+    expect(deepEqual({ foo: 1, bar: "" }, { foo: 1 })).toBe(false);
+    expect(deepEqual({ foo: 1 }, { fooo: 1 })).toBe(false);
+  });
+
+  it("should resolve equality for nested objects", () => {
+    expect(deepEqual({ a: {} }, { a: {} })).toBe(true);
+    expect(deepEqual({ a: {} }, { b: {} })).toBe(false);
+    expect(deepEqual({ a: { aa: "" } }, { a: {} })).toBe(false);
+    expect(deepEqual({ a: { aa: "" } }, { a: { aa: "" } })).toBe(true);
+    expect(deepEqual({ a: { aa: "foo" } }, { a: { aa: "bar" } })).toBe(false);
+    expect(deepEqual({ a: { aa: "foo" } }, { a: { bb: "foo" } })).toBe(false);
+    expect(deepEqual({ a: { aa: "foo" } }, { a: { bb: "foo" } })).toBe(false);
+    expect(deepEqual({ a: { aa: [] } }, { a: { aa: [] } })).toBe(true);
+    expect(deepEqual({ a: { aa: [1] } }, { a: { aa: [1] } })).toBe(true);
+    expect(deepEqual({ a: { aa: [1] } }, { a: { aa: [2] } })).toBe(false);
+    expect(deepEqual({ a: { aa: [1] } }, { a: { aa: [1, 2] } })).toBe(false);
+  });
+
+  it("should resolve equality for arrays", () => {
+    expect(deepEqual([], [])).toBe(true);
+    expect(deepEqual([1], [1])).toBe(true);
+    expect(deepEqual([1], [2])).toBe(false);
+    expect(deepEqual([1, 2], [1])).toBe(false);
+    expect(deepEqual(["a", "b", "c"], ["b", "c", "a"])).toBe(false);
+    expect(deepEqual([null], [null])).toBe(true);
+    expect(deepEqual(Array(10), Array(10))).toBe(true);
+    expect(deepEqual(Array(10), Array(5))).toBe(false);
+  });
+
+  it("should resolve equality for arrays with nested objects", () => {
+    expect(deepEqual([{ a: 1 }], [{ a: 1 }])).toBe(true);
+    expect(deepEqual([{ a: 1 }], [{ a: 2 }])).toBe(false);
+    expect(deepEqual([{ a: 1 }], [{ b: 1 }])).toBe(false);
+    expect(deepEqual([{ a: {} }], [{ a: {} }])).toBe(true);
+    expect(deepEqual([{ a: {} }], [{ a: { b: [] } }])).toBe(false);
+    expect(deepEqual([{ a: { b: [] } }], [{ a: { b: [] } }])).toBe(true);
+  });
+
+  it("should resolve equality for Dates", () => {
+    const timestamp = new Date().getTime();
+
+    expect(deepEqual(new Date(timestamp), new Date(timestamp))).toBe(true);
+    expect(deepEqual(new Date(timestamp), new Date(timestamp + 1))).toBe(false);
+    expect(deepEqual(new Date(timestamp), new Date(NaN))).toBe(false);
+    expect(deepEqual(new Date(NaN), new Date(NaN))).toBe(true);
+  });
+
+  // we do not need to worry about these cases for the purpose of the library
+  // it("should resolve equality for class instances");
+  // it("should resolve equality for symbols");
 });

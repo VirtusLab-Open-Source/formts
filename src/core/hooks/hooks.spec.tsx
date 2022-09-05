@@ -455,6 +455,109 @@ describe("formts hooks API", () => {
     }
   });
 
+  it("keeps track of isChanged flag for individual fields and the form as a whole", () => {
+    const { result: controllerHook } = renderHook(() =>
+      useFormController({
+        Schema,
+        initialValues: {
+          theNum: 42,
+          theObjectArray: { arr: ["1", "2"] },
+        },
+      })
+    );
+    const {
+      result: formHandleHook,
+      rerender: rerenderFormHandleHook,
+    } = renderHook(() => useFormHandle(Schema, controllerHook.current));
+    const {
+      result: numberFieldHook,
+      rerender: rerenderNumberFieldHook,
+    } = renderHook(() => useField(Schema.theNum, controllerHook.current));
+    const {
+      result: objectArrayFieldHook,
+      rerender: rerenderObjectArrayFieldHook,
+    } = renderHook(() =>
+      useField(Schema.theObjectArray, controllerHook.current)
+    );
+    const {
+      result: nestedArrayFieldHook,
+      rerender: rerenderNestedArrayFieldHook,
+    } = renderHook(() =>
+      useField(Schema.theObjectArray.arr, controllerHook.current)
+    );
+
+    const rerenderHooks = () => {
+      rerenderFormHandleHook();
+      rerenderNumberFieldHook();
+      rerenderObjectArrayFieldHook();
+      rerenderNestedArrayFieldHook();
+    };
+
+    {
+      expect(formHandleHook.current.isChanged).toBe(false);
+      expect(numberFieldHook.current.isChanged).toBe(false);
+      expect(objectArrayFieldHook.current.isChanged).toBe(false);
+      expect(nestedArrayFieldHook.current.isChanged).toBe(false);
+    }
+
+    {
+      act(() => {
+        numberFieldHook.current.setValue(1);
+        rerenderHooks();
+      });
+    }
+
+    {
+      expect(formHandleHook.current.isChanged).toBe(true);
+      expect(numberFieldHook.current.isChanged).toBe(true);
+      expect(objectArrayFieldHook.current.isChanged).toBe(false);
+      expect(nestedArrayFieldHook.current.isChanged).toBe(false);
+    }
+
+    {
+      act(() => {
+        nestedArrayFieldHook.current.setValue(["1", "2"]);
+        rerenderHooks();
+      });
+    }
+
+    {
+      expect(formHandleHook.current.isChanged).toBe(true);
+      expect(numberFieldHook.current.isChanged).toBe(true);
+      expect(objectArrayFieldHook.current.isChanged).toBe(false);
+      expect(nestedArrayFieldHook.current.isChanged).toBe(false);
+    }
+
+    {
+      act(() => {
+        nestedArrayFieldHook.current.setValue(["1", "2", "3"]);
+        rerenderHooks();
+      });
+    }
+
+    {
+      expect(formHandleHook.current.isChanged).toBe(true);
+      expect(numberFieldHook.current.isChanged).toBe(true);
+      expect(objectArrayFieldHook.current.isChanged).toBe(true);
+      expect(nestedArrayFieldHook.current.isChanged).toBe(true);
+    }
+
+    {
+      act(() => {
+        numberFieldHook.current.setValue(42);
+        nestedArrayFieldHook.current.setValue(["1", "2"]);
+        rerenderHooks();
+      });
+    }
+
+    {
+      expect(formHandleHook.current.isChanged).toBe(false);
+      expect(numberFieldHook.current.isChanged).toBe(false);
+      expect(objectArrayFieldHook.current.isChanged).toBe(false);
+      expect(nestedArrayFieldHook.current.isChanged).toBe(false);
+    }
+  });
+
   it("allows for setting field values based on change events", () => {
     const { result: controllerHook } = renderHook(() =>
       useFormController({ Schema })
@@ -703,6 +806,7 @@ describe("formts hooks API", () => {
     });
 
     {
+      expect(formHandleHook.current.isChanged).toBe(true);
       expect(formHandleHook.current.isValid).toBe(false);
       expect(formHandleHook.current.isTouched).toBe(true);
       expect(formValuesHook.current).toEqual({
@@ -723,6 +827,7 @@ describe("formts hooks API", () => {
     });
 
     {
+      expect(formHandleHook.current.isChanged).toBe(false);
       expect(formHandleHook.current.isValid).toBe(true);
       expect(formHandleHook.current.isTouched).toBe(false);
       expect(formValuesHook.current).toEqual({
@@ -767,14 +872,17 @@ describe("formts hooks API", () => {
     };
 
     {
+      expect(numberFieldHook.current.isChanged).toBe(false);
       expect(numberFieldHook.current.isTouched).toBe(false);
       expect(numberFieldHook.current.isValid).toBe(true);
       expect(numberFieldHook.current.value).toEqual("");
 
+      expect(objectFieldHook.current.isChanged).toBe(false);
       expect(objectFieldHook.current.isTouched).toBe(false);
       expect(objectFieldHook.current.isValid).toBe(true);
       expect(objectFieldHook.current.value).toEqual({ foo: "42" });
 
+      expect(nestedFooFieldHook.current.isChanged).toBe(false);
       expect(nestedFooFieldHook.current.isTouched).toBe(false);
       expect(nestedFooFieldHook.current.isValid).toBe(true);
       expect(nestedFooFieldHook.current.value).toEqual("42");
@@ -790,14 +898,17 @@ describe("formts hooks API", () => {
     }
 
     {
+      expect(numberFieldHook.current.isChanged).toBe(true);
       expect(numberFieldHook.current.isTouched).toBe(true);
       expect(numberFieldHook.current.isValid).toBe(true);
       expect(numberFieldHook.current.value).toEqual(42);
 
+      expect(objectFieldHook.current.isChanged).toBe(true);
       expect(objectFieldHook.current.isTouched).toBe(true);
       expect(objectFieldHook.current.isValid).toBe(false);
       expect(objectFieldHook.current.value).toEqual({ foo: "24" });
 
+      expect(nestedFooFieldHook.current.isChanged).toBe(true);
       expect(nestedFooFieldHook.current.isTouched).toBe(true);
       expect(nestedFooFieldHook.current.isValid).toBe(true);
       expect(nestedFooFieldHook.current.value).toEqual("24");
@@ -811,14 +922,17 @@ describe("formts hooks API", () => {
     }
 
     {
+      expect(numberFieldHook.current.isChanged).toBe(true);
       expect(numberFieldHook.current.isTouched).toBe(true);
       expect(numberFieldHook.current.isValid).toBe(true);
       expect(numberFieldHook.current.value).toEqual(42);
 
+      expect(objectFieldHook.current.isChanged).toBe(false);
       expect(objectFieldHook.current.isTouched).toBe(false);
       expect(objectFieldHook.current.isValid).toBe(true);
       expect(objectFieldHook.current.value).toEqual({ foo: "42" });
 
+      expect(nestedFooFieldHook.current.isChanged).toBe(false);
       expect(nestedFooFieldHook.current.isTouched).toBe(false);
       expect(nestedFooFieldHook.current.isValid).toBe(true);
       expect(nestedFooFieldHook.current.value).toEqual("42");

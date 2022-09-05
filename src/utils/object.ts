@@ -111,3 +111,36 @@ export const deepMerge = <T extends object>(
     return acc;
   }, {} as T);
 };
+
+export const deepEqual = (left: unknown, right: unknown): boolean => {
+  if (typeof left !== typeof right) {
+    return false;
+  }
+
+  if ((!left && !!right) || (!!left && !right)) {
+    return false;
+  }
+
+  if (Array.isArray(left) && Array.isArray(right)) {
+    return left.length === right.length
+      ? left.every((el, i) => deepEqual(el, right[i]))
+      : false;
+  }
+
+  if (isPlainObject(left) && isPlainObject(right)) {
+    return (
+      deepEqual(Object.keys(left), Object.keys(right)) &&
+      deepEqual(Object.values(left), Object.values(right))
+    );
+  }
+
+  if (left instanceof Date && right instanceof Date) {
+    return deepEqual(left.getTime(), right.getTime());
+  }
+
+  if (Number.isNaN(left) && Number.isNaN(right)) {
+    return true;
+  }
+
+  return left === right;
+};

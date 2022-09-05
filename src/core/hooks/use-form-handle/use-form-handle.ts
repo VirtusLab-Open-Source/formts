@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 
-import { keys, values } from "../../../utils";
+import { deepEqual, keys, values } from "../../../utils";
 import { Atom } from "../../../utils/atoms";
 import { Task } from "../../../utils/task";
 import { useSubscription } from "../../../utils/use-subscription";
@@ -34,16 +34,18 @@ import { impl } from "../../types/type-mapper-util";
  * ```
  */
 export const useFormHandle = <Values extends object, Err>(
-  _Schema: FormSchema<Values, Err>,
+  Schema: FormSchema<Values, Err>,
   controller?: FormController
 ): FormHandle<Values, Err> => {
   const { state, methods } = useFormtsContext<Values, Err>(controller);
 
+  // TODO: create cache for form handle atoms to avoid memory leaks and redundant computations
   const stateAtom = useMemo(
     () =>
       Atom.fuse(
         (
           isTouched,
+          isChanged,
           isValid,
           isValidating,
           isSubmitting,
@@ -51,6 +53,7 @@ export const useFormHandle = <Values extends object, Err>(
           failedSubmitCount
         ) => ({
           isTouched,
+          isChanged,
           isValid,
           isValidating,
           isSubmitting,
@@ -63,6 +66,18 @@ export const useFormHandle = <Values extends object, Err>(
           state.successfulSubmitCount,
           state.failedSubmitCount,
           state.touched
+        ),
+        Atom.fuse(
+          (...fieldsChanged) => fieldsChanged.some(Boolean),
+          ...values(Schema).map(field => {
+            const fieldLens = impl(field).__lens;
+            const initialValue = fieldLens.get(state.initialValues);
+            const fieldAtom = Atom.entangle(state.values, fieldLens);
+            return Atom.fuse(
+              fieldValue => !deepEqual(fieldValue, initialValue),
+              fieldAtom
+            );
+          })
         ),
         Atom.fuse(x => values(x).every(err => err == null), state.errors),
         Atom.fuse(x => keys(x).length > 0, state.validating),
@@ -82,6 +97,10 @@ export const useFormHandle = <Values extends object, Err>(
 
     get isTouched() {
       return stateAtom.val.isTouched;
+    },
+
+    get isChanged() {
+      return stateAtom.val.isChanged;
     },
 
     get isValid() {

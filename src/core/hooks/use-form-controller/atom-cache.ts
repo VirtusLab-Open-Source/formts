@@ -1,3 +1,4 @@
+import { deepEqual } from "../../../utils";
 import { Atom } from "../../../utils/atoms";
 import * as Helpers from "../../helpers";
 import { FieldDescriptor } from "../../types/field-descriptor";
@@ -8,6 +9,7 @@ type FieldPath = string;
 
 export type FieldStateAtom<T> = Atom.Readonly<{
   value: T;
+  changed: boolean;
   touched: TouchedValues<T>;
   formSubmitted: boolean;
 }>;
@@ -41,15 +43,18 @@ export class FieldStateAtomCache<Values extends object, Err> {
     field: FieldDescriptor<T, Err>
   ): FieldStateAtom<T> {
     const lens = impl(field).__lens;
+    const initialValue = lens.get(this.formtsState.initialValues);
+    const fieldValueAtom = Atom.entangle(this.formtsState.values, lens);
 
     return Atom.fuse(
-      (value, touched, formSubmitted) => ({
+      (value, changed, touched, formSubmitted) => ({
         value,
+        changed,
         touched: touched as any,
         formSubmitted,
       }),
-
-      Atom.entangle(this.formtsState.values, lens),
+      fieldValueAtom,
+      Atom.fuse(value => !deepEqual(value, initialValue), fieldValueAtom),
       Atom.entangle(this.formtsState.touched, lens),
       Atom.fuse(
         (sc, fc) => sc + fc > 0,

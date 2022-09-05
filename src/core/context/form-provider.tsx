@@ -10,6 +10,7 @@ const Context = React.createContext<
 
 type FormProviderProps = {
   controller: FormController;
+  children: React.ReactNode;
 };
 
 /**
