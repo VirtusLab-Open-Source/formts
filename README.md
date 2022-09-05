@@ -164,7 +164,7 @@ b) HTML input bindings:
 c) Advanced examples:
 
 1. [change password form](https://codesandbox.io/s/change-password-form-yn1yz?file=/src/example.tsx)
-2. [order pizza form](https://codesandbox.io/s/order-pizza-form-bsrv5?file=/src/example.tsx)
+2. [order pizza form](https://codesandbox.io/s/order-pizza-form-czt6cw?file=/src/order-pizza-form.tsx)
 
 ### Why another form lib?
 
