@@ -43,7 +43,6 @@ export class FieldStateAtomCache<Values extends object, Err> {
     field: FieldDescriptor<T, Err>
   ): FieldStateAtom<T> {
     const lens = impl(field).__lens;
-    const initialValue = lens.get(this.formtsState.initialValues);
     const fieldValueAtom = Atom.entangle(this.formtsState.values, lens);
 
     return Atom.fuse(
@@ -54,7 +53,11 @@ export class FieldStateAtomCache<Values extends object, Err> {
         formSubmitted,
       }),
       fieldValueAtom,
-      Atom.fuse(value => !deepEqual(value, initialValue), fieldValueAtom),
+      Atom.fuse(
+        (initialValue, value) => !deepEqual(value, initialValue),
+        Atom.entangle(this.formtsState.initialValues, lens),
+        fieldValueAtom
+      ),
       Atom.entangle(this.formtsState.touched, lens),
       Atom.fuse(
         (sc, fc) => sc + fc > 0,

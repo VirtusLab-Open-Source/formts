@@ -11,13 +11,17 @@ import {
 } from "../../types/form-validator";
 import { InternalFormtsMethods } from "../../types/formts-context";
 import { FormtsOptions } from "../../types/formts-options";
-import { FormtsAction, FormtsAtomState } from "../../types/formts-state";
+import {
+  FormtsAction,
+  FormtsAtomState,
+  InitialValues,
+} from "../../types/formts-state";
 import { impl } from "../../types/type-mapper-util";
 
 type Input<Values extends object, Err> = {
   options: FormtsOptions<Values, Err>;
   state: FormtsAtomState<Values, Err>;
-  dispatch: React.Dispatch<FormtsAction<Err>>;
+  dispatch: React.Dispatch<FormtsAction<Values, Err>>;
 };
 
 export const createFormtsMethods = <Values extends object, Err>({
@@ -146,8 +150,10 @@ export const createFormtsMethods = <Values extends object, Err>({
       })
     );
 
-  const resetForm = (): Task<void> =>
-    Task.from(() => dispatch({ type: "resetForm" }));
+  const resetForm = (newInitialValues?: InitialValues<Values>): Task<void> =>
+    Task.from(() =>
+      dispatch({ type: "resetForm", payload: { newInitialValues } })
+    );
 
   const resetField = <T>(field: FieldDescriptor<T, Err>): Task<void> =>
     Task.from(() => dispatch({ type: "resetField", payload: { field } }));

@@ -37,7 +37,7 @@ export const useFormController = <Values extends object, Err>(
   options: FormtsOptions<Values, Err>
 ): FormController => {
   const state = useMemo(() => getInitialState(options), []);
-  const dispatch = useCallback(createStateDispatch(state), [state]);
+  const dispatch = useCallback(createStateDispatch(state, options), [state]);
 
   const fieldStateCache = useMemo(() => new FieldStateAtomCache(state), [
     state,

@@ -1,6 +1,7 @@
 import { NoInfer } from "../../utils";
 
 import { GenericFieldDescriptor } from "./field-descriptor";
+import { InitialValues } from "./formts-state";
 
 export type FieldError<Err> = {
   path: string;
@@ -38,8 +39,10 @@ export type FormHandle<Values extends object, Err> = {
   /**
    * Resets the form cleaning all validation errors and touched flags.
    * Form values will be set to initial values.
+   *
+   * @param newInitialValues if provided will replace initialValues passed into `useFormController` hook.
    */
-  reset: () => void;
+  reset: (newInitialValues?: InitialValues<Values>) => void;
 
   /**
    * Runs validation of all fields.
