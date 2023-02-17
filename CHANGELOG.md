@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.2.23](https://github.com/VirtusLab/formts/compare/v0.2.22...v0.2.23) (2023-02-17)
+
+
+### Features
+
+* enable changing initialValues via form.reset method ([#131](https://github.com/VirtusLab/formts/issues/131)) ([34300e4](https://github.com/VirtusLab/formts/commit/34300e4e07bc87ef5088c97f2d86f6c6ad83d1e2))
+
 ### [0.2.22](https://github.com/VirtusLab/formts/compare/v0.2.21...v0.2.22) (2022-09-17)
 
 ### [0.2.21](https://github.com/VirtusLab/formts/compare/v0.2.20...v0.2.21) (2022-09-05)
