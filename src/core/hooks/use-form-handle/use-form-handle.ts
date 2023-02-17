@@ -71,11 +71,11 @@ export const useFormHandle = <Values extends object, Err>(
           (...fieldsChanged) => fieldsChanged.some(Boolean),
           ...values(Schema).map(field => {
             const fieldLens = impl(field).__lens;
-            const initialValue = fieldLens.get(state.initialValues);
-            const fieldAtom = Atom.entangle(state.values, fieldLens);
             return Atom.fuse(
-              fieldValue => !deepEqual(fieldValue, initialValue),
-              fieldAtom
+              (initialValue, fieldValue) =>
+                !deepEqual(fieldValue, initialValue),
+              Atom.entangle(state.initialValues, fieldLens),
+              Atom.entangle(state.values, fieldLens)
             );
           })
         ),
@@ -121,7 +121,7 @@ export const useFormHandle = <Values extends object, Err>(
       };
     },
 
-    reset: () => methods.resetForm().runPromise(),
+    reset: newInitialValues => methods.resetForm(newInitialValues).runPromise(),
 
     validate: () => methods.validateForm().runPromise(),
 

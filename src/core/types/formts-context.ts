@@ -10,7 +10,7 @@ import { FieldDescriptor } from "./field-descriptor";
 import { FieldError } from "./form-handle";
 import { ValidationResult, ValidationTrigger } from "./form-validator";
 import { FormtsOptions } from "./formts-options";
-import { FormtsAtomState } from "./formts-state";
+import { FormtsAtomState, InitialValues } from "./formts-state";
 
 export type InternalFormtsMethods<Values extends object, Err> = {
   validateField: <T>(
@@ -25,7 +25,7 @@ export type InternalFormtsMethods<Values extends object, Err> = {
   ) => Task<void>;
   touchField: <T>(field: FieldDescriptor<T, Err>) => Task<void>;
   setFieldErrors: (...fields: ValidationResult<Err>) => Task<void>;
-  resetForm: () => Task<void>;
+  resetForm: (newInitialValues?: InitialValues<Values>) => Task<void>;
   resetField: <T>(field: FieldDescriptor<T, Err>) => Task<void>;
   submitForm: (
     onSuccess: (values: Values) => Task<void>,

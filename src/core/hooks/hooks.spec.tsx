@@ -785,6 +785,10 @@ describe("formts hooks API", () => {
       useFormController({ Schema, initialValues: { theNum: 42 } })
     );
     const {
+      result: numberFieldHook,
+      rerender: rerenderNumberFieldHook,
+    } = renderHook(() => useField(Schema.theNum, controllerHook.current));
+    const {
       result: formHandleHook,
       rerender: rerenderFormHandleHook,
     } = renderHook(() => useFormHandle(Schema, controllerHook.current));
@@ -794,6 +798,7 @@ describe("formts hooks API", () => {
     } = renderHook(() => useFormValues(Schema, controllerHook.current));
 
     const rerenderHooks = () => {
+      rerenderNumberFieldHook();
       rerenderFormHandleHook();
       rerenderFormValuesHook();
     };
@@ -806,9 +811,12 @@ describe("formts hooks API", () => {
     });
 
     {
+      expect(numberFieldHook.current.isChanged).toBe(true);
       expect(formHandleHook.current.isChanged).toBe(true);
       expect(formHandleHook.current.isValid).toBe(false);
       expect(formHandleHook.current.isTouched).toBe(true);
+
+      expect(numberFieldHook.current.value).toBe(666);
       expect(formValuesHook.current).toEqual({
         theString: "",
         theChoice: "",
@@ -827,14 +835,94 @@ describe("formts hooks API", () => {
     });
 
     {
+      expect(numberFieldHook.current.isChanged).toBe(false);
       expect(formHandleHook.current.isChanged).toBe(false);
       expect(formHandleHook.current.isValid).toBe(true);
       expect(formHandleHook.current.isTouched).toBe(false);
+
+      expect(numberFieldHook.current.value).toBe(42);
       expect(formValuesHook.current).toEqual({
         theString: "",
         theChoice: "",
         theNum: 42,
         theBool: false,
+        theDate: null,
+        theArray: [],
+        theObject: { foo: "" },
+        theObjectArray: { arr: [] },
+      });
+    }
+  });
+
+  it("changes initial values and resets form state when FormHandle reset method is called with an argument", () => {
+    const { result: controllerHook } = renderHook(() =>
+      useFormController({ Schema, initialValues: { theNum: 42 } })
+    );
+    const {
+      result: numberFieldHook,
+      rerender: rerenderNumberFieldHook,
+    } = renderHook(() => useField(Schema.theNum, controllerHook.current));
+    const {
+      result: formHandleHook,
+      rerender: rerenderFormHandleHook,
+    } = renderHook(() => useFormHandle(Schema, controllerHook.current));
+    const {
+      result: formValuesHook,
+      rerender: rerenderFormValuesHook,
+    } = renderHook(() => useFormValues(Schema, controllerHook.current));
+
+    const rerenderHooks = () => {
+      rerenderNumberFieldHook();
+      rerenderFormHandleHook();
+      rerenderFormValuesHook();
+    };
+
+    act(() => {
+      formHandleHook.current.setFieldValue(Schema.theNum, 666);
+      formHandleHook.current.setFieldError(Schema.theNum, "ERR");
+      formHandleHook.current.setFieldValue(Schema.theObject.foo, "bar");
+      rerenderHooks();
+    });
+
+    {
+      expect(numberFieldHook.current.isChanged).toBe(true);
+      expect(formHandleHook.current.isChanged).toBe(true);
+      expect(formHandleHook.current.isValid).toBe(false);
+      expect(formHandleHook.current.isTouched).toBe(true);
+
+      expect(numberFieldHook.current.value).toBe(666);
+      expect(formValuesHook.current).toEqual({
+        theString: "",
+        theChoice: "",
+        theNum: 666,
+        theBool: false,
+        theDate: null,
+        theArray: [],
+        theObject: { foo: "bar" },
+        theObjectArray: { arr: [] },
+      });
+    }
+
+    act(() => {
+      formHandleHook.current.reset({
+        theNum: 666,
+        theBool: true,
+      });
+      rerenderHooks();
+    });
+
+    {
+      expect(numberFieldHook.current.isChanged).toBe(false);
+      expect(formHandleHook.current.isChanged).toBe(false);
+      expect(formHandleHook.current.isValid).toBe(true);
+      expect(formHandleHook.current.isTouched).toBe(false);
+
+      expect(numberFieldHook.current.value).toBe(666);
+      expect(formValuesHook.current).toEqual({
+        theString: "",
+        theChoice: "",
+        theNum: 666,
+        theBool: true,
         theDate: null,
         theArray: [],
         theObject: { foo: "" },

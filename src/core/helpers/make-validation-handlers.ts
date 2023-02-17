@@ -5,8 +5,8 @@ import { FormtsAction } from "../types/formts-state";
 
 type FieldPath = string;
 
-export const makeValidationHandlers = <Err>(
-  dispatch: Dispatch<FormtsAction<Err>>
+export const makeValidationHandlers = <Values extends object, Err>(
+  dispatch: Dispatch<FormtsAction<Values, Err>>
 ) => {
   const uuid = generateSimpleUuid();
   let pendingValidationStartFields: Record<FieldPath, true> = {};

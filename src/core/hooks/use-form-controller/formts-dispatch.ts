@@ -19,7 +19,7 @@ export const getInitialState = <Values extends object, Err>({
   const touched = makeUntouchedValues(values);
 
   return {
-    initialValues: values,
+    initialValues: Atom.of(values),
     values: Atom.of(values),
     touched: Atom.of(touched),
     errors: Atom.of({}),
@@ -31,13 +31,20 @@ export const getInitialState = <Values extends object, Err>({
 };
 
 export const createStateDispatch = <Values extends object, Err>(
-  state: FormtsAtomState<Values, Err>
-) => (action: FormtsAction<Err>) => {
+  state: FormtsAtomState<Values, Err>,
+  { Schema }: FormtsOptions<Values, Err>
+) => (action: FormtsAction<Values, Err>) => {
   switch (action.type) {
     case "resetForm": {
-      const touched = makeUntouchedValues(state.initialValues);
+      if (action.payload.newInitialValues != null) {
+        state.initialValues.set(
+          createInitialValues(Schema, action.payload.newInitialValues)
+        );
+      }
 
-      state.values.set(state.initialValues);
+      const touched = makeUntouchedValues(state.initialValues.val);
+
+      state.values.set(state.initialValues.val);
       state.touched.set(touched);
       state.errors.set({});
       state.validating.set({});
@@ -51,7 +58,7 @@ export const createStateDispatch = <Values extends object, Err>(
       const { field } = action.payload;
       const lens = impl(field).__lens;
 
-      const initialValue = lens.get(state.initialValues);
+      const initialValue = lens.get(state.initialValues.val);
       state.values.set(lens.update(state.values.val, () => initialValue));
 
       state.touched.set(
