@@ -23,7 +23,10 @@ export type InternalFormtsMethods<Values extends object, Err> = {
     field: FieldDescriptor<T, Err>,
     event: ChangeEvent<unknown>
   ) => Task<void>;
-  touchField: <T>(field: FieldDescriptor<T, Err>) => Task<void>;
+  setFieldTouched: <T>(
+    field: FieldDescriptor<T, Err>,
+    touched: boolean
+  ) => Task<void>;
   setFieldErrors: (...fields: ValidationResult<Err>) => Task<void>;
   resetForm: (newInitialValues?: InitialValues<Values>) => Task<void>;
   resetField: <T>(field: FieldDescriptor<T, Err>) => Task<void>;

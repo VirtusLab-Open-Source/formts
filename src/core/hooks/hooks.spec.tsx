@@ -780,6 +780,58 @@ describe("formts hooks API", () => {
     }
   });
 
+  it("allows for setting field touched state", () => {
+    const { result: controllerHook } = renderHook(() =>
+      useFormController({ Schema })
+    );
+    const {
+      result: formHandleHook,
+      rerender: rerenderFormHandleHook,
+    } = renderHook(() => useFormHandle(Schema, controllerHook.current));
+    const {
+      result: numberFieldHook,
+      rerender: rerenderNumberFieldHook,
+    } = renderHook(() => useField(Schema.theNum, controllerHook.current));
+    const {
+      result: stringFieldHook,
+      rerender: rerenderStringFieldHook,
+    } = renderHook(() => useField(Schema.theString, controllerHook.current));
+
+    const rerenderHooks = () => {
+      rerenderFormHandleHook();
+      rerenderNumberFieldHook();
+      rerenderStringFieldHook();
+    };
+
+    {
+      expect(formHandleHook.current.isTouched).toBe(false);
+      expect(numberFieldHook.current.isTouched).toBe(false);
+      expect(stringFieldHook.current.isTouched).toBe(false);
+    }
+
+    act(() => {
+      numberFieldHook.current.setTouched(true);
+      rerenderHooks();
+    });
+
+    {
+      expect(formHandleHook.current.isTouched).toBe(true);
+      expect(numberFieldHook.current.isTouched).toBe(true);
+      expect(stringFieldHook.current.isTouched).toBe(false);
+    }
+
+    act(() => {
+      numberFieldHook.current.setTouched(false);
+      rerenderHooks();
+    });
+
+    {
+      expect(formHandleHook.current.isTouched).toBe(false);
+      expect(numberFieldHook.current.isTouched).toBe(false);
+      expect(stringFieldHook.current.isTouched).toBe(false);
+    }
+  });
+
   it("resets form state to initial when FormHandle reset method is called", () => {
     const { result: controllerHook } = renderHook(() =>
       useFormController({ Schema, initialValues: { theNum: 42 } })
