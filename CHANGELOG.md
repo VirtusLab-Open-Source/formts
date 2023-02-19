@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.2.24](https://github.com/VirtusLab/formts/compare/v0.2.23...v0.2.24) (2023-02-19)
+
+
+### Features
+
+* add FieldHandle.setTouched method ([#137](https://github.com/VirtusLab/formts/issues/137)) ([d19841d](https://github.com/VirtusLab/formts/commit/d19841df9c3d38078d91feaf85ee5a6d727a20a0))
+
 ### [0.2.23](https://github.com/VirtusLab/formts/compare/v0.2.22...v0.2.23) (2023-02-17)
 
 
