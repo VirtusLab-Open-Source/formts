@@ -72,16 +72,17 @@ export const createStateDispatch = <Values extends object, Err>(
       break;
     }
 
-    case "touchValue": {
+    case "setTouched": {
+      const { touched } = action.payload;
       const lens = impl(action.payload.field).__lens;
 
-      if (resolveTouched(lens.get(state.touched.val)) === false) {
+      if (resolveTouched(lens.get(state.touched.val)) !== touched) {
         const value = lens.get(state.values.val);
-        const touched = lens.update(state.touched.val, () =>
-          makeTouchedValues(value)
+        const newTouchedState = lens.update(state.touched.val, () =>
+          touched ? makeTouchedValues(value) : makeUntouchedValues(value)
         );
 
-        state.touched.set(touched);
+        state.touched.set(newTouchedState);
       }
 
       break;

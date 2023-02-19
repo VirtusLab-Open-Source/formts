@@ -6,7 +6,10 @@ import { FieldDescriptor } from "./field-descriptor";
 export type FormtsAction<Values extends object, Err> =
   | { type: "resetForm"; payload: { newInitialValues?: InitialValues<Values> } }
   | { type: "resetField"; payload: { field: FieldDescriptor<unknown> } }
-  | { type: "touchValue"; payload: { field: FieldDescriptor<unknown> } }
+  | {
+      type: "setTouched";
+      payload: { field: FieldDescriptor<unknown>; touched: boolean };
+    }
   | {
       type: "setValue";
       payload: { field: FieldDescriptor<unknown>; value: any };

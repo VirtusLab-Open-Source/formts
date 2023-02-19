@@ -72,6 +72,9 @@ type BaseFieldHandle<T, Err> = {
   /** Sets field error, affecting `isValid` flag */
   setError: (error: null | Err) => void;
 
+  /** Directly sets `isTouched` flag */
+  setTouched: (touched: boolean) => void;
+
   /** runs all validation rules of the field, regardless of their validation triggers */
   validate: () => void;
 

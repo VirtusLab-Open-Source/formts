@@ -156,7 +156,7 @@ const createFieldHandle = <T, Err>(
 
     handleBlur: () =>
       Task.all(
-        methods.touchField(descriptor),
+        methods.setFieldTouched(descriptor, true),
         methods.validateField(descriptor, "blur")
       ).runPromise(),
 
@@ -169,6 +169,9 @@ const createFieldHandle = <T, Err>(
       methods
         .setFieldErrors({ path: impl(descriptor).__path, error })
         .runPromise(),
+
+    setTouched: touched =>
+      methods.setFieldTouched(descriptor, touched).runPromise(),
 
     addItem: item => {
       if (isArrayDescriptor(descriptor)) {

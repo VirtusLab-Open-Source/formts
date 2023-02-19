@@ -134,8 +134,13 @@ export const createFormtsMethods = <Values extends object, Err>({
     return validateField(field, "change");
   };
 
-  const touchField = <T>(field: FieldDescriptor<T, Err>): Task<void> =>
-    Task.from(() => dispatch({ type: "touchValue", payload: { field } }));
+  const setFieldTouched = <T>(
+    field: FieldDescriptor<T, Err>,
+    touched: boolean
+  ): Task<void> =>
+    Task.from(() =>
+      dispatch({ type: "setTouched", payload: { field, touched } })
+    );
 
   const setFieldErrors = (
     ...fields: Array<{
@@ -190,7 +195,7 @@ export const createFormtsMethods = <Values extends object, Err>({
     validateForm,
     setFieldValue,
     setFieldValueFromEvent,
-    touchField,
+    setFieldTouched,
     setFieldErrors,
     resetForm,
     resetField,
