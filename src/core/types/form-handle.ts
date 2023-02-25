@@ -4,7 +4,7 @@ import { GenericFieldDescriptor } from "./field-descriptor";
 import { InitialValues } from "./formts-state";
 
 export type FieldError<Err> = {
-  path: string;
+  fieldId: string;
   error: Err;
 };
 
@@ -59,7 +59,7 @@ export type FormHandle<Values extends object, Err> = {
    * @param onSuccess - callback invoked after successful submit validation.
    * Receives form values. Can return Promise which will affect `isSubmitting` flag.
    *
-   * @param onFailure - callback invoked after failed submit validation. Receives form errors. (optional)
+   * @param onFailure - callback invoked after failed submit validation. Receives all form errors. (optional)
    */
   submit: (
     onSuccess: (values: Values) => void | Promise<unknown>,

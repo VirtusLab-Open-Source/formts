@@ -170,9 +170,10 @@ export const createFormtsMethods = <Values extends object, Err>({
     dispatch({ type: "submitStart" });
 
     return validateForm("submit")
-      .map(
-        errors =>
-          errors.filter(({ error }) => error != null) as FieldError<Err>[]
+      .map(errors =>
+        errors
+          .filter(({ error }) => error != null)
+          .map(it => ({ error: it.error!, fieldId: it.path }))
       )
       .flatMap(errors => {
         if (errors.length > 0) {

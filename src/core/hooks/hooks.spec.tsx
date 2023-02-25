@@ -1371,14 +1371,14 @@ describe("formts hooks API", () => {
       expect(onSuccess).not.toHaveBeenCalled();
       expect(onFailure).toHaveBeenCalledTimes(1);
       expect(onFailure).toHaveBeenCalledWith([
-        { path: "theString", error: "ERROR" },
-        { path: "theChoice", error: "ERROR" },
-        { path: "theNum", error: "ERROR" },
-        { path: "theBool", error: "ERROR" },
-        { path: "theDate", error: "ERROR" },
-        { path: "theArray", error: "ERROR" },
-        { path: "theObject", error: "ERROR" },
-        { path: "theObjectArray", error: "ERROR" },
+        { fieldId: "theString", error: "ERROR" },
+        { fieldId: "theChoice", error: "ERROR" },
+        { fieldId: "theNum", error: "ERROR" },
+        { fieldId: "theBool", error: "ERROR" },
+        { fieldId: "theDate", error: "ERROR" },
+        { fieldId: "theArray", error: "ERROR" },
+        { fieldId: "theObject", error: "ERROR" },
+        { fieldId: "theObjectArray", error: "ERROR" },
       ]);
       expect(submitCount.total).toBe(1);
       expect(submitCount.valid).toBe(0);
