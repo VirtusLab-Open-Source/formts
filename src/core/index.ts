@@ -8,6 +8,7 @@ export {
   useFormController,
   useFormHandle,
   useFormValues,
+  useFormErrors,
   useField,
 } from "./hooks";
 

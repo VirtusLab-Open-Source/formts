@@ -4,7 +4,7 @@ import { get, logger, values } from "../../../utils";
 import { Task } from "../../../utils/task";
 import * as Helpers from "../../helpers";
 import { FieldDescriptor } from "../../types/field-descriptor";
-import { FieldError } from "../../types/form-handle";
+import { FieldError } from "../../types/field-error";
 import {
   ValidationResult,
   ValidationTrigger,

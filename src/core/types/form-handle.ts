@@ -1,12 +1,8 @@
 import { NoInfer } from "../../utils";
 
 import { GenericFieldDescriptor } from "./field-descriptor";
+import { FieldError } from "./field-error";
 import { InitialValues } from "./formts-state";
-
-export type FieldError<Err> = {
-  fieldId: string;
-  error: Err;
-};
 
 /**
  * Used to interact with the form as a whole
