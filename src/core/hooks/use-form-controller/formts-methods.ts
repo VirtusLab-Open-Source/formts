@@ -4,7 +4,7 @@ import { get, logger, values } from "../../../utils";
 import { Task } from "../../../utils/task";
 import * as Helpers from "../../helpers";
 import { FieldDescriptor } from "../../types/field-descriptor";
-import { FieldError } from "../../types/form-handle";
+import { FieldError } from "../../types/field-error";
 import {
   ValidationResult,
   ValidationTrigger,
@@ -170,9 +170,10 @@ export const createFormtsMethods = <Values extends object, Err>({
     dispatch({ type: "submitStart" });
 
     return validateForm("submit")
-      .map(
-        errors =>
-          errors.filter(({ error }) => error != null) as FieldError<Err>[]
+      .map(errors =>
+        errors
+          .filter(({ error }) => error != null)
+          .map(it => ({ error: it.error!, fieldId: it.path }))
       )
       .flatMap(errors => {
         if (errors.length > 0) {

@@ -8,10 +8,13 @@ export {
   useFormController,
   useFormHandle,
   useFormValues,
+  useFormErrors,
   useField,
 } from "./hooks";
 
 export { FormProvider } from "./context";
+
+export { FieldMatcher } from "./helpers";
 
 export { FormtsOptions } from "./types/formts-options";
 export { FieldDecoder } from "./types/field-decoder";

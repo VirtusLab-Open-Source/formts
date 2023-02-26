@@ -9,6 +9,7 @@ import { ValidateIn } from "../types/form-validator";
 import { impl, opaque } from "../types/type-mapper-util";
 
 import { useField } from "./use-field";
+import { useFormErrors } from "./use-form-errors/use-form-errors";
 import { useFormHandle } from "./use-form-handle";
 
 import { useFormController, useFormValues } from ".";
@@ -832,6 +833,83 @@ describe("formts hooks API", () => {
     }
   });
 
+  it("allows for setting and clearing field error state", () => {
+    const { result: controllerHook } = renderHook(() =>
+      useFormController({ Schema })
+    );
+    const {
+      result: formHandleHook,
+      rerender: rerenderFormHandleHook,
+    } = renderHook(() => useFormHandle(Schema, controllerHook.current));
+    const {
+      result: formErrorsHook,
+      rerender: rerenderFormErrorsHook,
+    } = renderHook(() => useFormErrors(Schema, controllerHook.current));
+    const {
+      result: numberFieldHook,
+      rerender: rerenderNumberFieldHook,
+    } = renderHook(() => useField(Schema.theNum, controllerHook.current));
+    const {
+      result: stringFieldHook,
+      rerender: rerenderStringFieldHook,
+    } = renderHook(() => useField(Schema.theString, controllerHook.current));
+
+    const rerenderHooks = () => {
+      rerenderFormHandleHook();
+      rerenderFormErrorsHook();
+      rerenderNumberFieldHook();
+      rerenderStringFieldHook();
+    };
+
+    {
+      expect(formHandleHook.current.isValid).toBe(true);
+      expect(formErrorsHook.current).toEqual([]);
+
+      expect(numberFieldHook.current.isValid).toBe(true);
+      expect(numberFieldHook.current.error).toBe(null);
+
+      expect(stringFieldHook.current.isValid).toBe(true);
+      expect(stringFieldHook.current.error).toBe(null);
+    }
+
+    act(() => {
+      numberFieldHook.current.setError("test error 1");
+      rerenderHooks();
+    });
+
+    {
+      expect(formHandleHook.current.isValid).toBe(false);
+      expect(formErrorsHook.current).toEqual([
+        {
+          fieldId: numberFieldHook.current.id,
+          error: "test error 1",
+        },
+      ]);
+
+      expect(numberFieldHook.current.isValid).toBe(false);
+      expect(numberFieldHook.current.error).toBe("test error 1");
+
+      expect(stringFieldHook.current.isValid).toBe(true);
+      expect(stringFieldHook.current.error).toBe(null);
+    }
+
+    act(() => {
+      numberFieldHook.current.setError(null);
+      rerenderHooks();
+    });
+
+    {
+      expect(formHandleHook.current.isValid).toBe(true);
+      expect(formErrorsHook.current).toEqual([]);
+
+      expect(numberFieldHook.current.isValid).toBe(true);
+      expect(numberFieldHook.current.error).toBe(null);
+
+      expect(stringFieldHook.current.isValid).toBe(true);
+      expect(stringFieldHook.current.error).toBe(null);
+    }
+  });
+
   it("resets form state to initial when FormHandle reset method is called", () => {
     const { result: controllerHook } = renderHook(() =>
       useFormController({ Schema, initialValues: { theNum: 42 } })
@@ -1095,17 +1173,23 @@ describe("formts hooks API", () => {
       rerender: rerenderFormHandleHook,
     } = renderHook(() => useFormHandle(Schema, controllerHook.current));
     const {
+      result: formErrorsHook,
+      rerender: rerenderFormErrorsHook,
+    } = renderHook(() => useFormErrors(Schema, controllerHook.current));
+    const {
       result: numberFieldHook,
       rerender: rerenderNumberFieldHook,
     } = renderHook(() => useField(Schema.theNum, controllerHook.current));
 
     const rerenderHooks = () => {
       rerenderFormHandleHook();
+      rerenderFormErrorsHook();
       rerenderNumberFieldHook();
     };
 
     {
       expect(formHandleHook.current.isValid).toBe(true);
+      expect(formErrorsHook.current).toEqual([]);
 
       expect(numberFieldHook.current.isValid).toBe(true);
       expect(numberFieldHook.current.error).toBe(null);
@@ -1120,6 +1204,12 @@ describe("formts hooks API", () => {
 
     {
       expect(formHandleHook.current.isValid).toBe(false);
+      expect(formErrorsHook.current).toEqual([
+        {
+          fieldId: numberFieldHook.current.id,
+          error: "ERR_1",
+        },
+      ]);
 
       expect(numberFieldHook.current.isValid).toBe(false);
       expect(numberFieldHook.current.error).toBe("ERR_1");
@@ -1134,6 +1224,7 @@ describe("formts hooks API", () => {
 
     {
       expect(formHandleHook.current.isValid).toBe(true);
+      expect(formErrorsHook.current).toEqual([]);
 
       expect(numberFieldHook.current.isValid).toBe(true);
       expect(numberFieldHook.current.error).toBe(null);
@@ -1158,17 +1249,23 @@ describe("formts hooks API", () => {
       rerender: rerenderFormHandleHook,
     } = renderHook(() => useFormHandle(Schema, controllerHook.current));
     const {
+      result: formErrorsHook,
+      rerender: rerenderFormErrorsHook,
+    } = renderHook(() => useFormErrors(Schema, controllerHook.current));
+    const {
       result: numberFieldHook,
       rerender: rerenderNumberFieldHook,
     } = renderHook(() => useField(Schema.theNum, controllerHook.current));
 
     const rerenderHooks = () => {
       rerenderFormHandleHook();
+      rerenderFormErrorsHook();
       rerenderNumberFieldHook();
     };
 
     {
       expect(formHandleHook.current.isValid).toBe(true);
+      expect(formErrorsHook.current).toEqual([]);
 
       expect(numberFieldHook.current.isValid).toBe(true);
       expect(numberFieldHook.current.error).toBe(null);
@@ -1183,6 +1280,12 @@ describe("formts hooks API", () => {
 
     {
       expect(formHandleHook.current.isValid).toBe(false);
+      expect(formErrorsHook.current).toEqual([
+        {
+          fieldId: numberFieldHook.current.id,
+          error: "ERR_1",
+        },
+      ]);
 
       expect(numberFieldHook.current.isValid).toBe(false);
       expect(numberFieldHook.current.error).toBe("ERR_1");
@@ -1197,6 +1300,7 @@ describe("formts hooks API", () => {
 
     {
       expect(formHandleHook.current.isValid).toBe(true);
+      expect(formErrorsHook.current).toEqual([]);
 
       expect(numberFieldHook.current.isValid).toBe(true);
       expect(numberFieldHook.current.error).toBe(null);
@@ -1227,17 +1331,23 @@ describe("formts hooks API", () => {
       rerender: rerenderFormHandleHook,
     } = renderHook(() => useFormHandle(Schema, controllerHook.current));
     const {
+      result: formErrorsHook,
+      rerender: rerenderFormErrorsHook,
+    } = renderHook(() => useFormErrors(Schema, controllerHook.current));
+    const {
       result: numberFieldHook,
       rerender: rerenderNumberFieldHook,
     } = renderHook(() => useField(Schema.theNum, controllerHook.current));
 
     const rerenderHooks = () => {
       rerenderFormHandleHook();
+      rerenderFormErrorsHook();
       rerenderNumberFieldHook();
     };
 
     {
       expect(formHandleHook.current.isValid).toBe(true);
+      expect(formErrorsHook.current).toEqual([]);
 
       expect(numberFieldHook.current.isValid).toBe(true);
       expect(numberFieldHook.current.error).toBe(null);
@@ -1252,6 +1362,7 @@ describe("formts hooks API", () => {
 
     {
       expect(formHandleHook.current.isValid).toBe(true);
+      expect(formErrorsHook.current).toEqual([]);
 
       expect(numberFieldHook.current.isValid).toBe(true);
       expect(numberFieldHook.current.error).toBe(null);
@@ -1266,6 +1377,12 @@ describe("formts hooks API", () => {
 
     {
       expect(formHandleHook.current.isValid).toBe(false);
+      expect(formErrorsHook.current).toEqual([
+        {
+          fieldId: numberFieldHook.current.id,
+          error: "REQUIRED",
+        },
+      ]);
 
       expect(numberFieldHook.current.isValid).toBe(false);
       expect(numberFieldHook.current.error).toBe("REQUIRED");
@@ -1293,12 +1410,17 @@ describe("formts hooks API", () => {
       rerender: rerenderFormHandleHook,
     } = renderHook(() => useFormHandle(Schema, controllerHook.current));
     const {
+      result: formErrorsHook,
+      rerender: rerenderFormErrorsHook,
+    } = renderHook(() => useFormErrors(Schema, controllerHook.current));
+    const {
       result: numberFieldHook,
       rerender: rerenderNumberFieldHook,
     } = renderHook(() => useField(Schema.theNum, controllerHook.current));
 
     const rerenderHooks = () => {
       rerenderFormHandleHook();
+      rerenderFormErrorsHook();
       rerenderNumberFieldHook();
     };
 
@@ -1306,6 +1428,7 @@ describe("formts hooks API", () => {
       expect(impl(validator).validate).not.toHaveBeenCalled();
 
       expect(formHandleHook.current.isValid).toBe(true);
+      expect(formErrorsHook.current).toEqual([]);
 
       expect(numberFieldHook.current.isValid).toBe(true);
       expect(numberFieldHook.current.error).toBe(null);
@@ -1320,6 +1443,21 @@ describe("formts hooks API", () => {
       expect(impl(validator).validate).toHaveBeenCalledTimes(1);
 
       expect(formHandleHook.current.isValid).toBe(false);
+      expect(formErrorsHook.current).toEqual(
+        [
+          Schema.theString,
+          Schema.theChoice,
+          Schema.theNum,
+          Schema.theBool,
+          Schema.theDate,
+          Schema.theArray,
+          Schema.theObject,
+          Schema.theObjectArray,
+        ].map(descriptor => ({
+          fieldId: impl(descriptor).__path,
+          error: "ERROR",
+        }))
+      );
 
       expect(numberFieldHook.current.isValid).toBe(false);
       expect(numberFieldHook.current.error).toBe("ERROR");
@@ -1371,14 +1509,14 @@ describe("formts hooks API", () => {
       expect(onSuccess).not.toHaveBeenCalled();
       expect(onFailure).toHaveBeenCalledTimes(1);
       expect(onFailure).toHaveBeenCalledWith([
-        { path: "theString", error: "ERROR" },
-        { path: "theChoice", error: "ERROR" },
-        { path: "theNum", error: "ERROR" },
-        { path: "theBool", error: "ERROR" },
-        { path: "theDate", error: "ERROR" },
-        { path: "theArray", error: "ERROR" },
-        { path: "theObject", error: "ERROR" },
-        { path: "theObjectArray", error: "ERROR" },
+        { fieldId: "theString", error: "ERROR" },
+        { fieldId: "theChoice", error: "ERROR" },
+        { fieldId: "theNum", error: "ERROR" },
+        { fieldId: "theBool", error: "ERROR" },
+        { fieldId: "theDate", error: "ERROR" },
+        { fieldId: "theArray", error: "ERROR" },
+        { fieldId: "theObject", error: "ERROR" },
+        { fieldId: "theObjectArray", error: "ERROR" },
       ]);
       expect(submitCount.total).toBe(1);
       expect(submitCount.valid).toBe(0);
