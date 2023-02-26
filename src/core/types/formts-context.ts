@@ -7,7 +7,7 @@ import type {
 } from "../hooks/use-form-controller/atom-cache";
 
 import { FieldDescriptor } from "./field-descriptor";
-import { FieldError } from "./form-handle";
+import { FieldError } from "./field-error";
 import { ValidationResult, ValidationTrigger } from "./form-validator";
 import { FormtsOptions } from "./formts-options";
 import { FormtsAtomState, InitialValues } from "./formts-state";
