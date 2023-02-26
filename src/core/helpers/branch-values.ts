@@ -1,7 +1,8 @@
 import { filter as OFilter } from "../../utils";
 import { FieldDescriptor } from "../types/field-descriptor";
 import { FieldErrors, FieldValidatingState } from "../types/formts-state";
-import { impl } from "../types/type-mapper-util";
+
+import { FieldMatcher } from "./field-matcher";
 
 export const constructBranchErrorsString = <Err>(
   errors: FieldErrors<Err>,
@@ -28,20 +29,6 @@ export const constructBranchValidatingString = (
 export const isExactOrChildPath = (field: FieldDescriptor<unknown>) => (
   path: string
 ): boolean => {
-  const fieldPath = impl(field).__path;
-
-  if (!path.startsWith(fieldPath)) {
-    return false;
-  }
-
-  switch (path[fieldPath.length]) {
-    case undefined: // same path
-    case ".": // object child
-    case "[": // array element
-      return true;
-
-    default:
-      // unrelated field starting with the same path
-      return false;
-  }
+  const fieldMatcher = new FieldMatcher(field);
+  return fieldMatcher.matches(path) || fieldMatcher.isParentOf(path);
 };

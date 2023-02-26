@@ -14,6 +14,8 @@ export {
 
 export { FormProvider } from "./context";
 
+export { FieldMatcher } from "./helpers";
+
 export { FormtsOptions } from "./types/formts-options";
 export { FieldDecoder } from "./types/field-decoder";
 export { FieldDescriptor } from "./types/field-descriptor";
