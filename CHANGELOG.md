@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.2.25](https://github.com/VirtusLab/formts/compare/v0.2.24...v0.2.25) (2023-02-26)
+
+
+### Features
+
+* useFormErrors hook & FieldMatcher util ([#138](https://github.com/VirtusLab/formts/issues/138)) ([ae3c000](https://github.com/VirtusLab/formts/commit/ae3c0005386b2cb18849f4776f5650bbc062f8e5))
+
 ### [0.2.24](https://github.com/VirtusLab/formts/compare/v0.2.23...v0.2.24) (2023-02-19)
 
 
