@@ -54,5 +54,5 @@ export const useFormController = <Values extends object, Err>(
     [state, methods, atoms]
   );
 
-  return opaque({ __ctx });
+  return useMemo(() => opaque({ __ctx }), [__ctx]);
 };

@@ -1,3 +1,5 @@
+import { useMemo } from "react";
+
 import { keys, toIdentityDict } from "../../../utils";
 import { Task } from "../../../utils/task";
 import { useSubscription } from "../../../utils/use-subscription";
@@ -51,7 +53,10 @@ export const useField = <T, Err>(
   useSubscription(fieldState);
   useSubscription(dependencies);
 
-  return createFieldHandle(fieldDescriptor, methods, fieldState, state, atoms);
+  return useMemo(
+    () => createFieldHandle(fieldDescriptor, methods, fieldState, state, atoms),
+    [impl(fieldDescriptor).__path, fieldState.val, dependencies.val]
+  );
 };
 
 const createFieldHandle = <T, Err>(

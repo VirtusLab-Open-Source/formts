@@ -1,3 +1,5 @@
+import { useMemo } from "react";
+
 import { Task } from "../../../utils/task";
 import { useSubscription } from "../../../utils/use-subscription";
 import { useFormtsContext } from "../../context";
@@ -35,53 +37,62 @@ export const useFormHandle = <Values extends object, Err>(
   const { atoms, methods } = useFormtsContext<Values, Err>(controller);
   useSubscription(atoms.formHandle);
 
-  return {
-    get isSubmitting() {
-      return atoms.formHandle.val.isSubmitting;
-    },
+  return useMemo(
+    () => ({
+      get isSubmitting() {
+        return atoms.formHandle.val.isSubmitting;
+      },
 
-    get isTouched() {
-      return atoms.formHandle.val.isTouched;
-    },
+      get isTouched() {
+        return atoms.formHandle.val.isTouched;
+      },
 
-    get isChanged() {
-      return atoms.formHandle.val.isChanged;
-    },
+      get isChanged() {
+        return atoms.formHandle.val.isChanged;
+      },
 
-    get isValid() {
-      return atoms.formHandle.val.isValid;
-    },
+      get isValid() {
+        return atoms.formHandle.val.isValid;
+      },
 
-    get isValidating() {
-      return atoms.formHandle.val.isValidating;
-    },
+      get isValidating() {
+        return atoms.formHandle.val.isValidating;
+      },
 
-    get submitCount() {
-      const { successfulSubmitCount, failedSubmitCount } = atoms.formHandle.val;
+      get submitCount() {
+        const {
+          successfulSubmitCount,
+          failedSubmitCount,
+        } = atoms.formHandle.val;
 
-      return {
-        valid: successfulSubmitCount,
-        invalid: failedSubmitCount,
-        total: successfulSubmitCount + failedSubmitCount,
-      };
-    },
+        return {
+          valid: successfulSubmitCount,
+          invalid: failedSubmitCount,
+          total: successfulSubmitCount + failedSubmitCount,
+        };
+      },
 
-    reset: newInitialValues => methods.resetForm(newInitialValues).runPromise(),
+      reset: newInitialValues =>
+        methods.resetForm(newInitialValues).runPromise(),
 
-    validate: () => methods.validateForm().runPromise(),
+      validate: () => methods.validateForm().runPromise(),
 
-    submit: (onSuccess, onFailure) =>
-      methods
-        .submitForm(
-          values => Task.from(() => onSuccess(values)).map(() => {}),
-          errors => Task.from(() => onFailure?.(errors))
-        )
-        .runPromise(),
+      submit: (onSuccess, onFailure) =>
+        methods
+          .submitForm(
+            values => Task.from(() => onSuccess(values)).map(() => {}),
+            errors => Task.from(() => onFailure?.(errors))
+          )
+          .runPromise(),
 
-    setFieldValue: (field, value) =>
-      methods.setFieldValue(field, value).runPromise(),
+      setFieldValue: (field, value) =>
+        methods.setFieldValue(field, value).runPromise(),
 
-    setFieldError: (field, error) =>
-      methods.setFieldErrors({ path: impl(field).__path, error }).runPromise(),
-  };
+      setFieldError: (field, error) =>
+        methods
+          .setFieldErrors({ path: impl(field).__path, error })
+          .runPromise(),
+    }),
+    [atoms.formHandle.val]
+  );
 };
