@@ -129,19 +129,21 @@ export const createStateDispatch = <Values extends object, Err>(
     }
 
     case "setErrors": {
-      const errors = action.payload.reduce(
-        (dict, { path, error }) => {
-          if (error != null) {
-            dict[path] = error;
-          } else {
-            delete dict[path];
-          }
-          return dict;
-        },
-        { ...state.errors.val }
-      );
+      if (action.payload.length > 0) {
+        const errors = action.payload.reduce(
+          (dict, { path, error }) => {
+            if (error != null) {
+              dict[path] = error;
+            } else {
+              delete dict[path];
+            }
+            return dict;
+          },
+          { ...state.errors.val }
+        );
 
-      state.errors.set(errors);
+        state.errors.set(errors);
+      }
       break;
     }
 

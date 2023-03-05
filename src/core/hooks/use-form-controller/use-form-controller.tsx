@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from "react";
 
+import { FormAtoms } from "../../atoms";
 import {
   FormController,
   _FormControllerImpl,
@@ -8,7 +9,6 @@ import { InternalFormtsContext } from "../../types/formts-context";
 import { FormtsOptions } from "../../types/formts-options";
 import { opaque } from "../../types/type-mapper-util";
 
-import { FieldDependenciesAtomCache, FieldStateAtomCache } from "./atom-cache";
 import { createStateDispatch, getInitialState } from "./formts-dispatch";
 import { createFormtsMethods } from "./formts-methods";
 
@@ -38,15 +38,7 @@ export const useFormController = <Values extends object, Err>(
 ): FormController => {
   const state = useMemo(() => getInitialState(options), []);
   const dispatch = useCallback(createStateDispatch(state, options), [state]);
-
-  const fieldStateCache = useMemo(() => new FieldStateAtomCache(state), [
-    state,
-  ]);
-  const fieldDependenciesCache = useMemo(
-    () => new FieldDependenciesAtomCache(state),
-    [state]
-  );
-
+  const atoms = useMemo(() => new FormAtoms(state, options.Schema), [state]);
   const methods = useMemo(
     () => createFormtsMethods({ options, state, dispatch }),
     [state, dispatch, options.validator]
@@ -57,11 +49,10 @@ export const useFormController = <Values extends object, Err>(
       options,
       state,
       methods,
-      fieldStateCache,
-      fieldDependenciesCache,
+      atoms,
     }),
-    [state, methods, fieldStateCache, fieldDependenciesCache]
+    [state, methods, atoms]
   );
 
-  return opaque({ __ctx });
+  return useMemo(() => opaque({ __ctx }), [__ctx]);
 };

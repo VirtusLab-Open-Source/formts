@@ -1,6 +1,9 @@
+import { useMemo } from "react";
+
 import { keys, toIdentityDict } from "../../../utils";
 import { Task } from "../../../utils/task";
 import { useSubscription } from "../../../utils/use-subscription";
+import { FieldStateAtom, FormAtoms } from "../../atoms";
 import { useFormtsContext } from "../../context";
 import * as Helpers from "../../helpers";
 import { isChoiceDecoder } from "../../types/field-decoder";
@@ -15,10 +18,6 @@ import { FormController } from "../../types/form-controller";
 import { InternalFormtsMethods } from "../../types/formts-context";
 import { FormtsAtomState } from "../../types/formts-state";
 import { impl } from "../../types/type-mapper-util";
-import {
-  FieldStateAtom,
-  FieldStateAtomCache,
-} from "../use-form-controller/atom-cache";
 
 /**
  * Hook used to gain access to field-specific state and methods
@@ -46,25 +45,17 @@ export const useField = <T, Err>(
   fieldDescriptor: GenericFieldDescriptor<T, Err>,
   controller?: FormController
 ): FieldHandle<T, Err> => {
-  const {
-    methods,
-    state,
-    fieldStateCache,
-    fieldDependenciesCache,
-  } = useFormtsContext<object, Err>(controller);
+  const { methods, state, atoms } = useFormtsContext<object, Err>(controller);
 
-  const fieldState = fieldStateCache.get(fieldDescriptor);
-  const dependencies = fieldDependenciesCache.get(fieldDescriptor);
+  const fieldState = atoms.fieldStates.get(fieldDescriptor);
+  const dependencies = atoms.fieldDependencies.get(fieldDescriptor);
 
   useSubscription(fieldState);
   useSubscription(dependencies);
 
-  return createFieldHandle(
-    fieldDescriptor,
-    methods,
-    fieldState,
-    state,
-    fieldStateCache
+  return useMemo(
+    () => createFieldHandle(fieldDescriptor, methods, fieldState, state, atoms),
+    [impl(fieldDescriptor).__path, fieldState.val, dependencies.val]
   );
 };
 
@@ -73,7 +64,7 @@ const createFieldHandle = <T, Err>(
   methods: InternalFormtsMethods<object, Err>,
   fieldState: FieldStateAtom<T>,
   formState: FormtsAtomState<object, Err>,
-  fieldStateCache: FieldStateAtomCache<object, Err>
+  atoms: FormAtoms<object, Err>
 ): FieldHandle<T, Err> =>
   toFieldHandle({
     descriptor,
@@ -115,13 +106,13 @@ const createFieldHandle = <T, Err>(
               enumerable: true,
               get: function () {
                 const nestedDescriptor = descriptor[key];
-                const childState = fieldStateCache.get(nestedDescriptor);
+                const childState = atoms.fieldStates.get(nestedDescriptor);
                 return createFieldHandle(
                   nestedDescriptor,
                   methods,
                   childState,
                   formState,
-                  fieldStateCache
+                  atoms
                 );
               },
             }),
@@ -133,13 +124,13 @@ const createFieldHandle = <T, Err>(
         const value = (fieldState.val.value as unknown) as unknown[];
         return value.map((_, i) => {
           const childDescriptor = descriptor.nth(i);
-          const childState = fieldStateCache.get(childDescriptor);
+          const childState = atoms.fieldStates.get(childDescriptor);
           return createFieldHandle(
             descriptor.nth(i),
             methods,
             childState,
             formState,
-            fieldStateCache
+            atoms
           );
         });
       }

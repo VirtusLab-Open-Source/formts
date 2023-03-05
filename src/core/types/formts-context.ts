@@ -1,10 +1,7 @@
 import { ChangeEvent } from "react";
 
 import { Task } from "../../utils/task";
-import type {
-  FieldStateAtomCache,
-  FieldDependenciesAtomCache,
-} from "../hooks/use-form-controller/atom-cache";
+import type { FormAtoms } from "../atoms";
 
 import { FieldDescriptor } from "./field-descriptor";
 import { FieldError } from "./field-error";
@@ -41,6 +38,5 @@ export type InternalFormtsContext<Values extends object, Err> = {
   options: FormtsOptions<Values, Err>;
   state: FormtsAtomState<Values, Err>;
   methods: InternalFormtsMethods<Values, Err>;
-  fieldStateCache: FieldStateAtomCache<Values, Err>;
-  fieldDependenciesCache: FieldDependenciesAtomCache<Values, Err>;
+  atoms: FormAtoms<Values, Err>;
 };
