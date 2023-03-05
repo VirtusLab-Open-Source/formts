@@ -1,11 +1,6 @@
-import { useMemo } from "react";
-
-import { deepEqual, keys, values } from "../../../utils";
-import { Atom } from "../../../utils/atoms";
 import { Task } from "../../../utils/task";
 import { useSubscription } from "../../../utils/use-subscription";
 import { useFormtsContext } from "../../context";
-import { resolveTouched } from "../../helpers";
 import { FormController } from "../../types/form-controller";
 import { FormHandle } from "../../types/form-handle";
 import { FormSchema } from "../../types/form-schema";
@@ -34,85 +29,35 @@ import { impl } from "../../types/type-mapper-util";
  * ```
  */
 export const useFormHandle = <Values extends object, Err>(
-  Schema: FormSchema<Values, Err>,
+  _Schema: FormSchema<Values, Err>,
   controller?: FormController
 ): FormHandle<Values, Err> => {
-  const { state, methods } = useFormtsContext<Values, Err>(controller);
-
-  // TODO: create cache for form handle atoms to avoid memory leaks and redundant computations
-  const stateAtom = useMemo(
-    () =>
-      Atom.fuse(
-        (
-          isTouched,
-          isChanged,
-          isValid,
-          isValidating,
-          isSubmitting,
-          successfulSubmitCount,
-          failedSubmitCount
-        ) => ({
-          isTouched,
-          isChanged,
-          isValid,
-          isValidating,
-          isSubmitting,
-          successfulSubmitCount,
-          failedSubmitCount,
-        }),
-
-        Atom.fuse(
-          (sc, fc, touched) => sc > 0 || fc > 0 || resolveTouched(touched),
-          state.successfulSubmitCount,
-          state.failedSubmitCount,
-          state.touched
-        ),
-        Atom.fuse(
-          (...fieldsChanged) => fieldsChanged.some(Boolean),
-          ...values(Schema).map(field => {
-            const fieldLens = impl(field).__lens;
-            return Atom.fuse(
-              (initialValue, fieldValue) =>
-                !deepEqual(fieldValue, initialValue),
-              Atom.entangle(state.initialValues, fieldLens),
-              Atom.entangle(state.values, fieldLens)
-            );
-          })
-        ),
-        Atom.fuse(x => values(x).every(err => err == null), state.errors),
-        Atom.fuse(x => keys(x).length > 0, state.validating),
-        state.isSubmitting,
-        state.successfulSubmitCount,
-        state.failedSubmitCount
-      ),
-    [state]
-  );
-
-  useSubscription(stateAtom);
+  const { atoms, methods } = useFormtsContext<Values, Err>(controller);
+  useSubscription(atoms.formHandle);
 
   return {
     get isSubmitting() {
-      return stateAtom.val.isSubmitting;
+      return atoms.formHandle.val.isSubmitting;
     },
 
     get isTouched() {
-      return stateAtom.val.isTouched;
+      return atoms.formHandle.val.isTouched;
     },
 
     get isChanged() {
-      return stateAtom.val.isChanged;
+      return atoms.formHandle.val.isChanged;
     },
 
     get isValid() {
-      return stateAtom.val.isValid;
+      return atoms.formHandle.val.isValid;
     },
 
     get isValidating() {
-      return stateAtom.val.isValidating;
+      return atoms.formHandle.val.isValidating;
     },
 
     get submitCount() {
-      const { successfulSubmitCount, failedSubmitCount } = stateAtom.val;
+      const { successfulSubmitCount, failedSubmitCount } = atoms.formHandle.val;
 
       return {
         valid: successfulSubmitCount,

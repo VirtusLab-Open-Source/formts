@@ -1,6 +1,3 @@
-import { useMemo } from "react";
-
-import { Atom } from "../../../utils/atoms";
 import { useSubscription } from "../../../utils/use-subscription";
 import { useFormtsContext } from "../../context";
 import { FieldError } from "../../types/field-error";
@@ -33,21 +30,7 @@ export const useFormErrors = <Values extends object, Err>(
   _Schema: FormSchema<Values, Err>,
   controller?: FormController
 ): Array<FieldError<Err>> => {
-  const { state } = useFormtsContext<Values, Err>(controller);
-  const stateAtom = useMemo(
-    () =>
-      Atom.fuse(
-        errorsDict =>
-          Object.entries(errorsDict)
-            .filter(([, error]) => error != null)
-            .map(([fieldId, error]) => ({ fieldId, error: error! })),
-
-        state.errors
-      ),
-    [state]
-  );
-
-  useSubscription(stateAtom);
-
-  return stateAtom.val;
+  const { atoms } = useFormtsContext<Values, Err>(controller);
+  useSubscription(atoms.formErrors);
+  return atoms.formErrors.val;
 };
