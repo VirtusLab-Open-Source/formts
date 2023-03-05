@@ -965,24 +965,34 @@ describe("FormValidatorBuilder", () => {
       ]);
     });
 
-    it("dependency change should trigger validation run", async () => {
-      const required = (x: any) => (x ? null : "REQUIRED");
+    it("validation is run for primitive dependent field", async () => {
+      const validatorSpies = {
+        stringField: jest.fn().mockReturnValue("err:stringField"),
+        numberField: jest.fn().mockReturnValue("err:numberField"),
+        choiceField: jest.fn().mockReturnValue("err:choiceField"),
+      };
+      const getValue = (field: FieldDescriptor<any> | string): any => {
+        const path = typeof field === "string" ? field : impl(field).__path;
+        return path;
+      };
 
       const { validate } = impl(
         new FormValidatorBuilder(Schema)
           .validate({
             field: Schema.string,
-            rules: _number => [required],
             dependencies: [Schema.number],
+            rules: _number => [validatorSpies.stringField],
           })
           .validate({
             field: Schema.number,
-            rules: () => [required],
+            rules: () => [validatorSpies.numberField],
+          })
+          .validate({
+            field: Schema.choice,
+            rules: () => [validatorSpies.choiceField],
           })
           .build()
       );
-
-      const getValue = () => "" as any;
 
       const result = await validate({
         fields: [Schema.number],
@@ -990,38 +1000,57 @@ describe("FormValidatorBuilder", () => {
       }).runPromise();
 
       expect(result).toEqual([
-        { path: "number", error: "REQUIRED" },
-        { path: "string", error: "REQUIRED" },
+        { path: "number", error: "err:numberField" },
+        { path: "string", error: "err:stringField" },
       ]);
+
+      expect(validatorSpies.numberField).toHaveBeenCalledWith("number");
+      expect(validatorSpies.numberField).toHaveBeenCalledTimes(1);
+
+      expect(validatorSpies.stringField).toHaveBeenCalledWith("string");
+      expect(validatorSpies.stringField).toHaveBeenCalledTimes(1);
+
+      expect(validatorSpies.choiceField).not.toHaveBeenCalled();
     });
 
-    it("dependency change should trigger validation run for with array.every()", async () => {
+    it("validation is run for dependent field defined with array.every()", async () => {
+      const validatorSpies = {
+        everyArrayObjectString: jest
+          .fn()
+          .mockReturnValue("err:arrayObjectString.every"),
+        choiceField: jest.fn().mockReturnValue("err:choiceField"),
+      };
+
+      const getValue = (field: FieldDescriptor<any> | string): any => {
+        const path = typeof field === "string" ? field : impl(field).__path;
+        switch (path) {
+          case "arrayObjectString":
+            return [
+              { str: "arrayObjectString[0]" },
+              { str: "arrayObjectString[1]" },
+              { str: "arrayObjectString[2]" },
+            ];
+          case "arrayObjectString[0]":
+            return { str: "arrayObjectString[0]" };
+          case "arrayObjectString[1]":
+            return { str: "arrayObjectString[1]" };
+          case "arrayObjectString[2]":
+            return { str: "arrayObjectString[2]" };
+          case "choice":
+            return "A";
+        }
+      };
+
       const { validate } = impl(
         new FormValidatorBuilder(Schema)
           .validate({
             field: Schema.arrayObjectString.every(),
-            rules: _ => [x => (x.str === "" ? "REQUIRED" : null)],
             dependencies: [Schema.choice],
+            rules: _ => [validatorSpies.everyArrayObjectString],
           })
-          .validate(Schema.choice, x => (x === "A" ? "INVALID_VALUE" : null))
+          .validate(Schema.choice, validatorSpies.choiceField)
           .build()
       );
-
-      const getValue = (field: FieldDescriptor<any> | string): any => {
-        const path = typeof field === "string" ? field : impl(field).__path;
-        switch (path) {
-          case "arrayObjectString":
-            return [{ str: "sm" }, { str: "" }, { str: "valid string" }];
-          case "arrayObjectString[0]":
-            return { str: "sm" };
-          case "arrayObjectString[1]":
-            return { str: "" };
-          case "arrayObjectString[2]":
-            return { str: "valid string" };
-          case "choice":
-            return "A";
-        }
-      };
 
       const result = await validate({
         fields: [Schema.choice],
@@ -1029,40 +1058,65 @@ describe("FormValidatorBuilder", () => {
       }).runPromise();
 
       expect(result).toEqual([
-        { path: "choice", error: "INVALID_VALUE" },
-        { path: "arrayObjectString[0]", error: null },
-        { path: "arrayObjectString[1]", error: "REQUIRED" },
-        { path: "arrayObjectString[2]", error: null },
+        { path: "choice", error: "err:choiceField" },
+        { path: "arrayObjectString[0]", error: "err:arrayObjectString.every" },
+        { path: "arrayObjectString[1]", error: "err:arrayObjectString.every" },
+        { path: "arrayObjectString[2]", error: "err:arrayObjectString.every" },
       ]);
+
+      expect(validatorSpies.choiceField).toHaveBeenCalledWith("A");
+      expect(validatorSpies.choiceField).toHaveBeenCalledTimes(1);
+
+      expect(validatorSpies.everyArrayObjectString).toHaveBeenCalledWith({
+        str: "arrayObjectString[0]",
+      });
+      expect(validatorSpies.everyArrayObjectString).toHaveBeenCalledWith({
+        str: "arrayObjectString[1]",
+      });
+      expect(validatorSpies.everyArrayObjectString).toHaveBeenCalledWith({
+        str: "arrayObjectString[2]",
+      });
+      expect(validatorSpies.everyArrayObjectString).toHaveBeenCalledTimes(3);
     });
 
-    it("dependency change should trigger validation run for with array.every()...", async () => {
+    it("validation is run for dependent field defined with array.every()...", async () => {
+      const validatorSpies = {
+        everyArrayObjectString: jest
+          .fn()
+          .mockReturnValue("err:arrayObjectString.every.str"),
+        choiceField: jest.fn().mockReturnValue("err:choiceField"),
+      };
+
+      const getValue = (field: FieldDescriptor<any> | string): any => {
+        const path = typeof field === "string" ? field : impl(field).__path;
+        switch (path) {
+          case "arrayObjectString":
+            return [
+              { str: "arrayObjectString[0]" },
+              { str: "arrayObjectString[1]" },
+              { str: "arrayObjectString[2]" },
+            ];
+          case "arrayObjectString[0].str":
+            return "arrayObjectString[0]";
+          case "arrayObjectString[1].str":
+            return "arrayObjectString[1]";
+          case "arrayObjectString[2].str":
+            return "arrayObjectString[2]";
+          case "choice":
+            return "A";
+        }
+      };
+
       const { validate } = impl(
         new FormValidatorBuilder(Schema)
           .validate({
             field: Schema.arrayObjectString.every().str,
-            rules: _ => [x => (x === "" ? "REQUIRED" : null)],
             dependencies: [Schema.choice],
+            rules: _ => [validatorSpies.everyArrayObjectString],
           })
-          .validate(Schema.choice, x => (x === "A" ? "INVALID_VALUE" : null))
+          .validate(Schema.choice, validatorSpies.choiceField)
           .build()
       );
-
-      const getValue = (field: FieldDescriptor<any> | string): any => {
-        const path = typeof field === "string" ? field : impl(field).__path;
-        switch (path) {
-          case "arrayObjectString":
-            return [{ str: "sm" }, { str: "" }, { str: "valid string" }];
-          case "arrayObjectString[0].str":
-            return "sm";
-          case "arrayObjectString[1].str":
-            return "";
-          case "arrayObjectString[2].str":
-            return "valid string";
-          case "choice":
-            return "A";
-        }
-      };
 
       const result = await validate({
         fields: [Schema.choice],
@@ -1070,31 +1124,59 @@ describe("FormValidatorBuilder", () => {
       }).runPromise();
 
       expect(result).toEqual([
-        { path: "choice", error: "INVALID_VALUE" },
-        { path: "arrayObjectString[0].str", error: null },
-        { path: "arrayObjectString[1].str", error: "REQUIRED" },
-        { path: "arrayObjectString[2].str", error: null },
+        { path: "choice", error: "err:choiceField" },
+        {
+          path: "arrayObjectString[0].str",
+          error: "err:arrayObjectString.every.str",
+        },
+        {
+          path: "arrayObjectString[1].str",
+          error: "err:arrayObjectString.every.str",
+        },
+        {
+          path: "arrayObjectString[2].str",
+          error: "err:arrayObjectString.every.str",
+        },
       ]);
+
+      expect(validatorSpies.choiceField).toHaveBeenCalledWith("A");
+      expect(validatorSpies.choiceField).toHaveBeenCalledTimes(1);
+
+      expect(validatorSpies.everyArrayObjectString).toHaveBeenCalledWith(
+        "arrayObjectString[0]"
+      );
+      expect(validatorSpies.everyArrayObjectString).toHaveBeenCalledWith(
+        "arrayObjectString[1]"
+      );
+      expect(validatorSpies.everyArrayObjectString).toHaveBeenCalledWith(
+        "arrayObjectString[2]"
+      );
+      expect(validatorSpies.everyArrayObjectString).toHaveBeenCalledTimes(3);
     });
 
     it("dependency change should not duplicate validation", async () => {
-      const required = (x: any) => (x ? null : "REQUIRED");
+      const validatorSpies = {
+        stringField: jest.fn().mockReturnValue("err:stringField"),
+        numberField: jest.fn().mockReturnValue("err:numberField"),
+      };
+      const getValue = (field: FieldDescriptor<any> | string): any => {
+        const path = typeof field === "string" ? field : impl(field).__path;
+        return path;
+      };
 
       const { validate } = impl(
         new FormValidatorBuilder(Schema)
           .validate({
             field: Schema.string,
-            rules: _number => [required],
             dependencies: [Schema.number],
+            rules: _number => [validatorSpies.stringField],
           })
           .validate({
             field: Schema.number,
-            rules: () => [required],
+            rules: () => [validatorSpies.numberField],
           })
           .build()
       );
-
-      const getValue = () => "" as any;
 
       const result = await validate({
         fields: [Schema.number, Schema.string],
@@ -1102,9 +1184,15 @@ describe("FormValidatorBuilder", () => {
       }).runPromise();
 
       expect(result).toEqual([
-        { path: "number", error: "REQUIRED" },
-        { path: "string", error: "REQUIRED" },
+        { path: "number", error: "err:numberField" },
+        { path: "string", error: "err:stringField" },
       ]);
+
+      expect(validatorSpies.numberField).toHaveBeenCalledWith("number");
+      expect(validatorSpies.numberField).toHaveBeenCalledTimes(1);
+
+      expect(validatorSpies.stringField).toHaveBeenCalledWith("string");
+      expect(validatorSpies.stringField).toHaveBeenCalledTimes(1);
     });
 
     it("dependency change should trigger validation run even if root field triggers don't match", async () => {
@@ -1114,19 +1202,19 @@ describe("FormValidatorBuilder", () => {
         new FormValidatorBuilder(Schema)
           .validate({
             field: Schema.string,
-            rules: _number => [required],
             dependencies: [Schema.number],
+            rules: _number => [required],
           })
           .validate({
             field: Schema.choice,
-            rules: _number => [required],
             dependencies: [Schema.number],
             triggers: ["blur"],
+            rules: _number => [required],
           })
           .validate({
             field: Schema.number,
-            rules: () => [required],
             triggers: ["blur"],
+            rules: () => [required],
           })
           .build()
       );
@@ -1143,14 +1231,7 @@ describe("FormValidatorBuilder", () => {
     });
 
     it("dependencies values are passed to rules constructor", async () => {
-      const rules = jest.fn((...dependencies) => [
-        () =>
-          dependencies[0] === 2 &&
-          dependencies[1] === "B" &&
-          dependencies[2].length === 0
-            ? null
-            : "INVALID_VALUE",
-      ]) as any;
+      const rules = jest.fn().mockReturnValue([]);
 
       const { validate } = impl(
         new FormValidatorBuilder(Schema)
