@@ -1100,7 +1100,7 @@ describe("FormValidatorBuilder", () => {
           .validate({
             field: Schema.string,
             dependencies: [Schema.object],
-            rules: _number => [validatorSpies.string],
+            rules: _object => [validatorSpies.string],
           })
           .validate({
             field: Schema.object,
