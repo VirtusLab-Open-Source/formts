@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.2.27](https://github.com/VirtusLab/formts/compare/v0.2.26...v0.2.27) (2023-06-11)
+
+
+### Bug Fixes
+
+* triggering validation based on dependent fields ([#143](https://github.com/VirtusLab/formts/issues/143)) ([808d4b9](https://github.com/VirtusLab/formts/commit/808d4b9d16c1f41a6d013366dc4fa671202be888))
+
 ### [0.2.26](https://github.com/VirtusLab/formts/compare/v0.2.25...v0.2.26) (2023-03-05)
 
 
