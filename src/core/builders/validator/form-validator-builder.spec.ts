@@ -9,7 +9,7 @@ import { FormFields, FormSchemaBuilder } from "../schema";
 
 import { FormValidatorBuilder } from "./form-validator-builder";
 
-export const wait = <T extends string | null>(value: T): Promise<T> =>
+const wait = <T extends string | null>(value: T): Promise<T> =>
   new Promise(resolve => setTimeout(() => resolve(value), 0));
 
 describe("FormValidatorBuilder", () => {
@@ -114,7 +114,8 @@ describe("FormValidatorBuilder", () => {
         getValue,
       }).runPromise();
 
-      expect(result).toEqual([{ path: "string", error: "REQUIRED" }]);
+      expect(result).toContainEqual({ path: "string", error: "REQUIRED" });
+      expect(result).toHaveLength(1);
     });
 
     it("should return null for passing single-rule on string field", async () => {
@@ -136,7 +137,8 @@ describe("FormValidatorBuilder", () => {
         getValue,
       }).runPromise();
 
-      expect(result).toEqual([{ path: "string", error: null }]);
+      expect(result).toContainEqual({ path: "string", error: null });
+      expect(result).toHaveLength(1);
     });
 
     it("should return ERR for failing all of multiple-rule on string field", async () => {
@@ -161,7 +163,8 @@ describe("FormValidatorBuilder", () => {
         getValue,
       }).runPromise();
 
-      expect(result).toEqual([{ path: "string", error: "REQUIRED" }]);
+      expect(result).toContainEqual({ path: "string", error: "REQUIRED" });
+      expect(result).toHaveLength(1);
     });
 
     it("should return ERR for failing last of multiple-rule on string field", async () => {
@@ -186,7 +189,8 @@ describe("FormValidatorBuilder", () => {
         getValue,
       }).runPromise();
 
-      expect(result).toEqual([{ path: "string", error: "TOO_SHORT" }]);
+      expect(result).toContainEqual({ path: "string", error: "TOO_SHORT" });
+      expect(result).toHaveLength(1);
     });
 
     it("should return null for passing all of multiple-rule on string field", async () => {
@@ -211,7 +215,8 @@ describe("FormValidatorBuilder", () => {
         getValue,
       }).runPromise();
 
-      expect(result).toEqual([{ path: "string", error: null }]);
+      expect(result).toContainEqual({ path: "string", error: null });
+      expect(result).toHaveLength(1);
     });
 
     it("should return ERR for failing single-rule on choice field ", async () => {
@@ -231,7 +236,8 @@ describe("FormValidatorBuilder", () => {
         getValue,
       }).runPromise();
 
-      expect(result).toEqual([{ path: "choice", error: "INVALID_VALUE" }]);
+      expect(result).toContainEqual({ path: "choice", error: "INVALID_VALUE" });
+      expect(result).toHaveLength(1);
     });
 
     it("should return null for passing single-rule on choice field ", async () => {
@@ -251,7 +257,8 @@ describe("FormValidatorBuilder", () => {
         getValue,
       }).runPromise();
 
-      expect(result).toEqual([{ path: "choice", error: null }]);
+      expect(result).toContainEqual({ path: "choice", error: null });
+      expect(result).toHaveLength(1);
     });
 
     it("should return ERR for failing single-rule on date field ", async () => {
@@ -271,7 +278,8 @@ describe("FormValidatorBuilder", () => {
         getValue,
       }).runPromise();
 
-      expect(result).toEqual([{ path: "date", error: "REQUIRED" }]);
+      expect(result).toContainEqual({ path: "date", error: "REQUIRED" });
+      expect(result).toHaveLength(1);
     });
 
     it("should return ERR for failing multiple-rule on string array field ", async () => {
@@ -294,7 +302,11 @@ describe("FormValidatorBuilder", () => {
         getValue,
       }).runPromise();
 
-      expect(result).toEqual([{ path: "arrayString", error: "INVALID_VALUE" }]);
+      expect(result).toContainEqual({
+        path: "arrayString",
+        error: "INVALID_VALUE",
+      });
+      expect(result).toHaveLength(1);
     });
 
     it("should return null for passing single-rule on string array array field ", async () => {
@@ -315,7 +327,8 @@ describe("FormValidatorBuilder", () => {
         getValue,
       }).runPromise();
 
-      expect(result).toEqual([{ path: "arrayArrayString", error: null }]);
+      expect(result).toContainEqual({ path: "arrayArrayString", error: null });
+      expect(result).toHaveLength(1);
     });
 
     it("should return ERR for failing async single-rule on object field ", async () => {
@@ -335,7 +348,8 @@ describe("FormValidatorBuilder", () => {
         getValue,
       }).runPromise();
 
-      expect(result).toEqual([{ path: "object", error: "INVALID_VALUE" }]);
+      expect(result).toContainEqual({ path: "object", error: "INVALID_VALUE" });
+      expect(result).toHaveLength(1);
     });
 
     it("should return ERR for failing async multi-rule on object field ", async () => {
@@ -355,7 +369,8 @@ describe("FormValidatorBuilder", () => {
         getValue,
       }).runPromise();
 
-      expect(result).toEqual([{ path: "object", error: "REQUIRED" }]);
+      expect(result).toContainEqual({ path: "object", error: "REQUIRED" });
+      expect(result).toHaveLength(1);
     });
 
     it("should return null for passing async multi-rule on object field ", async () => {
@@ -375,7 +390,8 @@ describe("FormValidatorBuilder", () => {
         getValue,
       }).runPromise();
 
-      expect(result).toEqual([{ path: "object", error: null }]);
+      expect(result).toContainEqual({ path: "object", error: null });
+      expect(result).toHaveLength(1);
     });
 
     it("validate.every() should run for each element of list", async () => {
@@ -416,12 +432,23 @@ describe("FormValidatorBuilder", () => {
         getValue,
       }).runPromise();
 
-      expect(result).toEqual([
-        { path: "arrayObjectString[0]", error: "TOO_SHORT" },
-        { path: "arrayObjectString[1]", error: "REQUIRED" },
-        { path: "arrayObjectString[2]", error: null },
-        { path: "arrayObjectString[3]", error: "INVALID_VALUE" },
-      ]);
+      expect(result).toContainEqual({
+        path: "arrayObjectString[0]",
+        error: "TOO_SHORT",
+      });
+      expect(result).toContainEqual({
+        path: "arrayObjectString[1]",
+        error: "REQUIRED",
+      });
+      expect(result).toContainEqual({
+        path: "arrayObjectString[2]",
+        error: null,
+      });
+      expect(result).toContainEqual({
+        path: "arrayObjectString[3]",
+        error: "INVALID_VALUE",
+      });
+      expect(result).toHaveLength(4);
     });
 
     it("validate.every() for multiple arrays should run for each element of corresponding list", async () => {
@@ -463,12 +490,20 @@ describe("FormValidatorBuilder", () => {
         getValue,
       }).runPromise();
 
-      expect(result).toEqual([
-        { path: "arrayChoice[1]", error: null },
-        { path: "arrayChoice[0]", error: "INVALID_VALUE" },
-        { path: "arrayObjectString[0]", error: null },
-        { path: "arrayObjectString[1]", error: "TOO_SHORT" },
-      ]);
+      expect(result).toContainEqual({ path: "arrayChoice[1]", error: null });
+      expect(result).toContainEqual({
+        path: "arrayChoice[0]",
+        error: "INVALID_VALUE",
+      });
+      expect(result).toContainEqual({
+        path: "arrayObjectString[0]",
+        error: null,
+      });
+      expect(result).toContainEqual({
+        path: "arrayObjectString[1]",
+        error: "TOO_SHORT",
+      });
+      expect(result).toHaveLength(4);
     });
 
     it("validation should run depending if corresponding trigger is present in builder", async () => {
@@ -503,7 +538,8 @@ describe("FormValidatorBuilder", () => {
         trigger: "change",
       }).runPromise();
 
-      expect(result).toEqual([{ path: "choice", error: "REQUIRED" }]);
+      expect(result).toContainEqual({ path: "choice", error: "REQUIRED" });
+      expect(result).toHaveLength(1);
     });
 
     it("validation is not making redundant calls", async () => {
@@ -569,10 +605,9 @@ describe("FormValidatorBuilder", () => {
         trigger: "change",
       }).runPromise();
 
-      expect(result).toEqual([
-        { path: "string", error: "TOO_SHORT" },
-        { path: "number", error: "REQUIRED" },
-      ]);
+      expect(result).toContainEqual({ path: "string", error: "TOO_SHORT" });
+      expect(result).toContainEqual({ path: "number", error: "REQUIRED" });
+      expect(result).toHaveLength(2);
 
       expect(stringRequired).toHaveBeenCalledTimes(1);
       expect(stringLength).toHaveBeenCalledTimes(1);
@@ -634,12 +669,17 @@ describe("FormValidatorBuilder", () => {
         getValue,
       }).runPromise();
 
-      expect(result).toEqual([
-        { path: "arrayString[0]", error: "INVALID_VALUE" },
-        { path: "arrayString[1]", error: null },
-        { path: "arrayString[2]", error: "TOO_SHORT" },
-        { path: "string", error: "TOO_SHORT" },
-      ]);
+      expect(result).toContainEqual({
+        path: "arrayString[0]",
+        error: "INVALID_VALUE",
+      });
+      expect(result).toContainEqual({ path: "arrayString[1]", error: null });
+      expect(result).toContainEqual({
+        path: "arrayString[2]",
+        error: "TOO_SHORT",
+      });
+      expect(result).toContainEqual({ path: "string", error: "TOO_SHORT" });
+      expect(result).toHaveLength(4);
     });
 
     it("calls callback functions to signal start and end of validation for every affected field", async () => {
@@ -723,7 +763,9 @@ describe("FormValidatorBuilder", () => {
           getValue,
         }).runPromise();
 
-        expect(result).toEqual([{ path: "string", error: null }]);
+        expect(result).toContainEqual({ path: "string", error: null });
+        expect(result).toHaveLength(1);
+
         expect(rule1).not.toHaveBeenCalled();
         expect(rule2).not.toHaveBeenCalled();
       }
@@ -734,7 +776,9 @@ describe("FormValidatorBuilder", () => {
           getValue,
         }).runPromise();
 
-        expect(result).toEqual([{ path: "string", error: "ERR_1" }]);
+        expect(result).toContainEqual({ path: "string", error: "ERR_1" });
+        expect(result).toHaveLength(1);
+
         expect(rule1).toHaveBeenCalled();
         expect(rule2).not.toHaveBeenCalled();
       }
@@ -793,11 +837,19 @@ describe("FormValidatorBuilder", () => {
         getValue,
       }).runPromise();
 
-      expect(result).toEqual([
-        { path: "arrayObjectString", error: "TOO_SHORT" },
-        { path: "arrayObjectString[0]", error: null },
-        { path: "arrayObjectString[1]", error: "REQUIRED" },
-      ]);
+      expect(result).toContainEqual({
+        path: "arrayObjectString",
+        error: "TOO_SHORT",
+      });
+      expect(result).toContainEqual({
+        path: "arrayObjectString[0]",
+        error: null,
+      });
+      expect(result).toContainEqual({
+        path: "arrayObjectString[1]",
+        error: "REQUIRED",
+      });
+      expect(result).toHaveLength(3);
     });
 
     it("object validation should fire validation for each child", async () => {
@@ -831,10 +883,9 @@ describe("FormValidatorBuilder", () => {
         getValue,
       }).runPromise();
 
-      expect(result).toEqual([
-        { path: "object.str", error: "REQUIRED" },
-        { path: "object.num", error: null },
-      ]);
+      expect(result).toContainEqual({ path: "object.str", error: "REQUIRED" });
+      expect(result).toContainEqual({ path: "object.num", error: null });
+      expect(result).toHaveLength(2);
     });
 
     it("nested object validation should fire validation for each child without duplicates", async () => {
@@ -883,21 +934,23 @@ describe("FormValidatorBuilder", () => {
         getValue,
       }).runPromise();
 
-      expect(result).toEqual([
-        { path: "objectObjectArrayObjectString.obj.array", error: null },
-        {
-          path: "objectObjectArrayObjectString.obj.array[0]",
-          error: null,
-        },
-        {
-          path: "objectObjectArrayObjectString.obj.array[1]",
-          error: null,
-        },
-        {
-          path: "objectObjectArrayObjectString.obj.array[1].str",
-          error: "INVALID_VALUE",
-        },
-      ]);
+      expect(result).toContainEqual({
+        path: "objectObjectArrayObjectString.obj.array",
+        error: null,
+      });
+      expect(result).toContainEqual({
+        path: "objectObjectArrayObjectString.obj.array[0]",
+        error: null,
+      });
+      expect(result).toContainEqual({
+        path: "objectObjectArrayObjectString.obj.array[1]",
+        error: null,
+      });
+      expect(result).toContainEqual({
+        path: "objectObjectArrayObjectString.obj.array[1].str",
+        error: "INVALID_VALUE",
+      });
+      expect(result).toHaveLength(4);
 
       expect(arrayValidator).toHaveBeenCalledTimes(1);
       expect(arrayItemValidator).toHaveBeenCalledTimes(2);
@@ -918,7 +971,8 @@ describe("FormValidatorBuilder", () => {
         getValue,
       }).runPromise();
 
-      expect(result).toEqual([{ path: "string", error: "REQUIRED" }]);
+      expect(result).toContainEqual({ path: "string", error: "REQUIRED" });
+      expect(result).toHaveLength(1);
     });
 
     it("should work with simple signature with array.every()", async () => {
@@ -957,154 +1011,399 @@ describe("FormValidatorBuilder", () => {
         getValue,
       }).runPromise();
 
-      expect(result).toEqual([
-        { path: "arrayObjectString[0]", error: "TOO_SHORT" },
-        { path: "arrayObjectString[1]", error: "REQUIRED" },
-        { path: "arrayObjectString[2]", error: null },
-        { path: "arrayObjectString[3]", error: "INVALID_VALUE" },
-      ]);
+      expect(result).toContainEqual({
+        path: "arrayObjectString[0]",
+        error: "TOO_SHORT",
+      });
+      expect(result).toContainEqual({
+        path: "arrayObjectString[1]",
+        error: "REQUIRED",
+      });
+      expect(result).toContainEqual({
+        path: "arrayObjectString[2]",
+        error: null,
+      });
+      expect(result).toContainEqual({
+        path: "arrayObjectString[3]",
+        error: "INVALID_VALUE",
+      });
+      expect(result).toHaveLength(4);
     });
 
-    it("dependency change should trigger validation run", async () => {
-      const required = (x: any) => (x ? null : "REQUIRED");
+    it("validation is run for dependent field when it's direct dependency is validated", async () => {
+      const validatorSpies = {
+        stringField: jest.fn().mockReturnValue("err:stringField"),
+        numberField: jest.fn().mockReturnValue("err:numberField"),
+        choiceField: jest.fn().mockReturnValue("err:choiceField"),
+      };
+      const getValue = (field: FieldDescriptor<any> | string): any => {
+        const path = typeof field === "string" ? field : impl(field).__path;
+        return path;
+      };
 
       const { validate } = impl(
         new FormValidatorBuilder(Schema)
           .validate({
             field: Schema.string,
-            rules: _number => [required],
             dependencies: [Schema.number],
+            rules: _number => [validatorSpies.stringField],
           })
           .validate({
             field: Schema.number,
-            rules: () => [required],
+            rules: () => [validatorSpies.numberField],
+          })
+          .validate({
+            field: Schema.choice,
+            rules: () => [validatorSpies.choiceField],
           })
           .build()
       );
-
-      const getValue = () => "" as any;
 
       const result = await validate({
         fields: [Schema.number],
         getValue,
       }).runPromise();
 
-      expect(result).toEqual([
-        { path: "number", error: "REQUIRED" },
-        { path: "string", error: "REQUIRED" },
-      ]);
+      expect(result).toContainEqual({
+        path: "number",
+        error: "err:numberField",
+      });
+      expect(result).toContainEqual({
+        path: "string",
+        error: "err:stringField",
+      });
+      expect(result).toHaveLength(2);
+
+      expect(validatorSpies.numberField).toHaveBeenCalledWith("number");
+      expect(validatorSpies.numberField).toHaveBeenCalledTimes(1);
+
+      expect(validatorSpies.stringField).toHaveBeenCalledWith("string");
+      expect(validatorSpies.stringField).toHaveBeenCalledTimes(1);
+
+      expect(validatorSpies.choiceField).not.toHaveBeenCalled();
     });
 
-    it("dependency change should trigger validation run for with array.every()", async () => {
-      const { validate } = impl(
-        new FormValidatorBuilder(Schema)
-          .validate({
-            field: Schema.arrayObjectString.every(),
-            rules: _ => [x => (x.str === "" ? "REQUIRED" : null)],
-            dependencies: [Schema.choice],
-          })
-          .validate(Schema.choice, x => (x === "A" ? "INVALID_VALUE" : null))
-          .build()
-      );
-
+    it("validation is run for dependent field when child of it's dependency is validated", async () => {
+      const validatorSpies = {
+        string: jest.fn().mockReturnValue("err:string"),
+        object: jest.fn().mockReturnValue("err:object"),
+        objectStr: jest.fn().mockReturnValue("err:object.str"),
+        objectNum: jest.fn().mockReturnValue("err:object.num"),
+      };
       const getValue = (field: FieldDescriptor<any> | string): any => {
         const path = typeof field === "string" ? field : impl(field).__path;
-        switch (path) {
-          case "arrayObjectString":
-            return [{ str: "sm" }, { str: "" }, { str: "valid string" }];
-          case "arrayObjectString[0]":
-            return { str: "sm" };
-          case "arrayObjectString[1]":
-            return { str: "" };
-          case "arrayObjectString[2]":
-            return { str: "valid string" };
-          case "choice":
-            return "A";
-        }
+        return path;
       };
-
-      const result = await validate({
-        fields: [Schema.choice],
-        getValue,
-      }).runPromise();
-
-      expect(result).toEqual([
-        { path: "choice", error: "INVALID_VALUE" },
-        { path: "arrayObjectString[0]", error: null },
-        { path: "arrayObjectString[1]", error: "REQUIRED" },
-        { path: "arrayObjectString[2]", error: null },
-      ]);
-    });
-
-    it("dependency change should trigger validation run for with array.every()...", async () => {
-      const { validate } = impl(
-        new FormValidatorBuilder(Schema)
-          .validate({
-            field: Schema.arrayObjectString.every().str,
-            rules: _ => [x => (x === "" ? "REQUIRED" : null)],
-            dependencies: [Schema.choice],
-          })
-          .validate(Schema.choice, x => (x === "A" ? "INVALID_VALUE" : null))
-          .build()
-      );
-
-      const getValue = (field: FieldDescriptor<any> | string): any => {
-        const path = typeof field === "string" ? field : impl(field).__path;
-        switch (path) {
-          case "arrayObjectString":
-            return [{ str: "sm" }, { str: "" }, { str: "valid string" }];
-          case "arrayObjectString[0].str":
-            return "sm";
-          case "arrayObjectString[1].str":
-            return "";
-          case "arrayObjectString[2].str":
-            return "valid string";
-          case "choice":
-            return "A";
-        }
-      };
-
-      const result = await validate({
-        fields: [Schema.choice],
-        getValue,
-      }).runPromise();
-
-      expect(result).toEqual([
-        { path: "choice", error: "INVALID_VALUE" },
-        { path: "arrayObjectString[0].str", error: null },
-        { path: "arrayObjectString[1].str", error: "REQUIRED" },
-        { path: "arrayObjectString[2].str", error: null },
-      ]);
-    });
-
-    it("dependency change should not duplicate validation", async () => {
-      const required = (x: any) => (x ? null : "REQUIRED");
 
       const { validate } = impl(
         new FormValidatorBuilder(Schema)
           .validate({
             field: Schema.string,
-            rules: _number => [required],
-            dependencies: [Schema.number],
+            dependencies: [Schema.object],
+            rules: _object => [validatorSpies.string],
           })
           .validate({
-            field: Schema.number,
-            rules: () => [required],
+            field: Schema.object,
+            rules: () => [validatorSpies.object],
+          })
+          .validate({
+            field: Schema.object.str,
+            rules: () => [validatorSpies.objectStr],
+          })
+          .validate({
+            field: Schema.object.num,
+            rules: () => [validatorSpies.objectNum],
           })
           .build()
       );
 
-      const getValue = () => "" as any;
+      const result = await validate({
+        fields: [Schema.object.str],
+        getValue,
+      }).runPromise();
+
+      expect(result).toContainEqual({
+        path: "object.str",
+        error: "err:object.str",
+      });
+      expect(result).toContainEqual({ path: "string", error: "err:string" });
+      expect(result).toContainEqual({ path: "object", error: "err:object" });
+      expect(result).toHaveLength(3);
+
+      expect(validatorSpies.objectStr).toHaveBeenCalledWith("object.str");
+      expect(validatorSpies.objectStr).toHaveBeenCalledTimes(1);
+
+      expect(validatorSpies.object).toHaveBeenCalledWith("object");
+      expect(validatorSpies.object).toHaveBeenCalledTimes(1);
+
+      expect(validatorSpies.string).toHaveBeenCalledWith("string");
+      expect(validatorSpies.string).toHaveBeenCalledTimes(1);
+
+      expect(validatorSpies.objectNum).not.toHaveBeenCalled();
+    });
+
+    it("validation is run for dependent field when parent of it's dependency is validated", async () => {
+      const validatorSpies = {
+        string: jest.fn().mockReturnValue("err:string"),
+        object: jest.fn().mockReturnValue("err:object"),
+        objectStr: jest.fn().mockReturnValue("err:object.str"),
+        objectNum: jest.fn().mockReturnValue("err:object.num"),
+      };
+      const getValue = (field: FieldDescriptor<any> | string): any => {
+        const path = typeof field === "string" ? field : impl(field).__path;
+        return path;
+      };
+
+      const { validate } = impl(
+        new FormValidatorBuilder(Schema)
+          .validate({
+            field: Schema.string,
+            dependencies: [Schema.object.num],
+            rules: _number => [validatorSpies.string],
+          })
+          .validate({
+            field: Schema.object,
+            rules: () => [validatorSpies.object],
+          })
+          .validate({
+            field: Schema.object.str,
+            rules: () => [validatorSpies.objectStr],
+          })
+          .validate({
+            field: Schema.object.num,
+            rules: () => [validatorSpies.objectNum],
+          })
+          .build()
+      );
+
+      const result = await validate({
+        fields: [Schema.object],
+        getValue,
+      }).runPromise();
+
+      expect(result).toContainEqual({ path: "object", error: "err:object" });
+      expect(result).toContainEqual({
+        path: "object.str",
+        error: "err:object.str",
+      });
+      expect(result).toContainEqual({
+        path: "object.num",
+        error: "err:object.num",
+      });
+      expect(result).toContainEqual({ path: "string", error: "err:string" });
+      expect(result).toHaveLength(4);
+
+      expect(validatorSpies.object).toHaveBeenCalledWith("object");
+      expect(validatorSpies.object).toHaveBeenCalledTimes(1);
+
+      expect(validatorSpies.objectStr).toHaveBeenCalledWith("object.str");
+      expect(validatorSpies.objectStr).toHaveBeenCalledTimes(1);
+
+      expect(validatorSpies.objectNum).toHaveBeenCalledWith("object.num");
+      expect(validatorSpies.objectNum).toHaveBeenCalledTimes(1);
+
+      expect(validatorSpies.string).toHaveBeenCalledWith("string");
+      expect(validatorSpies.string).toHaveBeenCalledTimes(1);
+    });
+
+    it("validation is run for dependent field defined with array.every()", async () => {
+      const validatorSpies = {
+        everyArrayObjectString: jest
+          .fn()
+          .mockReturnValue("err:arrayObjectString.every"),
+        choiceField: jest.fn().mockReturnValue("err:choiceField"),
+      };
+
+      const getValue = (field: FieldDescriptor<any> | string): any => {
+        const path = typeof field === "string" ? field : impl(field).__path;
+        switch (path) {
+          case "arrayObjectString":
+            return [
+              { str: "arrayObjectString[0]" },
+              { str: "arrayObjectString[1]" },
+              { str: "arrayObjectString[2]" },
+            ];
+          case "arrayObjectString[0]":
+            return { str: "arrayObjectString[0]" };
+          case "arrayObjectString[1]":
+            return { str: "arrayObjectString[1]" };
+          case "arrayObjectString[2]":
+            return { str: "arrayObjectString[2]" };
+          case "choice":
+            return "A";
+        }
+      };
+
+      const { validate } = impl(
+        new FormValidatorBuilder(Schema)
+          .validate({
+            field: Schema.arrayObjectString.every(),
+            dependencies: [Schema.choice],
+            rules: _ => [validatorSpies.everyArrayObjectString],
+          })
+          .validate(Schema.choice, validatorSpies.choiceField)
+          .build()
+      );
+
+      const result = await validate({
+        fields: [Schema.choice],
+        getValue,
+      }).runPromise();
+
+      expect(result).toContainEqual({
+        path: "choice",
+        error: "err:choiceField",
+      });
+      expect(result).toContainEqual({
+        path: "arrayObjectString[0]",
+        error: "err:arrayObjectString.every",
+      });
+      expect(result).toContainEqual({
+        path: "arrayObjectString[1]",
+        error: "err:arrayObjectString.every",
+      });
+      expect(result).toContainEqual({
+        path: "arrayObjectString[2]",
+        error: "err:arrayObjectString.every",
+      });
+      expect(result).toHaveLength(4);
+
+      expect(validatorSpies.choiceField).toHaveBeenCalledWith("A");
+      expect(validatorSpies.choiceField).toHaveBeenCalledTimes(1);
+
+      expect(validatorSpies.everyArrayObjectString).toHaveBeenCalledWith({
+        str: "arrayObjectString[0]",
+      });
+      expect(validatorSpies.everyArrayObjectString).toHaveBeenCalledWith({
+        str: "arrayObjectString[1]",
+      });
+      expect(validatorSpies.everyArrayObjectString).toHaveBeenCalledWith({
+        str: "arrayObjectString[2]",
+      });
+      expect(validatorSpies.everyArrayObjectString).toHaveBeenCalledTimes(3);
+    });
+
+    it("validation is run for dependent field defined with array.every()...", async () => {
+      const validatorSpies = {
+        everyArrayObjectString: jest
+          .fn()
+          .mockReturnValue("err:arrayObjectString.every.str"),
+        choiceField: jest.fn().mockReturnValue("err:choiceField"),
+      };
+
+      const getValue = (field: FieldDescriptor<any> | string): any => {
+        const path = typeof field === "string" ? field : impl(field).__path;
+        switch (path) {
+          case "arrayObjectString":
+            return [
+              { str: "arrayObjectString[0]" },
+              { str: "arrayObjectString[1]" },
+              { str: "arrayObjectString[2]" },
+            ];
+          case "arrayObjectString[0].str":
+            return "arrayObjectString[0]";
+          case "arrayObjectString[1].str":
+            return "arrayObjectString[1]";
+          case "arrayObjectString[2].str":
+            return "arrayObjectString[2]";
+          case "choice":
+            return "A";
+        }
+      };
+
+      const { validate } = impl(
+        new FormValidatorBuilder(Schema)
+          .validate({
+            field: Schema.arrayObjectString.every().str,
+            dependencies: [Schema.choice],
+            rules: _ => [validatorSpies.everyArrayObjectString],
+          })
+          .validate(Schema.choice, validatorSpies.choiceField)
+          .build()
+      );
+
+      const result = await validate({
+        fields: [Schema.choice],
+        getValue,
+      }).runPromise();
+
+      expect(result).toContainEqual({
+        path: "choice",
+        error: "err:choiceField",
+      });
+      expect(result).toContainEqual({
+        path: "arrayObjectString[0].str",
+        error: "err:arrayObjectString.every.str",
+      });
+      expect(result).toContainEqual({
+        path: "arrayObjectString[1].str",
+        error: "err:arrayObjectString.every.str",
+      });
+      expect(result).toContainEqual({
+        path: "arrayObjectString[2].str",
+        error: "err:arrayObjectString.every.str",
+      });
+      expect(result).toHaveLength(4);
+
+      expect(validatorSpies.choiceField).toHaveBeenCalledWith("A");
+      expect(validatorSpies.choiceField).toHaveBeenCalledTimes(1);
+
+      expect(validatorSpies.everyArrayObjectString).toHaveBeenCalledWith(
+        "arrayObjectString[0]"
+      );
+      expect(validatorSpies.everyArrayObjectString).toHaveBeenCalledWith(
+        "arrayObjectString[1]"
+      );
+      expect(validatorSpies.everyArrayObjectString).toHaveBeenCalledWith(
+        "arrayObjectString[2]"
+      );
+      expect(validatorSpies.everyArrayObjectString).toHaveBeenCalledTimes(3);
+    });
+
+    it("dependency change should not duplicate validation", async () => {
+      const validatorSpies = {
+        stringField: jest.fn().mockReturnValue("err:stringField"),
+        numberField: jest.fn().mockReturnValue("err:numberField"),
+      };
+      const getValue = (field: FieldDescriptor<any> | string): any => {
+        const path = typeof field === "string" ? field : impl(field).__path;
+        return path;
+      };
+
+      const { validate } = impl(
+        new FormValidatorBuilder(Schema)
+          .validate({
+            field: Schema.string,
+            dependencies: [Schema.number],
+            rules: _number => [validatorSpies.stringField],
+          })
+          .validate({
+            field: Schema.number,
+            rules: () => [validatorSpies.numberField],
+          })
+          .build()
+      );
 
       const result = await validate({
         fields: [Schema.number, Schema.string],
         getValue,
       }).runPromise();
 
-      expect(result).toEqual([
-        { path: "number", error: "REQUIRED" },
-        { path: "string", error: "REQUIRED" },
-      ]);
+      expect(result).toContainEqual({
+        path: "number",
+        error: "err:numberField",
+      });
+      expect(result).toContainEqual({
+        path: "string",
+        error: "err:stringField",
+      });
+      expect(result).toHaveLength(2);
+
+      expect(validatorSpies.numberField).toHaveBeenCalledWith("number");
+      expect(validatorSpies.numberField).toHaveBeenCalledTimes(1);
+
+      expect(validatorSpies.stringField).toHaveBeenCalledWith("string");
+      expect(validatorSpies.stringField).toHaveBeenCalledTimes(1);
     });
 
     it("dependency change should trigger validation run even if root field triggers don't match", async () => {
@@ -1114,19 +1413,19 @@ describe("FormValidatorBuilder", () => {
         new FormValidatorBuilder(Schema)
           .validate({
             field: Schema.string,
-            rules: _number => [required],
             dependencies: [Schema.number],
+            rules: _number => [required],
           })
           .validate({
             field: Schema.choice,
-            rules: _number => [required],
             dependencies: [Schema.number],
             triggers: ["blur"],
+            rules: _number => [required],
           })
           .validate({
             field: Schema.number,
-            rules: () => [required],
             triggers: ["blur"],
+            rules: () => [required],
           })
           .build()
       );
@@ -1139,18 +1438,12 @@ describe("FormValidatorBuilder", () => {
         trigger: "change",
       }).runPromise();
 
-      expect(result).toEqual([{ path: "string", error: "REQUIRED" }]);
+      expect(result).toContainEqual({ path: "string", error: "REQUIRED" });
+      expect(result).toHaveLength(1);
     });
 
     it("dependencies values are passed to rules constructor", async () => {
-      const rules = jest.fn((...dependencies) => [
-        () =>
-          dependencies[0] === 2 &&
-          dependencies[1] === "B" &&
-          dependencies[2].length === 0
-            ? null
-            : "INVALID_VALUE",
-      ]) as any;
+      const rules = jest.fn().mockReturnValue([]);
 
       const { validate } = impl(
         new FormValidatorBuilder(Schema)
@@ -1181,7 +1474,9 @@ describe("FormValidatorBuilder", () => {
         getValue,
       }).runPromise();
 
-      expect(result).toEqual([{ path: "string", error: null }]);
+      expect(result).toContainEqual({ path: "string", error: null });
+      expect(result).toHaveLength(1);
+
       expect(rules).toHaveBeenCalledWith(2, "B", []);
     });
 
@@ -1205,7 +1500,8 @@ describe("FormValidatorBuilder", () => {
         getValue,
       }).runPromise();
 
-      expect(result).toEqual([{ path: "string", error: null }]);
+      expect(result).toContainEqual({ path: "string", error: null });
+      expect(result).toHaveLength(1);
     });
 
     it("should trigger parent validation when child is validating", async () => {
@@ -1243,11 +1539,19 @@ describe("FormValidatorBuilder", () => {
         getValue,
       }).runPromise();
 
-      expect(result).toEqual([
-        { path: "objectArray.arrayString[0]", error: "INVALID_VALUE" },
-        { path: "objectArray.arrayString", error: "TOO_SHORT" },
-        { path: "objectArray", error: "TOO_SHORT" },
-      ]);
+      expect(result).toContainEqual({
+        path: "objectArray.arrayString[0]",
+        error: "INVALID_VALUE",
+      });
+      expect(result).toContainEqual({
+        path: "objectArray.arrayString",
+        error: "TOO_SHORT",
+      });
+      expect(result).toContainEqual({
+        path: "objectArray",
+        error: "TOO_SHORT",
+      });
+      expect(result).toHaveLength(3);
     });
 
     it("should trigger parent validation when child is validating and not trigger another parents branches", async () => {
@@ -1305,14 +1609,20 @@ describe("FormValidatorBuilder", () => {
         getValue,
       }).runPromise();
 
-      expect(result).toEqual([
-        {
-          path: "objectTwoArrays.arrayString[0]",
-          error: "INVALID_VALUE",
-        },
-        { path: "objectTwoArrays.arrayString", error: "TOO_SHORT" },
-        { path: "objectTwoArrays", error: "TOO_SHORT" },
-      ]);
+      expect(result).toContainEqual({
+        path: "objectTwoArrays.arrayString[0]",
+        error: "INVALID_VALUE",
+      });
+      expect(result).toContainEqual({
+        path: "objectTwoArrays.arrayString",
+        error: "TOO_SHORT",
+      });
+      expect(result).toContainEqual({
+        path: "objectTwoArrays",
+        error: "TOO_SHORT",
+      });
+      expect(result).toHaveLength(3);
+
       expect(stringValidator).toBeCalledTimes(1);
       expect(numberValidator).not.toHaveBeenCalled();
       expect(arrayNumberValidator).not.toHaveBeenCalled();
@@ -1348,11 +1658,19 @@ describe("FormValidatorBuilder", () => {
         getValue,
       }).runPromise();
 
-      expect(result).toEqual([
-        { path: "arrayObjectString[0].str", error: null },
-        { path: "arrayObjectString[1].str", error: "INVALID_VALUE" },
-        { path: "arrayObjectString[2].str", error: null },
-      ]);
+      expect(result).toContainEqual({
+        path: "arrayObjectString[0].str",
+        error: null,
+      });
+      expect(result).toContainEqual({
+        path: "arrayObjectString[1].str",
+        error: "INVALID_VALUE",
+      });
+      expect(result).toContainEqual({
+        path: "arrayObjectString[2].str",
+        error: null,
+      });
+      expect(result).toHaveLength(3);
     });
 
     it("should work with array.every().every()", async () => {
@@ -1385,11 +1703,19 @@ describe("FormValidatorBuilder", () => {
         getValue,
       }).runPromise();
 
-      expect(result).toEqual([
-        { path: "arrayArrayString[0][0]", error: null },
-        { path: "arrayArrayString[0][1]", error: "INVALID_VALUE" },
-        { path: "arrayArrayString[1][0]", error: null },
-      ]);
+      expect(result).toContainEqual({
+        path: "arrayArrayString[0][0]",
+        error: null,
+      });
+      expect(result).toContainEqual({
+        path: "arrayArrayString[0][1]",
+        error: "INVALID_VALUE",
+      });
+      expect(result).toContainEqual({
+        path: "arrayArrayString[1][0]",
+        error: null,
+      });
+      expect(result).toHaveLength(3);
     });
 
     it("should work with array.every()...every()", async () => {
@@ -1422,14 +1748,19 @@ describe("FormValidatorBuilder", () => {
         getValue,
       }).runPromise();
 
-      expect(result).toEqual([
-        { path: "arrayNestedArrays[0].array[0]", error: null },
-        {
-          path: "arrayNestedArrays[0].array[1]",
-          error: "INVALID_VALUE",
-        },
-        { path: "arrayNestedArrays[1].array[0]", error: null },
-      ]);
+      expect(result).toContainEqual({
+        path: "arrayNestedArrays[0].array[0]",
+        error: null,
+      });
+      expect(result).toContainEqual({
+        path: "arrayNestedArrays[0].array[1]",
+        error: "INVALID_VALUE",
+      });
+      expect(result).toContainEqual({
+        path: "arrayNestedArrays[1].array[0]",
+        error: null,
+      });
+      expect(result).toHaveLength(3);
     });
 
     it("should not accept templates as dependencies", async () => {

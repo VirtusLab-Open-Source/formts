@@ -2,7 +2,6 @@ import { isFalsy } from "../../../utils";
 import { compact, flatMap, uniqBy } from "../../../utils/array";
 import { Task } from "../../../utils/task";
 import {
-  FieldDescriptor,
   getChildrenDescriptors,
   getParentsChain,
 } from "../../types/field-descriptor";
@@ -59,19 +58,20 @@ export const createFormValidator = <Values extends object, Err>(
       const timestamp = Timestamp.make();
 
       const resolveFieldsToValidate = () => {
-        const allFields = flatMap(fields, x =>
-          getChildrenDescriptors(x, getValue).map(x => impl(x).__path)
+        const childFields = flatMap(fields, it =>
+          getChildrenDescriptors(it, getValue).map(x => impl(x).__path)
         );
-        const dependents = flatMap(fields, x =>
-          getDependents(x, dependenciesDict, getValue)
+        const parentFields = flatMap(fields, it =>
+          getParentsChain(it).map(x => impl(x).__path)
         );
-        const parents = flatMap(fields, x =>
-          getParentsChain(x).map(x => impl(x).__path)
+
+        const dependents = flatMap([...childFields, ...parentFields], it =>
+          getDependents(it, dependenciesDict, getValue)
         );
 
         const uniqueFields = uniqBy(
-          [...allFields, ...dependents, ...parents],
-          x => x
+          [...dependents, ...childFields, ...parentFields],
+          it => it
         );
 
         return uniqueFields
@@ -79,7 +79,7 @@ export const createFormValidator = <Values extends object, Err>(
             fieldPath,
             validators: getValidatorsForField(fieldPath, trigger),
           }))
-          .filter(x => x.validators.length > 0);
+          .filter(it => it.validators.length > 0);
       };
 
       return Task.from(resolveFieldsToValidate)
@@ -189,11 +189,11 @@ const buildDependenciesDict = <Err>(
 };
 
 const getDependents = <Err>(
-  desc: FieldDescriptor<any, Err>,
+  fieldPath: string,
   dependenciesDict: DependenciesDict,
   getValue: GetValue<Err>
 ): FieldPath[] =>
-  flatMap(dependenciesDict[impl(desc).__path] ?? [], x => {
+  flatMap(dependenciesDict[fieldPath] ?? [], x => {
     if (pathIsTemplate(x)) {
       return generateFieldPathsFromTemplate(x, getValue);
     } else {
