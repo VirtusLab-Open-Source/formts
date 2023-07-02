@@ -166,6 +166,7 @@ c) Advanced examples:
 1. [change password form](https://codesandbox.io/s/change-password-form-yn1yz?file=/src/example.tsx)
 2. [order pizza form](https://codesandbox.io/s/order-pizza-form-czt6cw?file=/src/order-pizza-form.tsx)
 3. [form with summary of validation errors](https://codesandbox.io/s/form-with-summary-of-validation-errors-r44usv?file=/src/example.tsx)
+4. [registration stepper form](https://codesandbox.io/s/registration-stepper-form-8c3jdm?file=/src/registration-stepper-form.tsx)
 
 ### Why another form lib?
 
