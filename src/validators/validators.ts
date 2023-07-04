@@ -187,27 +187,29 @@ export const integer = <T extends Numberlike, E>(
 export const minValue = <T extends Numberlike, E>(
   min: number,
   error: E
-): Validator.Sync<T, E> => num => (num === "" || num < min ? error : null);
+): Validator.Sync<T, E> => num =>
+  num === "" || (num as number) < min ? error : null;
 
 /** checks number value against provided maximum */
 export const maxValue = <T extends Numberlike, E>(
   max: number,
   error: E
-): Validator.Sync<T, E> => num => (num === "" || num > max ? error : null);
+): Validator.Sync<T, E> => num =>
+  num === "" || (num as number) > max ? error : null;
 
 /** checks if value is a number greater than provided value */
 export const greaterThan = <T extends Numberlike, E>(
   threshold: number,
   error: E
 ): Validator.Sync<T, E> => num =>
-  num === "" || num <= threshold ? error : null;
+  num === "" || (num as number) <= threshold ? error : null;
 
 /** checks if value is a number smaller than provided value */
 export const lesserThan = <T extends Numberlike, E>(
   threshold: number,
   error: E
 ): Validator.Sync<T, E> => num =>
-  num === "" || num >= threshold ? error : null;
+  num === "" || (num as number) >= threshold ? error : null;
 
 // strings
 

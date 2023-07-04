@@ -99,6 +99,21 @@ const createFieldHandle = <T, Err>(
     },
 
     get children() {
+      if (isArrayDescriptor(descriptor)) {
+        const value = (fieldState.val.value as unknown) as unknown[];
+        return value.map((_, i) => {
+          const childDescriptor = descriptor.nth(i);
+          const childState = atoms.fieldStates.get(childDescriptor);
+          return createFieldHandle(
+            descriptor.nth(i),
+            methods,
+            childState,
+            formState,
+            atoms
+          );
+        });
+      }
+
       if (isObjectDescriptor(descriptor)) {
         return keys(descriptor).reduce(
           (acc, key) =>
@@ -118,21 +133,6 @@ const createFieldHandle = <T, Err>(
             }),
           {}
         );
-      }
-
-      if (isArrayDescriptor(descriptor)) {
-        const value = (fieldState.val.value as unknown) as unknown[];
-        return value.map((_, i) => {
-          const childDescriptor = descriptor.nth(i);
-          const childState = atoms.fieldStates.get(childDescriptor);
-          return createFieldHandle(
-            descriptor.nth(i),
-            methods,
-            childState,
-            formState,
-            atoms
-          );
-        });
       }
 
       return undefined;

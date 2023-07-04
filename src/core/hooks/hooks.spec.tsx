@@ -37,7 +37,7 @@ describe("formts hooks API", () => {
     const { result: formHandleHook } = renderHook(() => useFormHandle(Schema));
 
     expect(formHandleHook.error != null).toBe(true);
-    expect(formHandleHook.error.message).toBe("FormController not found!");
+    expect(formHandleHook.error?.message).toBe("FormController not found!");
   });
 
   it("allows for hook usage in root component when passing FormController object directly", () => {

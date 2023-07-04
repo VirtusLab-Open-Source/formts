@@ -104,7 +104,7 @@ export const deepMerge = <T extends object>(
         ? Array.isArray(toMerge) ||
           typeof toMerge !== "object" ||
           toMerge === null ||
-          toMerge instanceof Date
+          (toMerge as any) instanceof Date
           ? toMerge
           : deepMerge(value, toMerge as any)
         : value;

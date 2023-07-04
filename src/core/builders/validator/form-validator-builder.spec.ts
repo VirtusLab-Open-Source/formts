@@ -551,13 +551,13 @@ describe("FormValidatorBuilder", () => {
         wait(x ? null : "REQUIRED")
       );
       const numberValue = jest.fn((x: number | "") =>
-        wait(x < 18 ? "TOO_SHORT" : null)
+        wait((x || 0) < 18 ? "TOO_SHORT" : null)
       );
       const choiceCheck = jest.fn((x: "A" | "B" | "C") =>
         x === "C" ? "INVALID_VALUE" : null
       );
       const arrayCheck = jest.fn((x: string[]) =>
-        x === [] ? "TOO_SHORT" : null
+        x.length === 0 ? "TOO_SHORT" : null
       );
 
       const { validate } = impl(
@@ -857,7 +857,7 @@ describe("FormValidatorBuilder", () => {
         new FormValidatorBuilder(Schema)
           .validate({
             field: Schema.object.num,
-            rules: () => [x => (x > 0 ? null : "REQUIRED")],
+            rules: () => [x => ((x || 0) > 0 ? null : "REQUIRED")],
           })
           .validate({
             field: Schema.object.str,

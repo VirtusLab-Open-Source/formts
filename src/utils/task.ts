@@ -39,7 +39,7 @@ export class Task<T, Err = unknown> {
           resolve(it);
         }
       } catch (err) {
-        reject(err);
+        reject(err as Err);
       }
     });
   }

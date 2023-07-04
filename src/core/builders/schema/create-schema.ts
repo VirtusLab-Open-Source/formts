@@ -21,12 +21,15 @@ const createObjectSchema = <O extends object, Root, Err>(
 ) => {
   return keys(decodersMap).reduce((schema, key) => {
     const decoder = decodersMap[key];
+    const keyStr = String(key);
+
     (schema as any)[key] = createFieldDescriptor(
       decoder as any,
       Lens.compose(lens, Lens.prop(key as any)),
-      path ? `${path}.${key}` : `${key}`,
+      path ? `${path}.${keyStr}` : `${keyStr}`,
       parent
     );
+
     return schema;
   }, {} as FormSchema<O, Err>);
 };
@@ -150,10 +153,13 @@ const createObjectTemplateSchema = <O extends object>(
 ) => {
   return keys(decodersMap).reduce((schema, key) => {
     const decoder = decodersMap[key];
+    const keyStr = String(key);
+
     (schema as any)[key] = createFieldTemplate(
       decoder as any,
-      `${path}.${key}`
+      `${path}.${keyStr}`
     );
+
     return schema;
   }, {} as { [x in keyof O]: _FieldTemplateImpl<O[x]> });
 };

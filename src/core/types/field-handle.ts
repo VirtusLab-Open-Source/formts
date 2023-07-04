@@ -109,16 +109,16 @@ type ArrayFieldHandle<T, Err> = T extends Array<infer E>
        */
       children: Array<FieldHandle<E, Err>>;
     }
-  : void;
+  : {};
 
 type ObjectFieldHandle<T, Err> = T extends Array<any>
-  ? void
+  ? {}
   : T extends object
   ? {
       /** Object containing FieldHandles for each nested field */
       children: { [K in keyof T]: FieldHandle<T[K], Err> };
     }
-  : void;
+  : {};
 
 type ChoiceFieldHandle<T> = [T] extends [string]
   ? IsUnion<T> extends true
@@ -126,5 +126,5 @@ type ChoiceFieldHandle<T> = [T] extends [string]
         /** Dictionary containing options specified in Schema using `choice` function (excluding `""`) */
         options: IdentityDict<Exclude<T, "">>;
       }
-    : void
-  : void;
+    : {}
+  : {};
