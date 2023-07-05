@@ -20,9 +20,9 @@ type GetImplFn = {
     it: ArrayFieldDescriptor<T, Err>
   ): _FieldDescriptorImpl<T>;
 
-  <T extends {}, Err>(it: ObjectFieldDescriptor<T, Err>): _FieldDescriptorImpl<
-    T
-  >;
+  <T extends Record<string, any>, Err>(
+    it: ObjectFieldDescriptor<T, Err>
+  ): _FieldDescriptorImpl<T>;
 
   <T>(it: FieldDecoder<T>): _FieldDecoderImpl<T>;
 

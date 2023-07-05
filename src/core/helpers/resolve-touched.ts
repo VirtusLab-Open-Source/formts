@@ -19,4 +19,4 @@ const isBool = (it: unknown): it is boolean => typeof it === "boolean";
 const isArray = Array.isArray;
 
 const isRecord = (it: unknown): it is Record<string, TouchedValues<any>> =>
-  !!(it && typeof it === "object" && !Array.isArray(it))
+  !!(it && typeof it === "object" && !Array.isArray(it));

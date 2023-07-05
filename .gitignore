@@ -7,4 +7,4 @@ __src
 .vscode
 .idea
 .DS_Store
-validators
+/validators

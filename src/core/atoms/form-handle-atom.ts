@@ -5,10 +5,20 @@ import { FormSchema } from "../types/form-schema";
 import { FormtsAtomState } from "../types/formts-state";
 import { impl } from "../types/type-mapper-util";
 
+export type FormHandleAtom = Atom.Readonly<{
+  isTouched: boolean;
+  isChanged: boolean;
+  isValid: boolean;
+  isValidating: boolean;
+  isSubmitting: boolean;
+  successfulSubmitCount: number;
+  failedSubmitCount: number;
+}>;
+
 export const createFormHandleAtom = <Values extends object, Err>(
   state: FormtsAtomState<Values, Err>,
   Schema: FormSchema<Values, Err>
-) =>
+): FormHandleAtom =>
   Atom.fuse(
     (
       isTouched,
