@@ -29,8 +29,6 @@
     "test:ci": "tsdx test --ci --runInBand",
     "lint": "eslint --fix ./src/**/*.ts && prettier --write ./src",
     "prepare": "yarn build",
-    "size": "size-limit",
-    "analyze": "size-limit --why",
     "prepack": "sh ./scripts/prepack.sh",
     "postpack": "sh ./scripts/postpack.sh",
     "release": "standard-version --releaseCommitMessageFormat \"chore(release): {{currentTag}} [ci skip]\""
@@ -51,20 +49,9 @@
       "prettier --write"
     ]
   },
-  "size-limit": [
-    {
-      "path": "dist/tsdx-example.cjs.production.min.js",
-      "limit": "10 KB"
-    },
-    {
-      "path": "dist/tsdx-example.esm.js",
-      "limit": "10 KB"
-    }
-  ],
   "devDependencies": {
     "@commitlint/cli": "^11.0.0",
     "@commitlint/config-conventional": "^11.0.0",
-    "@size-limit/preset-small-lib": "^4.9.2",
     "@testing-library/react-hooks": "^8.0.1",
     "@types/jest": "~29.5.2",
     "@types/react": "^16.9.50",
@@ -81,7 +68,6 @@
     "prettier": "^2.1.2",
     "react": "^16.13.1",
     "react-test-renderer": "^16.13.1",
-    "size-limit": "^4.9.2",
     "standard-version": "^9.0.0",
     "ts-jest": "~29.1.1",
     "tsdx": "^0.14.1",
