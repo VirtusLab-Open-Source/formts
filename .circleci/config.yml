@@ -57,6 +57,13 @@ jobs:
             git config user.email "circle@ci.com"
 
       - run:
+          name: Updated documentation files
+          command: |
+            yarn generate-docs
+            git add docs/
+            git commit -m "docs: update typedoc files [ci skip]"
+
+      - run:
           name: Create release
           command: yarn run release
 

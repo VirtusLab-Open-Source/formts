@@ -6,6 +6,7 @@ import { FieldDescriptor } from "./field-descriptor";
 
 /**
  * Interface for specific form field.
+ * Received using `useField` hook.
  */
 // prettier-ignore
 export type FieldHandle<T, Err> = 

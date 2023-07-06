@@ -25,6 +25,7 @@
     "start": "tsdx watch",
     "typecheck": "tsc -p ./tsconfig.json",
     "build": "yarn typecheck && tsdx build && sh ./scripts/postbuild.sh",
+    "generate-docs": "typedoc src/index.ts",
     "test": "tsdx test",
     "test:ci": "tsdx test --ci --runInBand",
     "lint": "eslint --fix ./src/**/*.ts && prettier --write ./src",
@@ -72,6 +73,7 @@
     "ts-jest": "~29.1.1",
     "tsdx": "^0.14.1",
     "tslib": "^2.6.0",
+    "typedoc": "^0.24.8",
     "typescript": "5.1.6",
     "yarn": "^1.22.5"
   },
