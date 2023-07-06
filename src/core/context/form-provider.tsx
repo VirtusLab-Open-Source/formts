@@ -15,11 +15,17 @@ type FormProviderProps = {
 
 /**
  * Enables usage of formts hooks in nested components
+ *
+ * @example
+ * ```tsx
+ * const controller = useFormController({ ... });
+ *
+ * <FormProvider controller={controller}>
+ *  ...
+ * </FormProvider>
+ * ```
  */
-export const FormProvider: React.FC<FormProviderProps> = ({
-  controller,
-  children,
-}) => (
+export const FormProvider = ({ controller, children }: FormProviderProps) => (
   <Context.Provider value={impl(controller).__ctx}>{children}</Context.Provider>
 );
 
