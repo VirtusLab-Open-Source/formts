@@ -138,8 +138,11 @@ const FormActions: React.FC = () => {
 
 ### Documentation
 
-Currently API documentation is available in form of exhaustive JSDocs and
-examples
+Currently API documentation is available in form of:
+
+- exhaustive JSDocs
+- [TYPEDOC docs](https://virtuslab-open-source.github.io/formts/)
+- CodeSandbox examples
 
 ### Examples
 
