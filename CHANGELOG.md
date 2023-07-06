@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.2.30](https://github.com/VirtusLab/formts/compare/v0.2.29...v0.2.30) (2023-07-06)
+
+
+### Features
+
+* auto-generated docs ([#146](https://github.com/VirtusLab/formts/issues/146)) ([4ae28b1](https://github.com/VirtusLab/formts/commit/4ae28b112f71d5deb7909fe7c0f8d78af63019ed))
+
 ### [0.2.29](https://github.com/VirtusLab/formts/compare/v0.2.28...v0.2.29) (2023-07-05)
 
 ### [0.2.28](https://github.com/VirtusLab/formts/compare/v0.2.27...v0.2.28) (2023-07-02)
