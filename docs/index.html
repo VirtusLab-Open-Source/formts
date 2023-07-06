@@ -1,0 +1,192 @@
+<!DOCTYPE html><html class="default" lang="en"><head><meta charSet="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>@virtuslab/formts</title><meta name="description" content="Documentation for @virtuslab/formts"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="assets/style.css"/><link rel="stylesheet" href="assets/highlight.css"/><script defer src="assets/main.js"></script><script async src="assets/search.js" id="tsd-search-script"></script></head><body><script>document.documentElement.dataset.theme = localStorage.getItem("tsd-theme") || "os"</script><header class="tsd-page-toolbar">
+<div class="tsd-toolbar-contents container">
+<div class="table-cell" id="tsd-search" data-base=".">
+<div class="field"><label for="tsd-search-field" class="tsd-widget tsd-toolbar-icon search no-caption"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M15.7824 13.833L12.6666 10.7177C12.5259 10.5771 12.3353 10.499 12.1353 10.499H11.6259C12.4884 9.39596 13.001 8.00859 13.001 6.49937C13.001 2.90909 10.0914 0 6.50048 0C2.90959 0 0 2.90909 0 6.49937C0 10.0896 2.90959 12.9987 6.50048 12.9987C8.00996 12.9987 9.39756 12.4863 10.5008 11.6239V12.1332C10.5008 12.3332 10.5789 12.5238 10.7195 12.6644L13.8354 15.7797C14.1292 16.0734 14.6042 16.0734 14.8948 15.7797L15.7793 14.8954C16.0731 14.6017 16.0731 14.1267 15.7824 13.833ZM6.50048 10.499C4.29094 10.499 2.50018 8.71165 2.50018 6.49937C2.50018 4.29021 4.28781 2.49976 6.50048 2.49976C8.71001 2.49976 10.5008 4.28708 10.5008 6.49937C10.5008 8.70852 8.71314 10.499 6.50048 10.499Z" fill="var(--color-text)"></path></svg></label><input type="text" id="tsd-search-field" aria-label="Search"/></div>
+<div class="field">
+<div id="tsd-toolbar-links"></div></div>
+<ul class="results">
+<li class="state loading">Preparing search index...</li>
+<li class="state failure">The search index is not available</li></ul><a href="index.html" class="title">@virtuslab/formts</a></div>
+<div class="table-cell" id="tsd-widgets"><a href="#" class="tsd-widget tsd-toolbar-icon menu no-caption" data-toggle="menu" aria-label="Menu"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="2" fill="var(--color-text)"></rect><rect x="1" y="7" width="14" height="2" fill="var(--color-text)"></rect><rect x="1" y="11" width="14" height="2" fill="var(--color-text)"></rect></svg></a></div></div></header>
+<div class="container container-main">
+<div class="col-content">
+<div class="tsd-page-title">
+<h2>@virtuslab/formts</h2></div>
+<div class="tsd-panel tsd-typography"><p><a href="https://app.circleci.com/pipelines/github/VirtusLab-Open-Source/formts"><img src="https://circleci.com/gh/VirtusLab-Open-Source/formts.svg?style=shield" alt="build status"></a>
+<a href="https://github.com/VirtusLab/formts/blob/master/LICENSE"><img src="https://img.shields.io/github/license/VirtusLab/formts" alt="GitHub license"></a>
+<a href="https://www.npmjs.com/package/@virtuslab/formts"><img src="https://img.shields.io/npm/v/@virtuslab/formts" alt="npm"></a>
+<a href="https://bundlephobia.com/result?p=@virtuslab/formts"><img src="https://img.shields.io/bundlephobia/minzip/@virtuslab/formts" alt="npm bundle size"></a>
+<a href="https://github.com/VirtusLab/formts#examples"><img src="https://img.shields.io/badge/examples-codesandbox-blue" alt="examples"></a></p>
+<a id="md:formts" class="tsd-anchor"></a><h1><a href="#md:formts">Formts</a></h1><p><strong>Type-safe, declarative and performant React form &amp; validation library</strong></p>
+<a id="md:status" class="tsd-anchor"></a><h3><a href="#md:status">Status</a></h3><p>Active development. Expect frequent breaking changes until <code>1.0.0</code> is reached ⚠️</p>
+<a id="md:features" class="tsd-anchor"></a><h3><a href="#md:features">Features</a></h3><ul>
+<li>Fully type-safe API, purpose built to get the most out of Typescript
+type-inference</li>
+<li>Declarative definition of form shape and validation rules</li>
+<li>Runtime type-checking of form values against the schema</li>
+<li>Convenient hooks &amp; context based API allowing for isolated re-renders</li>
+<li>Plain react-typescript, 0 dependencies</li>
+<li>View layer agnostic - no components are provided, works with any 3rd-party
+components</li>
+<li><code>handleChange</code> function for dealing with change events automatically</li>
+<li>Advanced validation API which enables:<ul>
+<li>specifying dependencies on other fields</li>
+<li>specifying validation triggers for individual rules</li>
+<li>selective validation of just the affected fields on value changes</li>
+<li>separation of error messages from error codes (optional)</li>
+<li>async validation rules with debounce option</li>
+<li>easy mixing of built-in rules with custom functions</li>
+<li>combining multiple validation rules into composite validators</li>
+</ul>
+</li>
+<li><strong>[TODO]</strong> Transformation API for declarative mapping and filtering of field
+values</li>
+<li>Good scalability for very large and complex forms</li>
+</ul>
+<a id="md:getting-started" class="tsd-anchor"></a><h3><a href="#md:getting-started">Getting Started</a></h3><a id="md:1-install" class="tsd-anchor"></a><h4><a href="#md:1-install">1) Install</a></h4><pre><code class="language-bash"><span class="hl-0">npm</span><span class="hl-1"> </span><span class="hl-2">install</span><span class="hl-1"> </span><span class="hl-2">@virtuslab/formts</span>
+</code><button>Copy</button></pre>
+<a id="md:2-define-shape-of-the-form" class="tsd-anchor"></a><h4><a href="#md:2-define-shape-of-the-form">2) Define shape of the form</a></h4><pre><code class="language-ts"><span class="hl-3">import</span><span class="hl-1"> { </span><span class="hl-4">FormSchemaBuilder</span><span class="hl-1">, </span><span class="hl-4">FormFields</span><span class="hl-1"> } </span><span class="hl-3">from</span><span class="hl-1"> </span><span class="hl-2">&quot;@virtuslab/formts&quot;</span><span class="hl-1">;</span><br/><br/><span class="hl-5">const</span><span class="hl-1"> </span><span class="hl-6">Schema</span><span class="hl-1"> = </span><span class="hl-5">new</span><span class="hl-1"> </span><span class="hl-0">FormSchemaBuilder</span><span class="hl-1">()</span><br/><span class="hl-1">  .</span><span class="hl-0">fields</span><span class="hl-1">({ </span><span class="hl-4">answer:</span><span class="hl-1"> </span><span class="hl-4">FormFields</span><span class="hl-1">.</span><span class="hl-0">string</span><span class="hl-1">() })</span><br/><span class="hl-1">  .</span><span class="hl-0">errors</span><span class="hl-1">&lt;</span><span class="hl-7">string</span><span class="hl-1">&gt;()</span><br/><span class="hl-1">  .</span><span class="hl-0">build</span><span class="hl-1">();</span>
+</code><button>Copy</button></pre>
+<a id="md:3-define-validation-rules-optional" class="tsd-anchor"></a><h4><a href="#md:3-define-validation-rules-optional">3) Define validation rules (optional)</a></h4><pre><code class="language-ts"><span class="hl-3">import</span><span class="hl-1"> { </span><span class="hl-4">FormValidatorBuilder</span><span class="hl-1"> } </span><span class="hl-3">from</span><span class="hl-1"> </span><span class="hl-2">&quot;@virtuslab/formts&quot;</span><span class="hl-1">;</span><br/><br/><span class="hl-5">const</span><span class="hl-1"> </span><span class="hl-6">validator</span><span class="hl-1"> = </span><span class="hl-5">new</span><span class="hl-1"> </span><span class="hl-0">FormValidatorBuilder</span><span class="hl-1">(</span><span class="hl-4">Schema</span><span class="hl-1">)</span><br/><span class="hl-1">  .</span><span class="hl-0">validate</span><span class="hl-1">(</span><br/><span class="hl-1">    </span><span class="hl-4">Schema</span><span class="hl-1">.</span><span class="hl-4">answer</span><span class="hl-1">,</span><br/><span class="hl-1">    </span><span class="hl-4">val</span><span class="hl-1"> </span><span class="hl-5">=&gt;</span><span class="hl-1"> (</span><span class="hl-4">val</span><span class="hl-1"> === </span><span class="hl-2">&quot;&quot;</span><span class="hl-1"> ? </span><span class="hl-2">&quot;Required!&quot;</span><span class="hl-1"> : </span><span class="hl-5">null</span><span class="hl-1">),</span><br/><span class="hl-1">    </span><span class="hl-4">val</span><span class="hl-1"> </span><span class="hl-5">=&gt;</span><span class="hl-1"> (</span><span class="hl-4">val</span><span class="hl-1"> !== </span><span class="hl-2">&quot;42&quot;</span><span class="hl-1"> ? </span><span class="hl-2">&quot;Wrong answer!&quot;</span><span class="hl-1"> : </span><span class="hl-5">null</span><span class="hl-1">)</span><br/><span class="hl-1">  )</span><br/><span class="hl-1">  .</span><span class="hl-0">build</span><span class="hl-1">();</span>
+</code><button>Copy</button></pre>
+<a id="md:3-create-controller-holding-form-state" class="tsd-anchor"></a><h4><a href="#md:3-create-controller-holding-form-state">3) Create controller holding form state</a></h4><pre><code class="language-tsx"><span class="hl-3">import</span><span class="hl-1"> { </span><span class="hl-4">useFormController</span><span class="hl-1">, </span><span class="hl-4">FormProvider</span><span class="hl-1"> } </span><span class="hl-3">from</span><span class="hl-1"> </span><span class="hl-2">&quot;@virtuslab/formts&quot;</span><span class="hl-1">;</span><br/><br/><span class="hl-5">const</span><span class="hl-1"> </span><span class="hl-0">MyForm</span><span class="hl-1">: </span><span class="hl-7">React</span><span class="hl-1">.</span><span class="hl-7">FC</span><span class="hl-1"> = () </span><span class="hl-5">=&gt;</span><span class="hl-1"> {</span><br/><span class="hl-1">  </span><span class="hl-5">const</span><span class="hl-1"> </span><span class="hl-6">controller</span><span class="hl-1"> = </span><span class="hl-0">useFormController</span><span class="hl-1">({ </span><span class="hl-4">Schema</span><span class="hl-1">, </span><span class="hl-4">validator</span><span class="hl-1"> });</span><br/><br/><span class="hl-1">  </span><span class="hl-3">return</span><span class="hl-1"> (</span><br/><span class="hl-1">    </span><span class="hl-8">&lt;</span><span class="hl-7">FormProvider</span><span class="hl-1"> </span><span class="hl-9">controller</span><span class="hl-1">=</span><span class="hl-5">{</span><span class="hl-4">controller</span><span class="hl-5">}</span><span class="hl-8">&gt;</span><br/><span class="hl-1">      </span><span class="hl-8">&lt;</span><span class="hl-7">AnswerField</span><span class="hl-1"> </span><span class="hl-8">/&gt;</span><br/><span class="hl-1">      </span><span class="hl-8">&lt;</span><span class="hl-7">FormActions</span><span class="hl-1"> </span><span class="hl-8">/&gt;</span><br/><span class="hl-1">    </span><span class="hl-8">&lt;/</span><span class="hl-7">FormProvider</span><span class="hl-8">&gt;</span><br/><span class="hl-1">  );</span><br/><span class="hl-1">};</span>
+</code><button>Copy</button></pre>
+<a id="md:4-connect-inputs-to-form" class="tsd-anchor"></a><h4><a href="#md:4-connect-inputs-to-form">4) Connect inputs to form</a></h4><pre><code class="language-tsx"><span class="hl-3">import</span><span class="hl-1"> { </span><span class="hl-4">useField</span><span class="hl-1"> } </span><span class="hl-3">from</span><span class="hl-1"> </span><span class="hl-2">&quot;@virtuslab/formts&quot;</span><span class="hl-1">;</span><br/><br/><span class="hl-5">const</span><span class="hl-1"> </span><span class="hl-0">AnswerField</span><span class="hl-1">: </span><span class="hl-7">React</span><span class="hl-1">.</span><span class="hl-7">FC</span><span class="hl-1"> = () </span><span class="hl-5">=&gt;</span><span class="hl-1"> {</span><br/><span class="hl-1">  </span><span class="hl-5">const</span><span class="hl-1"> </span><span class="hl-6">field</span><span class="hl-1"> = </span><span class="hl-0">useField</span><span class="hl-1">(</span><span class="hl-4">Schema</span><span class="hl-1">.</span><span class="hl-4">answer</span><span class="hl-1">);</span><br/><br/><span class="hl-1">  </span><span class="hl-3">return</span><span class="hl-1"> (</span><br/><span class="hl-1">    </span><span class="hl-8">&lt;</span><span class="hl-10">section</span><span class="hl-8">&gt;</span><br/><span class="hl-1">      </span><span class="hl-8">&lt;</span><span class="hl-10">label</span><span class="hl-1"> </span><span class="hl-9">htmlFor</span><span class="hl-1">=</span><span class="hl-5">{</span><span class="hl-4">field</span><span class="hl-11">.</span><span class="hl-4">id</span><span class="hl-5">}</span><span class="hl-8">&gt;</span><br/><span class="hl-1">        What is the answer to the meaning of life, the universe, and everything?</span><br/><span class="hl-1">      </span><span class="hl-8">&lt;/</span><span class="hl-10">label</span><span class="hl-8">&gt;</span><br/><span class="hl-1">      </span><span class="hl-8">&lt;</span><span class="hl-10">input</span><br/><span class="hl-1">        </span><span class="hl-9">id</span><span class="hl-1">=</span><span class="hl-5">{</span><span class="hl-4">field</span><span class="hl-11">.</span><span class="hl-4">id</span><span class="hl-5">}</span><br/><span class="hl-1">        </span><span class="hl-9">value</span><span class="hl-1">=</span><span class="hl-5">{</span><span class="hl-4">field</span><span class="hl-11">.</span><span class="hl-4">value</span><span class="hl-5">}</span><br/><span class="hl-1">        </span><span class="hl-9">onChange</span><span class="hl-1">=</span><span class="hl-5">{</span><span class="hl-4">field</span><span class="hl-11">.</span><span class="hl-4">handleChange</span><span class="hl-5">}</span><br/><span class="hl-1">        </span><span class="hl-9">onBlur</span><span class="hl-1">=</span><span class="hl-5">{</span><span class="hl-4">field</span><span class="hl-11">.</span><span class="hl-4">handleBlur</span><span class="hl-5">}</span><br/><span class="hl-1">      </span><span class="hl-8">/&gt;</span><br/><span class="hl-1">      </span><span class="hl-8">&lt;</span><span class="hl-10">div</span><span class="hl-1"> </span><span class="hl-9">className</span><span class="hl-1">=</span><span class="hl-2">&quot;error&quot;</span><span class="hl-8">&gt;</span><span class="hl-5">{</span><span class="hl-4">field</span><span class="hl-11">.</span><span class="hl-4">error</span><span class="hl-5">}</span><span class="hl-8">&lt;/</span><span class="hl-10">div</span><span class="hl-8">&gt;</span><br/><span class="hl-1">    </span><span class="hl-8">&lt;/</span><span class="hl-10">section</span><span class="hl-8">&gt;</span><br/><span class="hl-1">  );</span><br/><span class="hl-1">};</span>
+</code><button>Copy</button></pre>
+<a id="md:5-connect-actions-to-form" class="tsd-anchor"></a><h4><a href="#md:5-connect-actions-to-form">5) Connect actions to form</a></h4><pre><code class="language-tsx"><span class="hl-3">import</span><span class="hl-1"> { </span><span class="hl-4">useFormHandle</span><span class="hl-1"> } </span><span class="hl-3">from</span><span class="hl-1"> </span><span class="hl-2">&quot;@virtuslab/formts&quot;</span><span class="hl-1">;</span><br/><br/><span class="hl-5">const</span><span class="hl-1"> </span><span class="hl-0">FormActions</span><span class="hl-1">: </span><span class="hl-7">React</span><span class="hl-1">.</span><span class="hl-7">FC</span><span class="hl-1"> = () </span><span class="hl-5">=&gt;</span><span class="hl-1"> {</span><br/><span class="hl-1">  </span><span class="hl-5">const</span><span class="hl-1"> </span><span class="hl-6">form</span><span class="hl-1"> = </span><span class="hl-0">useFormHandle</span><span class="hl-1">(</span><span class="hl-4">Schema</span><span class="hl-1">);</span><br/><br/><span class="hl-1">  </span><span class="hl-3">return</span><span class="hl-1"> (</span><br/><span class="hl-1">    </span><span class="hl-8">&lt;</span><span class="hl-10">section</span><span class="hl-8">&gt;</span><br/><span class="hl-1">      </span><span class="hl-8">&lt;</span><span class="hl-10">button</span><br/><span class="hl-1">        </span><span class="hl-9">type</span><span class="hl-1">=</span><span class="hl-2">&quot;submit&quot;</span><br/><span class="hl-1">        </span><span class="hl-9">disabled</span><span class="hl-1">=</span><span class="hl-5">{</span><span class="hl-4">form</span><span class="hl-11">.</span><span class="hl-4">isValid</span><span class="hl-11"> </span><span class="hl-1">===</span><span class="hl-11"> </span><span class="hl-5">false}</span><br/><span class="hl-1">        </span><span class="hl-9">onClick</span><span class="hl-1">=</span><span class="hl-5">{</span><span class="hl-11">() </span><span class="hl-5">=&gt;</span><span class="hl-11"> </span><span class="hl-4">form</span><span class="hl-11">.</span><span class="hl-0">submit</span><span class="hl-11">(</span><span class="hl-4">console</span><span class="hl-11">.</span><span class="hl-4">log</span><span class="hl-11">)</span><span class="hl-5">}</span><br/><span class="hl-1">      </span><span class="hl-8">&gt;</span><br/><span class="hl-1">        Submit!</span><br/><span class="hl-1">      </span><span class="hl-8">&lt;/</span><span class="hl-10">button</span><span class="hl-8">&gt;</span><br/><br/><span class="hl-1">      </span><span class="hl-8">&lt;</span><span class="hl-10">button</span><span class="hl-1"> </span><span class="hl-9">type</span><span class="hl-1">=</span><span class="hl-2">&quot;reset&quot;</span><span class="hl-1"> </span><span class="hl-9">onClick</span><span class="hl-1">=</span><span class="hl-5">{</span><span class="hl-4">form</span><span class="hl-11">.</span><span class="hl-4">reset</span><span class="hl-5">}</span><span class="hl-8">&gt;</span><br/><span class="hl-1">        Reset</span><br/><span class="hl-1">      </span><span class="hl-8">&lt;/</span><span class="hl-10">button</span><span class="hl-8">&gt;</span><br/><span class="hl-1">    </span><span class="hl-8">&lt;/</span><span class="hl-10">section</span><span class="hl-8">&gt;</span><br/><span class="hl-1">  );</span><br/><span class="hl-1">};</span>
+</code><button>Copy</button></pre>
+<a id="md:documentation" class="tsd-anchor"></a><h3><a href="#md:documentation">Documentation</a></h3><p>Currently API documentation is available in form of exhaustive JSDocs and
+examples</p>
+<a id="md:examples" class="tsd-anchor"></a><h3><a href="#md:examples">Examples</a></h3><p>Play around with the code on <em>CodeSandbox</em> to learn <em>Formts</em> API and features:</p>
+<p>a) Step-by-step introduction:</p>
+<ol>
+<li><a href="https://codesandbox.io/s/intro-01-basic-form-naive-vplnc?file=/src/example.tsx">basic form (naive)</a></li>
+<li><a href="https://codesandbox.io/s/intro-02-basic-form-optimised-re-renders-r6mrc?file=/src/example.tsx">basic form + optimized re-renders</a></li>
+<li><a href="https://codesandbox.io/s/intro-03-basic-form-validation-nhsg7?file=/src/example.tsx:770-795">basic form + validation</a></li>
+<li><a href="https://codesandbox.io/s/intro-04-basic-form-material-ui-e0kkl?file=/src/example.tsx">basic form + Material-UI</a></li>
+</ol>
+<p>b) HTML input bindings:</p>
+<ol>
+<li><a href="https://codesandbox.io/s/inputs-radio-group-4l1pu?file=/src/example.tsx">radio group input</a></li>
+<li><a href="https://codesandbox.io/s/inputs-checkbox-group-t0mqb?file=/src/example.tsx">checkbox group input</a></li>
+<li><a href="https://codesandbox.io/s/inputs-select-1twl4?file=/src/example.tsx">select input</a></li>
+<li><a href="https://codesandbox.io/s/inputs-field-arrays-005tl?file=/src/example.tsx">input array</a></li>
+<li><a href="https://codesandbox.io/s/inputs-mui-multi-select-lczxy?file=/src/example.tsx">mui multi-select input</a></li>
+<li><a href="https://codesandbox.io/s/inputs-mui-date-picker-x21vz?file=/src/example.tsx">mui date-picker input</a></li>
+</ol>
+<p>c) Advanced examples:</p>
+<ol>
+<li><a href="https://codesandbox.io/s/change-password-form-yn1yz?file=/src/example.tsx">change password form</a></li>
+<li><a href="https://codesandbox.io/s/order-pizza-form-czt6cw?file=/src/order-pizza-form.tsx">order pizza form</a></li>
+<li><a href="https://codesandbox.io/s/form-with-summary-of-validation-errors-r44usv?file=/src/example.tsx">form with summary of validation errors</a></li>
+<li><a href="https://codesandbox.io/s/registration-stepper-form-8c3jdm?file=/src/registration-stepper-form.tsx">registration stepper form</a></li>
+</ol>
+<a id="md:why-another-form-lib" class="tsd-anchor"></a><h3><a href="#md:why-another-form-lib">Why another form lib?</a></h3><a id="md:a-type-safety" class="tsd-anchor"></a><h4><a href="#md:a-type-safety">a) Type-safety</a></h4><p>Most popular form libraries like <code>Formik</code> and <code>react-hook-form</code> are written in
+Typescript but are not <em>designed</em> with type-safe API as a primary concern.</p>
+<p>There is some evidence that this is important for some people:</p>
+<ul>
+<li><a href="https://www.reddit.com/r/typescript/comments/co03ud/fully_typesafe_form_libraries/ewg09p0/">Reddit: Fully type-safe form libraries?</a></li>
+<li><a href="https://github.com/formium/formik/issues/1334">Formik issue: Strongly Typed Fields</a></li>
+<li><a href="https://github.com/react-hook-form/strictly-typed">react-hook-form extension: strictly-typed</a></li>
+</ul>
+<p>There are some existing truly type-safe react form solutions, but each has a
+costly dependency associated with it:</p>
+<ul>
+<li><a href="https://github.com/formstate/formstate">formstate</a> --&gt; <code>MobX</code></li>
+<li><a href="https://dev.to/steida/how-to-forms-with-react-and-typescript-4icb">Typescript.fun</a>
+--&gt; <code>fp-ts</code></li>
+<li><a href="https://github.com/Astrocoders/reform">ReForm</a> --&gt; <code>ReasonML</code></li>
+</ul>
+<a id="md:b-performance" class="tsd-anchor"></a><h4><a href="#md:b-performance">b) Performance</a></h4><p>There are SOME form libraries with really good performance (react-hook-form).
+However combining convenient Context based hook API with React performance
+optimizations is still problematic. See
+<a href="https://react-hook-form.com/advanced-usage#FormProviderPerformance">https://react-hook-form.com/advanced-usage#FormProviderPerformance</a> for example.</p>
+<a id="md:c-declarative-validation-api" class="tsd-anchor"></a><h4><a href="#md:c-declarative-validation-api">c) Declarative validation API</a></h4><p>Usually form libs &quot;outsource&quot; advanced validation to schema-based libraries such
+as <code>Yup</code>. This seems like a great idea but has some limitations:</p>
+<ul>
+<li><code>yup</code> and similar packages are not designed with type-safety in mind</li>
+<li>Advanced optimizations (such as validating only the affected fields rather
+than the entire form) are not available.</li>
+</ul>
+<a id="md:current-limitations" class="tsd-anchor"></a><h3><a href="#md:current-limitations">Current limitations</a></h3><ul>
+<li>Form values type is limited by schema definition API and can&#39;t represent more
+advanced TS types</li>
+<li>Adding <code>required</code> validator does not impact type of values on Submit</li>
+<li>Definition of form shape and validation split into 2 separate steps</li>
+<li>Binding to input components is more verbose than with other form libraries
+(this is intentional to keep API type-safe and view-layer agnostic)</li>
+<li>Transformation API is limited to mapping inside the same type, i.e. <code>T =&gt; T</code></li>
+</ul>
+</div></div>
+<div class="col-sidebar">
+<div class="page-menu">
+<div class="tsd-navigation settings">
+<details class="tsd-index-accordion"><summary class="tsd-accordion-summary">
+<h3><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4.93896 8.531L12 15.591L19.061 8.531L16.939 6.409L12 11.349L7.06098 6.409L4.93896 8.531Z" fill="var(--color-text)" id="icon-chevronDown"></path></svg>Settings</h3></summary>
+<div class="tsd-accordion-details">
+<div class="tsd-filter-visibility">
+<h4 class="uppercase">Member Visibility</h4><form>
+<ul id="tsd-filter-options">
+<li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-protected" name="protected"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Protected</span></label></li>
+<li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-private" name="private"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Private</span></label></li>
+<li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-inherited" name="inherited" checked/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Inherited</span></label></li>
+<li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-external" name="external"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>External</span></label></li></ul></form></div>
+<div class="tsd-theme-toggle">
+<h4 class="uppercase">Theme</h4><select id="tsd-theme"><option value="os">OS</option><option value="light">Light</option><option value="dark">Dark</option></select></div></div></details></div>
+<details open class="tsd-index-accordion tsd-page-navigation"><summary class="tsd-accordion-summary">
+<h3><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><use href="#icon-chevronDown"></use></svg>On This Page</h3></summary>
+<div class="tsd-accordion-details">
+<ul>
+<li>
+<ul>
+<li><a href="#md:formts"><span>Formts</span></a></li>
+<li>
+<ul>
+<li><a href="#md:status"><span>Status</span></a></li>
+<li>
+<ul>
+<li><a href="#md:features"><span>Features</span></a></li>
+<li><a href="#md:getting-started"><span>Getting <wbr/>Started</span></a></li>
+<li>
+<ul>
+<li><a href="#md:1-install"><span>1) <wbr/>Install</span></a></li>
+<li><a href="#md:2-define-shape-of-the-form"><span>2) <wbr/>Define shape of the form</span></a></li>
+<li><a href="#md:3-define-validation-rules-optional"><span>3) <wbr/>Define validation rules (optional)</span></a></li>
+<li><a href="#md:3-create-controller-holding-form-state"><span>3) <wbr/>Create controller holding form state</span></a></li>
+<li><a href="#md:4-connect-inputs-to-form"><span>4) <wbr/>Connect inputs to form</span></a></li>
+<li><a href="#md:5-connect-actions-to-form"><span>5) <wbr/>Connect actions to form</span></a></li></ul></li>
+<li><a href="#md:documentation"><span>Documentation</span></a></li>
+<li><a href="#md:examples"><span>Examples</span></a></li>
+<li><a href="#md:why-another-form-lib"><span>Why another form lib?</span></a></li>
+<li>
+<ul>
+<li><a href="#md:a-type-safety"><span>a) <wbr/>Type-<wbr/>safety</span></a></li>
+<li><a href="#md:b-performance"><span>b) <wbr/>Performance</span></a></li>
+<li><a href="#md:c-declarative-validation-api"><span>c) <wbr/>Declarative validation API</span></a></li></ul></li>
+<li><a href="#md:current-limitations"><span>Current limitations</span></a></li></ul></li></ul></li></ul></li></ul></div></details></div>
+<div class="site-menu">
+<nav class="tsd-navigation"><a href="modules.html" class="current"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><g id="icon-4"><rect fill="var(--color-icon-background)" stroke="var(--color-ts-namespace)" stroke-width="1.5" x="1" y="1" width="22" height="22" rx="6"></rect><path d="M9.33 16V7.24H10.77L13.446 14.74C13.43 14.54 13.41 14.296 13.386 14.008C13.37 13.712 13.354 13.404 13.338 13.084C13.33 12.756 13.326 12.448 13.326 12.16V7.24H14.37V16H12.93L10.266 8.5C10.282 8.692 10.298 8.936 10.314 9.232C10.33 9.52 10.342 9.828 10.35 10.156C10.366 10.476 10.374 10.784 10.374 11.08V16H9.33Z" fill="var(--color-text)"></path></g></svg><span>@virtuslab/formts</span></a>
+<ul class="tsd-small-nested-navigation">
+<li><a href="modules/FormFields.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-4"></use></svg><span>Form<wbr/>Fields</span></a></li>
+<li><a href="modules/Validator.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-4"></use></svg><span>Validator</span></a></li>
+<li><a href="classes/FieldMatcher.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><g id="icon-128"><rect fill="var(--color-icon-background)" stroke="var(--color-ts-class)" stroke-width="1.5" x="1" y="1" width="22" height="22" rx="6"></rect><path d="M11.898 16.1201C11.098 16.1201 10.466 15.8961 10.002 15.4481C9.53803 15.0001 9.30603 14.3841 9.30603 13.6001V9.64012C9.30603 8.85612 9.53803 8.24012 10.002 7.79212C10.466 7.34412 11.098 7.12012 11.898 7.12012C12.682 7.12012 13.306 7.34812 13.77 7.80412C14.234 8.25212 14.466 8.86412 14.466 9.64012H13.386C13.386 9.14412 13.254 8.76412 12.99 8.50012C12.734 8.22812 12.37 8.09212 11.898 8.09212C11.426 8.09212 11.054 8.22412 10.782 8.48812C10.518 8.75212 10.386 9.13212 10.386 9.62812V13.6001C10.386 14.0961 10.518 14.4801 10.782 14.7521C11.054 15.0161 11.426 15.1481 11.898 15.1481C12.37 15.1481 12.734 15.0161 12.99 14.7521C13.254 14.4801 13.386 14.0961 13.386 13.6001H14.466C14.466 14.3761 14.234 14.9921 13.77 15.4481C13.306 15.8961 12.682 16.1201 11.898 16.1201Z" fill="var(--color-text)"></path></g></svg><span>Field<wbr/>Matcher</span></a></li>
+<li><a href="classes/FormSchemaBuilder.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg><span>Form<wbr/>Schema<wbr/>Builder</span></a></li>
+<li><a href="classes/FormValidatorBuilder.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg><span>Form<wbr/>Validator<wbr/>Builder</span></a></li>
+<li><a href="interfaces/FieldDecoder.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><g id="icon-256"><rect fill="var(--color-icon-background)" stroke="var(--color-ts-interface)" stroke-width="1.5" x="1" y="1" width="22" height="22" rx="6"></rect><path d="M9.51 16V15.016H11.298V8.224H9.51V7.24H14.19V8.224H12.402V15.016H14.19V16H9.51Z" fill="var(--color-text)"></path></g></svg><span>Field<wbr/>Decoder</span></a></li>
+<li><a href="interfaces/FieldDescriptor.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-256"></use></svg><span>Field<wbr/>Descriptor</span></a></li>
+<li><a href="interfaces/FormController.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-256"></use></svg><span>Form<wbr/>Controller</span></a></li>
+<li><a href="interfaces/FormValidator.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-256"></use></svg><span>Form<wbr/>Validator</span></a></li>
+<li><a href="types/ExtractFormValues.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><g id="icon-4194304"><rect fill="var(--color-icon-background)" stroke="var(--color-ts-type-alias)" stroke-width="1.5" x="1" y="1" width="22" height="22" rx="6"></rect><path d="M11.31 16V8.224H8.91V7.24H14.79V8.224H12.39V16H11.31Z" fill="var(--color-text)"></path></g></svg><span>Extract<wbr/>Form<wbr/>Values</span></a></li>
+<li><a href="types/FieldHandle.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-4194304"></use></svg><span>Field<wbr/>Handle</span></a></li>
+<li><a href="types/FormSchema.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-4194304"></use></svg><span>Form<wbr/>Schema</span></a></li>
+<li><a href="types/FormtsOptions.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-4194304"></use></svg><span>Formts<wbr/>Options</span></a></li>
+<li><a href="types/Validator-1.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-4194304"></use></svg><span>Validator</span></a></li>
+<li><a href="functions/FormProvider.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><g id="icon-64"><rect fill="var(--color-icon-background)" stroke="var(--color-ts-function)" stroke-width="1.5" x="1" y="1" width="22" height="22" rx="6"></rect><path d="M9.39 16V7.24H14.55V8.224H10.446V11.128H14.238V12.112H10.47V16H9.39Z" fill="var(--color-text)"></path></g></svg><span>Form<wbr/>Provider</span></a></li>
+<li><a href="functions/useField.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-64"></use></svg><span>use<wbr/>Field</span></a></li>
+<li><a href="functions/useFormController.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-64"></use></svg><span>use<wbr/>Form<wbr/>Controller</span></a></li>
+<li><a href="functions/useFormErrors.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-64"></use></svg><span>use<wbr/>Form<wbr/>Errors</span></a></li>
+<li><a href="functions/useFormHandle.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-64"></use></svg><span>use<wbr/>Form<wbr/>Handle</span></a></li>
+<li><a href="functions/useFormValues.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-64"></use></svg><span>use<wbr/>Form<wbr/>Values</span></a></li></ul></nav></div></div></div>
+<div class="tsd-generator">
+<p>Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p></div>
+<div class="overlay"></div></body></html>
