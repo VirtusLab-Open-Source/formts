@@ -10,7 +10,9 @@
 
 ### Status
 
-Active development. Expect frequent breaking changes until `1.0.0` is reached ⚠️
+**A stable release has been reached.** Further development of new features is
+currently not planned. Bug fixes will be provided if needed, feature requests
+wil still be considered.
 
 ### Features
 
@@ -31,8 +33,6 @@ Active development. Expect frequent breaking changes until `1.0.0` is reached �
   - async validation rules with debounce option
   - easy mixing of built-in rules with custom functions
   - combining multiple validation rules into composite validators
-- **[TODO]** Transformation API for declarative mapping and filtering of field
-  values
 - Good scalability for very large and complex forms
 
 ### Getting Started
@@ -173,6 +173,15 @@ c) Advanced examples:
 
 ### Why another form lib?
 
+#### Update 2023:
+
+Some of the reasons outlined below are no longer valid as
+[react-hook-form](https://github.com/react-hook-form/react-hook-form) has
+improved since this project started. It offers good type-safety and performance.
+If for some reason you are not happy with it however, this library offers
+different approach to many aspects of form management and a powerful validation
+API - so it may suit your needs better.
+
 #### a) Type-safety
 
 Most popular form libraries like `Formik` and `react-hook-form` are written in
@@ -208,12 +217,13 @@ as `Yup`. This seems like a great idea but has some limitations:
 - Advanced optimizations (such as validating only the affected fields rather
   than the entire form) are not available.
 
-### Current limitations
+### Limitations
 
 - Form values type is limited by schema definition API and can't represent more
   advanced TS types
-- Adding `required` validator does not impact type of values on Submit
+- Adding `required` validator does not impact type of values.
+- number() fields are typed as `number | ""`, this is because HTML number inputs
+  work with `""` as empty value.
 - Definition of form shape and validation split into 2 separate steps
 - Binding to input components is more verbose than with other form libraries
   (this is intentional to keep API type-safe and view-layer agnostic)
-- Transformation API is limited to mapping inside the same type, i.e. `T => T`
