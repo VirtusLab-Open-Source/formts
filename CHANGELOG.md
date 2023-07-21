@@ -1,13 +1,17 @@
 # Changelog
 
-All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
+All notable changes to this project will be documented in this file. See
+[standard-version](https://github.com/conventional-changelog/standard-version)
+for commit guidelines.
+
+### [0.2.31](https://github.com/VirtusLab/formts/compare/v0.2.30...v0.2.31) (2023-07-11)
 
 ### [0.2.30](https://github.com/VirtusLab/formts/compare/v0.2.29...v0.2.30) (2023-07-06)
 
-
 ### Features
 
-* auto-generated docs ([#146](https://github.com/VirtusLab/formts/issues/146)) ([4ae28b1](https://github.com/VirtusLab/formts/commit/4ae28b112f71d5deb7909fe7c0f8d78af63019ed))
+- auto-generated docs ([#146](https://github.com/VirtusLab/formts/issues/146))
+  ([4ae28b1](https://github.com/VirtusLab/formts/commit/4ae28b112f71d5deb7909fe7c0f8d78af63019ed))
 
 ### [0.2.29](https://github.com/VirtusLab/formts/compare/v0.2.28...v0.2.29) (2023-07-05)
 
@@ -15,54 +19,61 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### [0.2.27](https://github.com/VirtusLab/formts/compare/v0.2.26...v0.2.27) (2023-06-11)
 
-
 ### Bug Fixes
 
-* triggering validation based on dependent fields ([#143](https://github.com/VirtusLab/formts/issues/143)) ([808d4b9](https://github.com/VirtusLab/formts/commit/808d4b9d16c1f41a6d013366dc4fa671202be888))
+- triggering validation based on dependent fields
+  ([#143](https://github.com/VirtusLab/formts/issues/143))
+  ([808d4b9](https://github.com/VirtusLab/formts/commit/808d4b9d16c1f41a6d013366dc4fa671202be888))
 
 ### [0.2.26](https://github.com/VirtusLab/formts/compare/v0.2.25...v0.2.26) (2023-03-05)
 
-
 ### Bug Fixes
 
-* perf related improvements ([#140](https://github.com/VirtusLab/formts/issues/140)) ([d1161c5](https://github.com/VirtusLab/formts/commit/d1161c578f3caf3e51161c145ac4925ac403b599))
+- perf related improvements
+  ([#140](https://github.com/VirtusLab/formts/issues/140))
+  ([d1161c5](https://github.com/VirtusLab/formts/commit/d1161c578f3caf3e51161c145ac4925ac403b599))
 
 ### [0.2.25](https://github.com/VirtusLab/formts/compare/v0.2.24...v0.2.25) (2023-02-26)
 
-
 ### Features
 
-* useFormErrors hook & FieldMatcher util ([#138](https://github.com/VirtusLab/formts/issues/138)) ([ae3c000](https://github.com/VirtusLab/formts/commit/ae3c0005386b2cb18849f4776f5650bbc062f8e5))
+- useFormErrors hook & FieldMatcher util
+  ([#138](https://github.com/VirtusLab/formts/issues/138))
+  ([ae3c000](https://github.com/VirtusLab/formts/commit/ae3c0005386b2cb18849f4776f5650bbc062f8e5))
 
 ### [0.2.24](https://github.com/VirtusLab/formts/compare/v0.2.23...v0.2.24) (2023-02-19)
 
-
 ### Features
 
-* add FieldHandle.setTouched method ([#137](https://github.com/VirtusLab/formts/issues/137)) ([d19841d](https://github.com/VirtusLab/formts/commit/d19841df9c3d38078d91feaf85ee5a6d727a20a0))
+- add FieldHandle.setTouched method
+  ([#137](https://github.com/VirtusLab/formts/issues/137))
+  ([d19841d](https://github.com/VirtusLab/formts/commit/d19841df9c3d38078d91feaf85ee5a6d727a20a0))
 
 ### [0.2.23](https://github.com/VirtusLab/formts/compare/v0.2.22...v0.2.23) (2023-02-17)
 
-
 ### Features
 
-* enable changing initialValues via form.reset method ([#131](https://github.com/VirtusLab/formts/issues/131)) ([34300e4](https://github.com/VirtusLab/formts/commit/34300e4e07bc87ef5088c97f2d86f6c6ad83d1e2))
+- enable changing initialValues via form.reset method
+  ([#131](https://github.com/VirtusLab/formts/issues/131))
+  ([34300e4](https://github.com/VirtusLab/formts/commit/34300e4e07bc87ef5088c97f2d86f6c6ad83d1e2))
 
 ### [0.2.22](https://github.com/VirtusLab/formts/compare/v0.2.21...v0.2.22) (2022-09-17)
 
 ### [0.2.21](https://github.com/VirtusLab/formts/compare/v0.2.20...v0.2.21) (2022-09-05)
 
-
 ### Features
 
-* implement isChanged flags ([#125](https://github.com/VirtusLab/formts/issues/125)) ([92515a8](https://github.com/VirtusLab/formts/commit/92515a801d87d38a8d3135cc8a30a4c199663a36))
+- implement isChanged flags
+  ([#125](https://github.com/VirtusLab/formts/issues/125))
+  ([92515a8](https://github.com/VirtusLab/formts/commit/92515a801d87d38a8d3135cc8a30a4c199663a36))
 
 ### [0.2.20](https://github.com/VirtusLab/formts/compare/v0.2.19...v0.2.20) (2022-08-25)
 
-
 ### Features
 
-* resetting field ([#124](https://github.com/VirtusLab/formts/issues/124)) ([47bc79d](https://github.com/VirtusLab/formts/commit/47bc79dd11f53c0789587061d1a9401c55df8647)), closes [#114](https://github.com/VirtusLab/formts/issues/114)
+- resetting field ([#124](https://github.com/VirtusLab/formts/issues/124))
+  ([47bc79d](https://github.com/VirtusLab/formts/commit/47bc79dd11f53c0789587061d1a9401c55df8647)),
+  closes [#114](https://github.com/VirtusLab/formts/issues/114)
 
 ### [0.2.19](https://github.com/VirtusLab/formts/compare/v0.2.18...v0.2.19) (2022-08-14)
 
@@ -74,10 +85,11 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### [0.2.15](https://github.com/VirtusLab/formts/compare/v0.2.14...v0.2.15) (2021-12-09)
 
-
 ### Bug Fixes
 
-* **core:** replace use-handle props with getters ([#109](https://github.com/VirtusLab/formts/issues/109)) ([882d24d](https://github.com/VirtusLab/formts/commit/882d24d8d8d7928c24a5ac7993a839817a4e0361))
+- **core:** replace use-handle props with getters
+  ([#109](https://github.com/VirtusLab/formts/issues/109))
+  ([882d24d](https://github.com/VirtusLab/formts/commit/882d24d8d8d7928c24a5ac7993a839817a4e0361))
 
 ### [0.2.14](https://github.com/VirtusLab/formts/compare/v0.2.13...v0.2.14) (2021-06-07)
 
@@ -85,17 +97,19 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### [0.2.12](https://github.com/VirtusLab/formts/compare/v0.2.11...v0.2.12) (2021-05-21)
 
-
 ### Bug Fixes
 
-* isSubmitting not being set to true while Promise received from submit onSuccess callback is processing ([#103](https://github.com/VirtusLab/formts/issues/103)) ([fc3f3cb](https://github.com/VirtusLab/formts/commit/fc3f3cbf9655aa30c8ecd30d88bab1efbd40e61b))
+- isSubmitting not being set to true while Promise received from submit
+  onSuccess callback is processing
+  ([#103](https://github.com/VirtusLab/formts/issues/103))
+  ([fc3f3cb](https://github.com/VirtusLab/formts/commit/fc3f3cbf9655aa30c8ecd30d88bab1efbd40e61b))
 
 ### [0.2.11](https://github.com/VirtusLab/formts/compare/v0.2.10...v0.2.11) (2021-05-12)
 
-
 ### Features
 
-* builder api ([#97](https://github.com/VirtusLab/formts/issues/97)) ([f78bd91](https://github.com/VirtusLab/formts/commit/f78bd91079ec90c6c5f761da61949424f82300a9))
+- builder api ([#97](https://github.com/VirtusLab/formts/issues/97))
+  ([f78bd91](https://github.com/VirtusLab/formts/commit/f78bd91079ec90c6c5f761da61949424f82300a9))
 
 ### [0.2.10](https://github.com/VirtusLab/formts/compare/v0.2.9...v0.2.10) (2021-05-12)
 
@@ -105,10 +119,11 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### [0.2.7](https://github.com/VirtusLab/formts/compare/v0.2.6...v0.2.7) (2021-04-30)
 
-
 ### Features
 
-* **validators:** remove default errors ([#92](https://github.com/VirtusLab/formts/issues/92)) ([eeb9b18](https://github.com/VirtusLab/formts/commit/eeb9b188d5194f52c46aed8405022c62d69f4e0d))
+- **validators:** remove default errors
+  ([#92](https://github.com/VirtusLab/formts/issues/92))
+  ([eeb9b18](https://github.com/VirtusLab/formts/commit/eeb9b188d5194f52c46aed8405022c62d69f4e0d))
 
 ### [0.2.6](https://github.com/VirtusLab/formts/compare/v0.2.5...v0.2.6) (2021-04-28)
 
