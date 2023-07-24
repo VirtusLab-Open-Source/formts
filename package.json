@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0",
+  "version": "1.0.1",
   "name": "@virtuslab/formts",
   "description": "Type-safe, declarative and performant React form & validation library",
   "repository": "git@github.com:VirtusLab/formts.git",
