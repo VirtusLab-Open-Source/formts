@@ -18,7 +18,9 @@
 <a href="https://bundlephobia.com/result?p=@virtuslab/formts"><img src="https://img.shields.io/bundlephobia/minzip/@virtuslab/formts" alt="npm bundle size"></a>
 <a href="https://github.com/VirtusLab/formts#examples"><img src="https://img.shields.io/badge/examples-codesandbox-blue" alt="examples"></a></p>
 <a id="md:formts" class="tsd-anchor"></a><h1><a href="#md:formts">Formts</a></h1><p><strong>Type-safe, declarative and performant React form &amp; validation library</strong></p>
-<a id="md:status" class="tsd-anchor"></a><h3><a href="#md:status">Status</a></h3><p>Active development. Expect frequent breaking changes until <code>1.0.0</code> is reached ⚠️</p>
+<a id="md:status" class="tsd-anchor"></a><h3><a href="#md:status">Status</a></h3><p><strong>A stable release has been reached.</strong> Further development of new features is
+currently not planned. Bug fixes will be provided if needed, feature requests
+wil still be considered.</p>
 <a id="md:features" class="tsd-anchor"></a><h3><a href="#md:features">Features</a></h3><ul>
 <li>Fully type-safe API, purpose built to get the most out of Typescript
 type-inference</li>
@@ -39,8 +41,6 @@ components</li>
 <li>combining multiple validation rules into composite validators</li>
 </ul>
 </li>
-<li><strong>[TODO]</strong> Transformation API for declarative mapping and filtering of field
-values</li>
 <li>Good scalability for very large and complex forms</li>
 </ul>
 <a id="md:getting-started" class="tsd-anchor"></a><h3><a href="#md:getting-started">Getting Started</a></h3><a id="md:1-install" class="tsd-anchor"></a><h4><a href="#md:1-install">1) Install</a></h4><pre><code class="language-bash"><span class="hl-0">npm</span><span class="hl-1"> </span><span class="hl-2">install</span><span class="hl-1"> </span><span class="hl-2">@virtuslab/formts</span>
@@ -85,7 +85,13 @@ values</li>
 <li><a href="https://codesandbox.io/s/form-with-summary-of-validation-errors-r44usv?file=/src/example.tsx">form with summary of validation errors</a></li>
 <li><a href="https://codesandbox.io/s/registration-stepper-form-8c3jdm?file=/src/registration-stepper-form.tsx">registration stepper form</a></li>
 </ol>
-<a id="md:why-another-form-lib" class="tsd-anchor"></a><h3><a href="#md:why-another-form-lib">Why another form lib?</a></h3><a id="md:a-type-safety" class="tsd-anchor"></a><h4><a href="#md:a-type-safety">a) Type-safety</a></h4><p>Most popular form libraries like <code>Formik</code> and <code>react-hook-form</code> are written in
+<a id="md:why-another-form-lib" class="tsd-anchor"></a><h3><a href="#md:why-another-form-lib">Why another form lib?</a></h3><a id="md:update-2023" class="tsd-anchor"></a><h4><a href="#md:update-2023">Update 2023:</a></h4><p>Some of the reasons outlined below are no longer valid as
+<a href="https://github.com/react-hook-form/react-hook-form">react-hook-form</a> has
+improved since this project started. It offers good type-safety and performance.
+If for some reason you are not happy with it however, this library offers
+different approach to many aspects of form management and a powerful validation
+API - so it may suit your needs better.</p>
+<a id="md:a-type-safety" class="tsd-anchor"></a><h4><a href="#md:a-type-safety">a) Type-safety</a></h4><p>Most popular form libraries like <code>Formik</code> and <code>react-hook-form</code> are written in
 Typescript but are not <em>designed</em> with type-safe API as a primary concern.</p>
 <p>There is some evidence that this is important for some people:</p>
 <ul>
@@ -112,14 +118,15 @@ as <code>Yup</code>. This seems like a great idea but has some limitations:</p>
 <li>Advanced optimizations (such as validating only the affected fields rather
 than the entire form) are not available.</li>
 </ul>
-<a id="md:current-limitations" class="tsd-anchor"></a><h3><a href="#md:current-limitations">Current limitations</a></h3><ul>
+<a id="md:limitations" class="tsd-anchor"></a><h3><a href="#md:limitations">Limitations</a></h3><ul>
 <li>Form values type is limited by schema definition API and can&#39;t represent more
 advanced TS types</li>
-<li>Adding <code>required</code> validator does not impact type of values on Submit</li>
+<li>Adding <code>required</code> validator does not impact type of values.</li>
+<li>number() fields are typed as <code>number | &quot;&quot;</code>, this is because HTML number inputs
+work with <code>&quot;&quot;</code> as empty value.</li>
 <li>Definition of form shape and validation split into 2 separate steps</li>
 <li>Binding to input components is more verbose than with other form libraries
 (this is intentional to keep API type-safe and view-layer agnostic)</li>
-<li>Transformation API is limited to mapping inside the same type, i.e. <code>T =&gt; T</code></li>
 </ul>
 </div></div>
 <div class="col-sidebar">
@@ -164,10 +171,11 @@ advanced TS types</li>
 <li><a href="#md:why-another-form-lib"><span>Why another form lib?</span></a></li>
 <li>
 <ul>
+<li><a href="#md:update-2023"><span>Update 2023:</span></a></li>
 <li><a href="#md:a-type-safety"><span>a) <wbr/>Type-<wbr/>safety</span></a></li>
 <li><a href="#md:b-performance"><span>b) <wbr/>Performance</span></a></li>
 <li><a href="#md:c-declarative-validation-api"><span>c) <wbr/>Declarative validation API</span></a></li></ul></li>
-<li><a href="#md:current-limitations"><span>Current limitations</span></a></li></ul></li></ul></li></ul></li></ul></div></details></div>
+<li><a href="#md:limitations"><span>Limitations</span></a></li></ul></li></ul></li></ul></li></ul></div></details></div>
 <div class="site-menu">
 <nav class="tsd-navigation"><a href="modules.html" class="current"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><g id="icon-4"><rect fill="var(--color-icon-background)" stroke="var(--color-ts-namespace)" stroke-width="1.5" x="1" y="1" width="22" height="22" rx="6"></rect><path d="M9.33 16V7.24H10.77L13.446 14.74C13.43 14.54 13.41 14.296 13.386 14.008C13.37 13.712 13.354 13.404 13.338 13.084C13.33 12.756 13.326 12.448 13.326 12.16V7.24H14.37V16H12.93L10.266 8.5C10.282 8.692 10.298 8.936 10.314 9.232C10.33 9.52 10.342 9.828 10.35 10.156C10.366 10.476 10.374 10.784 10.374 11.08V16H9.33Z" fill="var(--color-text)"></path></g></svg><span>@virtuslab/formts</span></a>
 <ul class="tsd-small-nested-navigation">
